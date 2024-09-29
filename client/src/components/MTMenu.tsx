@@ -1,61 +1,43 @@
 import { Menu, MenuProps } from "@mui/material";
-import {Children, cloneElement, FC, Fragment, ReactElement, ReactNode, useState} from "react";
+import {Fragment, useState, ReactNode } from "react";
+import { SxProps, Theme } from "@mui/material/styles";
 
-interface MTMenuProps extends MenuProps {
+interface MTMenuProps extends Omit<MenuProps, 'open'>{
     open?: boolean;
-    handler: ReactElement;
-    children: ReactNode;
+    sx?: SxProps<Theme>;
+    handler: (e: any) => ReactNode;
+    options: (e:()=>void) => ReactNode;
     direction?: "left" | "right" | "center";
-    shouldCloseOnItemClick?: boolean;
 }
 
-const MTMenu: FC<MTMenuProps> = ({
-                                           open,
-                                           handler,
-                                           children,
-                                           direction = "left",
-                                           shouldCloseOnItemClick = true,
-                                           ...props
-                                       }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+export default function MTMenu({
+    open,
+    handler,
+    options,
+    direction = "left",
+    ...props
+}:MTMenuProps){
 
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
-
-    const handleClose = () => setAnchorEl(null);
-
-    const handleMenuItemClick = (customOnClick?: () => void) => () => {
-        if (customOnClick) customOnClick();
-        if (shouldCloseOnItemClick) handleClose();
-    };
-
-    return (
+    const [anchorEl, setAnchorEl] = useState(null);
+    const handleOnClick = (event: any) => setAnchorEl(event.currentTarget);
+    const handleOnClose = () => setAnchorEl(null);
+    const isOpen = open !== undefined ? open : !!anchorEl;
+    const origin = { vertical: "bottom" as const, horizontal: direction };
+    const transform = { vertical: "top" as const, horizontal: direction };
+    return(
         <Fragment>
-            {handler &&
-                cloneElement(handler, {
-                    onClick: handler.props.onClick || handleClick,
-                })}
+            {handler && handler(handleOnClick)}
             <Menu
                 anchorEl={anchorEl}
-                onClose={handleClose}
-                open={open !== undefined ? open : !!anchorEl}
-                anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: direction,
-                }}
-                transformOrigin={{
-                    vertical: "top",
-                    horizontal: direction,
-                }}
+                onClose={handleOnClose}
+                open={isOpen}
+                anchorOrigin={origin}
+                transformOrigin={transform}
+                elevation={0}
                 {...props}
             >
-                {Children.map(children, (child) =>
-                    cloneElement(child as ReactElement, {
-                        onClick: handleMenuItemClick(child.props.onClick),
-                    })
-                )}
+                {options(handleOnClose)}
             </Menu>
         </Fragment>
-    );
-};
-
-export default MTMenu;
+    )
+}
