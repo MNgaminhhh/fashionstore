@@ -3,7 +3,7 @@ import {FlexBox} from "../../../flexbox";
 
 export default function LoginRegisterButton() {
     return (
-        <FlexBox gap={2} sx={{ ml: "auto" }}>
+        <FlexBox gap={1} sx={{ ml: "auto" }}>
             <StyledButton variant="outlined"href="/login" variantType="login">
                 Đăng Nhập
             </StyledButton>
