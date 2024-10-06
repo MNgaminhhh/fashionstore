@@ -69,9 +69,9 @@ func (h *Handlers) Login(c echo.Context) error {
 		Secret:        "",
 		TokenExpiry:   time.Minute * 15,
 		RefreshExpiry: time.Hour * 24,
-		CookieDomain:  "/",
-		CookiePath:    "mtshop.com",
-		CookieName:    "",
+		CookieDomain:  "localhost",
+		CookiePath:    "/",
+		CookieName:    "refresh_token",
 	}
 
 	tokens, err := auth.GenerateToken(&user)
@@ -95,6 +95,9 @@ func (h *Handlers) Login(c echo.Context) error {
 		Message: "Success",
 		Success: true,
 	}
+
+	cookie := auth.GetRefreshCookie(tokens.RefreshToken)
+	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, res)
 }
