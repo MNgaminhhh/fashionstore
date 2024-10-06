@@ -110,7 +110,7 @@ const SearchBar: React.FC = () => {
             </SearchContainer>
 
             {resultList.length > 0 && (
-                <Box position="absolute" width="100%" mt={1} bgcolor="white" zIndex={1501}>
+                <Box position="absolute" width="100%" mt={1} bgcolor="white" zIndex={10000}>
                     {resultList.map((item) => (
                         <MenuItem key={item}>{item}</MenuItem>
                     ))}

@@ -1,6 +1,10 @@
 import { Box, BoxProps } from "@mui/material";
+import {ReactNode} from "react";
 
-export default function FlexBetween({ children, ...props }: BoxProps) {
+interface FlexBetweenProps {
+    children: ReactNode;
+}
+export default function FlexBetween({ children, ...props }: FlexBetweenProps) {
     return (
         <Box
             display="flex"
