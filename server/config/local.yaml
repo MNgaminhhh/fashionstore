@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  mode: "dev"
+
+postgres:
+  host: 127.0.0.1
+  port: 5432
+  username: postgres
+  password: 123456
+  dbname: mtshop
+  sslmode: disable
+  maxIdleConns: 10
+  maxOpenConns: 100
+  connMaxLifetime: 3600
+
+logger:
+  log_level: debug
+  file_log_name: "./storages/logs/dev.001.log"
+  max_backups: 30
+  max_age: 7
+  max_size: 1024
+  compress: true
