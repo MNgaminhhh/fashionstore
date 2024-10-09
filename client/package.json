@@ -11,8 +11,6 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@mngaminhhh/mn": "^1.0.2",
-    "@mngaminhhh/src": "^1.0.1",
     "@mui/icons-material": "^5.16.0",
     "@mui/lab": "^5.0.0-alpha.171",
     "@mui/material": "^5.16.0",
@@ -22,9 +20,9 @@
     "icons": "^1.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
-    "next": "14.2.7",
-    "react": "^18",
-    "react-dom": "^18",
+    "next": "^14.2.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "simplebar-react": "^3.2.6"
   },
   "devDependencies": {
