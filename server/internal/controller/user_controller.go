@@ -24,7 +24,9 @@ func (uc *UserController) Login(c echo.Context) error {
 	if err := c.Bind(&params); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
 	}
-
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
 	code := uc.userService.Login(params.Email, params.Password)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Login failed")

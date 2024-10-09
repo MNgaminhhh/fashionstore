@@ -12,7 +12,7 @@ const (
 
 var msg = map[int]string{
 	SuccessCode:         "Successfully",
-	ErrCodeParamInvalid: "Invalid parameters provided",
+	ErrCodeParamInvalid: "Thông tin nhập vào không hợp lệ",
 	ErrCodeNotFound:     "Resource not found",
 	ErrCodeInternal:     "Internal server error",
 	//========

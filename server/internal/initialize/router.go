@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"backend/global"
+	"backend/internal/controller"
 	"backend/internal/routers"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -9,7 +10,7 @@ import (
 
 func InitRouter() *echo.Echo {
 	e := echo.New()
-
+	e.Validator = controller.NewCustomValidator()
 	if global.Config.Server.Mode == "dev" {
 		e.Debug = true
 	} else {
