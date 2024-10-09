@@ -2,6 +2,7 @@ package services
 
 import (
 	"backend/internal/database"
+	"backend/internal/service"
 	"context"
 	"database/sql"
 	"github.com/labstack/echo"
@@ -59,7 +60,7 @@ func (h *Handlers) Login(c echo.Context) error {
 		}
 		return c.JSON(http.StatusNotFound, res)
 	}
-	auth := Auth{
+	auth := service.Auth{
 		Issuer:        "mtshop.com",
 		Audience:      "",
 		Secret:        "",

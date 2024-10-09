@@ -18,9 +18,9 @@ type CreateNewUserParams struct {
 	Password string
 }
 
-func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) error {
+func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) (error, error) {
 	_, err := q.db.ExecContext(ctx, createNewUser, arg.Email, arg.Password)
-	return err
+	return err, nil
 }
 
 const getAllUser = `-- name: GetAllUser :many

@@ -10,6 +10,7 @@ import (
 type IUserRepository interface {
 	GetUserByEmail(email string) (*database.User, error)
 	UpdateStatus(email string, status string) (error, error)
+	CreateNewUser(email string, password string) (error, error)
 }
 
 type userRepository struct {
@@ -36,6 +37,18 @@ func (ur *userRepository) UpdateStatus(email string, userStatus string) (error, 
 		return nil, err
 	}
 	return updatedUser, nil
+}
+
+func (ur *userRepository) CreateNewUser(email string, password string) (error, error) {
+	params := database.CreateNewUserParams{
+		Email:    email,
+		Password: password,
+	}
+	createdUser, err := ur.sqlc.CreateNewUser(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return createdUser, nil
 }
 
 func NewUserRepository() IUserRepository {

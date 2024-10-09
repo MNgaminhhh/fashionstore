@@ -13,6 +13,7 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 	userRouterPublic := router.Group("/auth")
 	{
 		userRouterPublic.POST("/login", userController.Login)
-		userRouterPublic.POST("/update-status", userController.UpdateUserStatus)
+		userRouterPublic.PUT("/update-status", userController.UpdateUserStatus)
+		userRouterPublic.POST("/register", userController.CreateNewUser)
 	}
 }
