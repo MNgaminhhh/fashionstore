@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend/database"
+	"backend/internal/database"
 	"context"
 	"database/sql"
 	"github.com/labstack/echo"

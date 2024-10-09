@@ -1,11 +1,12 @@
 package main
 
 import (
-	"backend/server"
+	"backend/internal/initialize"
 	"log"
 )
 
 func main() {
 	log.Println("Starting server...")
-	server.Start()
+	//server.Start()
+	initialize.Run()
 }
