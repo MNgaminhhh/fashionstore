@@ -12,6 +12,7 @@ const (
 	ErrCodeUserLocked                 = 50004
 	ErrCodeIncorrectConfirmedPassword = 50005
 	ErrCodeEmailAlreadyUsed           = 50006
+	ErrCodeTokenInvalid               = 50007
 )
 
 var msg = map[int]string{
@@ -26,4 +27,5 @@ var msg = map[int]string{
 	ErrCodeUserLocked:                 "Tài khoản đã bị khóa. Liên hệ admin để được hỗ trợ!!",
 	ErrCodeIncorrectConfirmedPassword: "Mật khẩu xác nhận không khớp. Vui lòng thử lại!!",
 	ErrCodeEmailAlreadyUsed:           "Email này đã được sử dụng!!",
+	ErrCodeTokenInvalid:               "Đường dẫn đã hết hạn hoặc không hợp lệ!!",
 }

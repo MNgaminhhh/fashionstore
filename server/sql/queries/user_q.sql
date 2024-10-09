@@ -16,3 +16,9 @@ WHERE email = $2;
 
 -- name: GetUserActived :many
 SELECT * FROM users WHERE status = $1;
+
+
+-- name: UpdateNewPassword :exec
+UPDATE users
+SET password = $1
+WHERE email = $2;

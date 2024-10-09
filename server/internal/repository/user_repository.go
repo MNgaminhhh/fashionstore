@@ -11,6 +11,7 @@ type IUserRepository interface {
 	GetUserByEmail(email string) (*database.User, error)
 	UpdateStatus(email string, status string) (error, error)
 	CreateNewUser(email string, password string) (error, error)
+	UpdatePassword(email, newPassword string) (error, error)
 }
 
 type userRepository struct {
@@ -49,6 +50,18 @@ func (ur *userRepository) CreateNewUser(email string, password string) (error, e
 		return nil, err
 	}
 	return createdUser, nil
+}
+
+func (ur *userRepository) UpdatePassword(email, newPassword string) (error, error) {
+	params := database.UpdateNewPasswordParams{
+		Email:    email,
+		Password: newPassword,
+	}
+	updatedUser, err := ur.sqlc.UpdateNewPassword(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return updatedUser, nil
 }
 
 func NewUserRepository() IUserRepository {

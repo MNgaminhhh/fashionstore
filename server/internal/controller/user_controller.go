@@ -74,3 +74,43 @@ func (uc *UserController) CreateNewUser(c echo.Context) error {
 
 	return response.SuccessResponse(c, response.SuccessCode, "Create new user successful")
 }
+
+func (uc *UserController) SendEmailResetPassword(c echo.Context) error {
+	var params validator.SendEmailRequest
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := uc.userService.SendEmailResetPassword(params.Email)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Send email reset password failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Send email reset password successful")
+}
+
+func (uc *UserController) ForgetPassword(c echo.Context) error {
+	token := c.QueryParams().Get("token")
+	if token == "" {
+		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
+	}
+
+	code, email := uc.userService.ValidateResetPasswordToken(token)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "invalid token")
+	}
+
+	requestParams := validator.ForgetPasswordRequest{}
+	if err := c.Bind(&requestParams); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(requestParams); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code = uc.userService.ResetPassword(email, requestParams.NewPassword, requestParams.ConfirmPassword)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Reset password failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Reset password successful")
+}
