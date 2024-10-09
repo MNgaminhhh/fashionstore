@@ -1,4 +1,4 @@
-GOOSE_DBSTRING = "postgres://postgres:12346@localhost:5432/mtshop?sslmode=disable"
+GOOSE_DBSTRING := "postgres://postgres:admin@localhost:5433/mtshop?sslmode=disable"
 GOOSE_MIGRATION_DIR ?= sql/schema
 
 APP_NAME := server

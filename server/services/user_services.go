@@ -20,10 +20,6 @@ type Handlers struct {
 	db *sql.DB
 }
 
-func NewHandlers(db *sql.DB) *Handlers {
-	return &Handlers{db: db}
-}
-
 func (h *Handlers) Home(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Hello")
 }

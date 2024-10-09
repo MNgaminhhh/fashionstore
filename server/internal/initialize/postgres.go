@@ -24,12 +24,12 @@ func InitPostgres() {
 	db, err := sql.Open("postgres", connString)
 	checkError(err, "Error connect")
 
-	SettupConn(db)
+	SetupConn(db)
 	global.Mdb = db
 	global.Logger.Info("Initializing PostgreSQL Successfully")
 }
 
-func SettupConn(db *sql.DB) {
+func SetupConn(db *sql.DB) {
 	p := global.Config.Postgres
 	db.SetConnMaxIdleTime(time.Duration(p.ConMaxLifetime) * time.Second)
 	db.SetMaxOpenConns(p.MaxOpenCon)

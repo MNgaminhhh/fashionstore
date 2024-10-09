@@ -9,9 +9,23 @@ import (
 	"context"
 )
 
+const createNewUser = `-- name: CreateNewUser :exec
+INSERT INTO users (email, password) VALUES ($1, $2)
+`
+
+type CreateNewUserParams struct {
+	Email    string
+	Password string
+}
+
+func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) error {
+	_, err := q.db.ExecContext(ctx, createNewUser, arg.Email, arg.Password)
+	return err
+}
+
 const getAllUser = `-- name: GetAllUser :many
 SELECT
-    id, email, password
+    id, email, password, status
   FROM users
 `
 
@@ -24,7 +38,44 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Email, &i.Password); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Password,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserActived = `-- name: GetUserActived :many
+SELECT id, email, password, status FROM users WHERE status = $1
+`
+
+func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUserActived, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Password,
+			&i.Status,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -39,12 +90,33 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password From users WHERE email = $1 LIMIT 1
+SELECT id, email, password, status From users WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
 	var i User
-	err := row.Scan(&i.ID, &i.Email, &i.Password)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Status,
+	)
 	return i, err
+}
+
+const updateUserStatus = `-- name: UpdateUserStatus :exec
+UPDATE users
+SET status = $1
+WHERE email = $2
+`
+
+type UpdateUserStatusParams struct {
+	Status UserStatus
+	Email  string
+}
+
+func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (error, error) {
+	_, err := q.db.ExecContext(ctx, updateUserStatus, arg.Status, arg.Email)
+	return err, nil
 }

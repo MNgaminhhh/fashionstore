@@ -8,6 +8,8 @@ const (
 	//========
 	ErrCodeEmailNotFound = 50001
 	ErrCodePassword      = 50002
+	ErrCodeUserInactive  = 50003
+	ErrCodeUserLocked    = 50004
 )
 
 var msg = map[int]string{
@@ -18,4 +20,6 @@ var msg = map[int]string{
 	//========
 	ErrCodeEmailNotFound: "Email này chưa được đăng ký. Vui Lòng thử lại sau!!",
 	ErrCodePassword:      "Email và mật khẩu chưa chính xác. Vui Lòng thử lại sau!!",
+	ErrCodeUserInactive:  "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt!!",
+	ErrCodeUserLocked:    "Tài khoản đã bị khóa. Liên hệ admin để được hỗ trợ!!",
 }

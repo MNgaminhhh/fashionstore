@@ -4,10 +4,12 @@ import (
 	"backend/global"
 	"backend/internal/database"
 	"fmt"
+	"strings"
 )
 
 type IUserRepository interface {
 	GetUserByEmail(email string) (*database.User, error)
+	UpdateStatus(email string, status string) (error, error)
 }
 
 type userRepository struct {
@@ -21,6 +23,19 @@ func (ur *userRepository) GetUserByEmail(email string) (*database.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (ur *userRepository) UpdateStatus(email string, userStatus string) (error, error) {
+	status := database.UserStatus(strings.ToLower(userStatus))
+	params := database.UpdateUserStatusParams{
+		Status: status,
+		Email:  email,
+	}
+	updatedUser, err := ur.sqlc.UpdateUserStatus(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return updatedUser, nil
 }
 
 func NewUserRepository() IUserRepository {

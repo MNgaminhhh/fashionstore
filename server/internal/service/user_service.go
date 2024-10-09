@@ -7,6 +7,7 @@ import (
 
 type IUserService interface {
 	Login(email string, password string) int
+	UpdateUserStatus(email string, status string) int
 }
 
 type userService struct {
@@ -29,6 +30,13 @@ func (us *userService) Login(email string, password string) int {
 	if user.Password != password {
 		return response.ErrCodePassword
 	}
+	return response.SuccessCode
+}
 
+func (us *userService) UpdateUserStatus(email string, status string) int {
+	_, err := us.userRepo.UpdateStatus(email, status)
+	if err != nil {
+		return response.ErrCodeEmailNotFound
+	}
 	return response.SuccessCode
 }

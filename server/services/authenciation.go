@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend/database"
+	"backend/internal/database"
 	"github.com/golang-jwt/jwt"
 	"net/http"
 	"time"

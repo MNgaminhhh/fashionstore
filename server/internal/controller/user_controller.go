@@ -32,3 +32,17 @@ func (uc *UserController) Login(c echo.Context) error {
 
 	return response.SuccessResponse(c, response.SuccessCode, "Login successful")
 }
+
+func (uc *UserController) UpdateUserStatus(c echo.Context) error {
+	var params validator.UpdateStatusParam
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+
+	code := uc.userService.UpdateUserStatus(params.Email, params.Status)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update user status failed")
+	}
+
+	return response.SuccessResponse(c, response.SuccessCode, "Update user status successful")
+}
