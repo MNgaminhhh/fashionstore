@@ -124,7 +124,7 @@ func (uc *UserController) SendEmailActiveUser(c echo.Context) error {
 	if err := c.Validate(params); err != nil {
 		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
 	}
-	code := uc.userService.SendEmailActiveUser(params.Email)
+	code := uc.userService.SendEmailVerify(params.Email)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Send email active user failed")
 	}

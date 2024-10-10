@@ -23,7 +23,7 @@ type IUserService interface {
 	SendEmailResetPassword(email string) int
 	ValidateToken(token string, secret string) (int, string)
 	ResetPassword(email string, newPassword string, confirmPassword string) int
-	SendEmailActiveUser(email string) int
+	SendEmailVerify(email string) int
 }
 
 type userService struct {
@@ -103,7 +103,7 @@ func (us *userService) CreateNewUser(email string, password string, confirmed st
 	}
 	result := make(chan int)
 	go func() {
-		result <- us.SendEmailActiveUser(email)
+		result <- us.SendEmailVerify(email)
 	}()
 
 	sendEmailResult := <-result
@@ -112,60 +112,6 @@ func (us *userService) CreateNewUser(email string, password string, confirmed st
 	}
 
 	return response.SuccessCode
-}
-
-func (us *userService) SendEmailResetPassword(email string) int {
-	user, _ := us.userRepo.GetUserByEmail(email)
-	if user == nil {
-		return response.ErrCodeEmailNotFound
-	}
-
-	resetAuth := Auth{
-		Issuer:       "mtshop.com",
-		Audience:     "",
-		Secret:       ResetSecret,
-		TokenExpiry:  time.Minute * 5,
-		CookieDomain: "localhost",
-		CookiePath:   "/api/v1/auth/reset-password",
-		CookieName:   "reset-token",
-	}
-
-	resetToken, err := resetAuth.GenerateTokenByEmail(email)
-	if err != nil {
-		return response.ErrCodeInternal
-	}
-
-	emailService := NewEmailService(SMTPServer{
-		Host:     "smtp.gmail.com",
-		Port:     587,
-		Username: "taihk2@gmail.com",
-		Password: "whyw mxby ezkq cqdh",
-	})
-	resetLink := fmt.Sprintf("http://localhost:8080/auth/reset-password?token=%s", resetToken)
-	content := fmt.Sprintf(`
-	<html>
-		<body>
-			<p>Nhấn vào liên kết sau để đặt lại mật khẩu: <a href="%s">Reset password</a></p>
-			<b>Liên kết sẽ hết hạn trong 5 phút.</b>
-		</body>
-	</html>
-	`, resetLink)
-
-	smtpErr := emailService.SendEmail("MTShop Reset Password", content, email)
-	if smtpErr != nil {
-		return response.ErrCodeInternal
-	}
-	return response.SuccessCode
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }
 
 func (us *userService) ValidateToken(token string, secret string) (int, string) {
@@ -249,40 +195,61 @@ func (us *userService) RefreshToken(cookies []*http.Cookie) (int, map[string]int
 	return response.ErrCodeUnauthorized, nil
 }
 
-func (us *userService) SendEmailActiveUser(email string) int {
-	activeAuth := Auth{
-		Issuer:        "mtshop.com",
-		Audience:      "",
-		Secret:        ActiveSecret,
-		TokenExpiry:   time.Minute * 5,
-		RefreshExpiry: 0,
-		CookieDomain:  "localhost",
-		CookiePath:    "/api/v1/auth/verify-email",
-		CookieName:    "verify-email-cookie",
+func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject string, tokenExpiry time.Duration, secret string) int {
+	auth := Auth{
+		Issuer:       "mtshop.com",
+		Audience:     "",
+		Secret:       secret,
+		TokenExpiry:  tokenExpiry,
+		CookieDomain: "localhost",
+		CookiePath:   linkPath,
+		CookieName:   fmt.Sprintf("%s-token", purpose),
 	}
 
-	token, err := activeAuth.GenerateTokenByEmail(email)
+	token, err := auth.GenerateTokenByEmail(email)
 	if err != nil {
 		return response.ErrCodeInternal
 	}
+
 	emailService := NewEmailService(SMTPServer{
 		Host:     "smtp.gmail.com",
 		Port:     587,
 		Username: "taihk2@gmail.com",
 		Password: "whyw mxby ezkq cqdh",
 	})
-	activeLink := fmt.Sprintf("http://localhost:8080/api/v1/auth/verify-email?token=%s", token)
+
+	link := fmt.Sprintf("http://localhost:8080%s?token=%s", linkPath, token)
 	content := fmt.Sprintf(`
 	<html>
 		<body>
-			<p>Nhấn vào liên kết sau để kích hoạt tài khoản: <a href="%s">Verify Email</a></p>
-			<b>Liên kết sẽ hết hạn trong 5 phút.</b>
+			<p>Nhấn vào liên kết sau để %s: <a href="%s">%s</a></p>
+			<b>Liên kết sẽ hết hạn trong %v phút.</b>
 		</body>
 	</html>
-	`, activeLink)
-	smtpErr := emailService.SendEmail("MTShop Verify Email", content, email)
+	`, purpose, link, subject, tokenExpiry.Minutes())
+
+	smtpErr := emailService.SendEmail(subject, content, email)
 	if smtpErr != nil {
 		return response.ErrCodeInternal
 	}
+
 	return response.SuccessCode
+}
+
+func (us *userService) SendEmailResetPassword(email string) int {
+	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/api/v1/auth/reset-password", "MTShop Reset Password", time.Minute*5, ResetSecret)
+}
+
+func (us *userService) SendEmailVerify(email string) int {
+	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/api/v1/auth/verify-email", "MTShop Verify Email", time.Minute*5, ActiveSecret)
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

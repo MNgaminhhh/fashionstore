@@ -12,12 +12,17 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 
 	userRouterPublic := router.Group("/auth")
 	{
+		//GET
+		userRouterPublic.GET("/verify-email", userController.ActiveUser)
+
+		//POST
 		userRouterPublic.POST("/login", userController.Login)
-		userRouterPublic.PUT("/update-status", userController.UpdateUserStatus)
 		userRouterPublic.POST("/register", userController.CreateNewUser)
 		userRouterPublic.POST("/forgot-password/send-email", userController.SendEmailResetPassword)
-		userRouterPublic.POST("/forgot-password", userController.ForgetPassword)
 		userRouterPublic.POST("/verify-email/send-email", userController.SendEmailActiveUser)
-		userRouterPublic.GET("/verify-email", userController.ActiveUser)
+
+		//PUT
+		userRouterPublic.PUT("/update-status", userController.UpdateUserStatus)
+		userRouterPublic.PUT("/forgot-password", userController.ForgetPassword)
 	}
 }
