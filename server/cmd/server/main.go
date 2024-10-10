@@ -7,6 +7,5 @@ import (
 
 func main() {
 	log.Println("Starting server...")
-	//server.Start()
 	initialize.Run()
 }

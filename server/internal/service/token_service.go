@@ -1,7 +1,7 @@
-package services
+package service
 
 import (
-	"backend/database"
+	"backend/internal/database"
 	"github.com/golang-jwt/jwt"
 	"net/http"
 	"time"
@@ -85,4 +85,16 @@ func (j *Auth) GetExpiredRefreshCookie() *http.Cookie {
 		HttpOnly: true,
 		Secure:   true,
 	}
+}
+
+func (j *Auth) GenerateResetPasswordToken(email string) (string, error) {
+	claims := jwt.MapClaims{
+		"iss":   j.Issuer,
+		"email": email,
+		"aud":   j.Audience,
+		"typ":   "JWT",
+		"exp":   time.Now().Add(j.TokenExpiry).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(j.Secret))
 }

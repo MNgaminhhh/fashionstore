@@ -13,5 +13,9 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 	userRouterPublic := router.Group("/auth")
 	{
 		userRouterPublic.POST("/login", userController.Login)
+		userRouterPublic.PUT("/update-status", userController.UpdateUserStatus)
+		userRouterPublic.POST("/register", userController.CreateNewUser)
+		userRouterPublic.GET("/forgot-password/send-email", userController.SendEmailResetPassword)
+		userRouterPublic.POST("/forgot-password", userController.ForgetPassword)
 	}
 }
