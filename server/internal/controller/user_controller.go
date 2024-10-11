@@ -134,7 +134,7 @@ func (uc *UserController) SendEmailActiveUser(c echo.Context) error {
 func (uc *UserController) ActiveUser(c echo.Context) error {
 	token := c.QueryParam("token")
 	if token == "" {
-		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "token is empty")
+		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 	code, email := uc.userService.ValidateToken(token, service.ActiveSecret)
 	if code != response.SuccessCode {
@@ -145,4 +145,19 @@ func (uc *UserController) ActiveUser(c echo.Context) error {
 		return response.ErrorResponse(c, updateStatusCode, "Update user status failed")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Update user status successful")
+}
+
+func (uc *UserController) ResendEmailActive(c echo.Context) error {
+	var params validator.SendEmailRequest
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := uc.userService.SendEmailVerify(params.Email)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Send email active user failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Đã gửi lai email kích hoạt!")
 }

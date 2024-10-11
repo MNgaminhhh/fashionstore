@@ -152,3 +152,5 @@
 {"level":"INFO","time":"2024-10-10T15:43:34.438+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
 {"level":"INFO","time":"2024-10-10T15:53:04.843+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
 {"level":"INFO","time":"2024-10-10T15:53:04.843+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-11T09:50:45.167+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-11T09:50:45.174+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
