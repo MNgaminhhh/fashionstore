@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal/enum"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -96,7 +97,7 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 
-	code, email := uc.userService.ValidateResetPasswordToken(token)
+	code, email := uc.userService.ValidateToken(token, service.ResetSecret)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -113,4 +114,35 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Reset password failed")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Reset password successful")
+}
+
+func (uc *UserController) SendEmailActiveUser(c echo.Context) error {
+	var params validator.SendEmailRequest
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := uc.userService.SendEmailVerify(params.Email)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Send email active user failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Đã gửi email kích hoạt tài khoản. Vui lòng kiểm tra email!!")
+}
+
+func (uc *UserController) ActiveUser(c echo.Context) error {
+	token := c.QueryParam("token")
+	if token == "" {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "token is empty")
+	}
+	code, email := uc.userService.ValidateToken(token, service.ActiveSecret)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "invalid token")
+	}
+	updateStatusCode := uc.userService.UpdateUserStatus(email, enum.ACTIVE.String())
+	if updateStatusCode != response.SuccessCode {
+		return response.ErrorResponse(c, updateStatusCode, "Update user status failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Update user status successful")
 }

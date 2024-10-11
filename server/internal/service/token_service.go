@@ -87,7 +87,7 @@ func (j *Auth) GetExpiredRefreshCookie() *http.Cookie {
 	}
 }
 
-func (j *Auth) GenerateResetPasswordToken(email string) (string, error) {
+func (j *Auth) GenerateTokenByEmail(email string) (string, error) {
 	claims := jwt.MapClaims{
 		"iss":   j.Issuer,
 		"email": email,
