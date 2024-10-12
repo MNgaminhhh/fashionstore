@@ -6,6 +6,9 @@ import * as yup from "yup";
 import usePasswordVisible from "../hook/usePasswordVisible";
 import EyeToggle from "../components/EyeToggle";
 import MTField from "../../../components/MTField";
+import Auth from "../../../services/Auth";
+import {router} from "next/client";
+import {notifyError, notifySuccess} from "../../../utils/ToastNotification";
 
 export const RegisterView = () => {
     const createInputProps = (visible, toggleVisible) => ({
@@ -35,7 +38,21 @@ export const RegisterView = () => {
     const formik = useFormik({
         initialValues,
         validationSchema,
-        onSubmit: (values) => console.log(values),
+        onSubmit: async (values) => {
+            try {
+                const response = await Auth.register(values.email, values.password, values.confirm_password);
+
+                if (response.data.success) {
+                    notifySuccess("Đăng ký thành công!");
+                    formik.resetForm();
+                    await router.push("/login");
+                } else {
+                    notifyError(response.data.message);
+                }
+            } catch (error) {
+                notifyError("Có lỗi xảy ra trong quá trình đăng ký!");
+            }
+        },
     });
 
     const fields = [

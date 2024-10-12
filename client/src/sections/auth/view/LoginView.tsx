@@ -6,7 +6,9 @@ import MTField from "../../../components/MTField";
 import usePasswordVisible from "../hook/usePasswordVisible";
 import EyeToggle from "../components/EyeToggle";
 import { useFormik } from "formik";
-
+import Auth from "../../../services/Auth";
+import {router} from "next/client";
+import {notifyError, notifySuccess} from "../../../utils/ToastNotification";
 interface LoginViewProps {
     closeDialog?: () => void;
 }
@@ -42,9 +44,19 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
     const formik = useFormik<LoginFormValues>({
         initialValues,
         validationSchema,
-        onSubmit: (values) => {
-            console.log(values);
-            closeDialog?.();
+        onSubmit: async (values) => {
+            try {
+                const response = await Auth.login(values.email, values.password);
+                if (response.data.success) {
+                    notifySuccess("Đăng nhập thành công!");
+                    formik.resetForm();
+                    await router.push("/");
+                } else {
+                    notifyError(response.data.message);
+                }
+            } catch (error) {
+                notifyError("Có lỗi xảy ra trong quá trình đăng nhập!");
+            }
         },
     });
 
