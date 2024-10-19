@@ -6,7 +6,7 @@ class Base extends BaseApi {
         super({
             ...data,
             baseURL: baseUrl,
-            timeout: 5000,
+            timeout: 7000,
         });
     }
 }

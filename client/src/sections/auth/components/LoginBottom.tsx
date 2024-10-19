@@ -11,7 +11,7 @@ export default function LoginBottom() {
             </FlexCenterRow>
             <FlexBox gap={1} py={2} borderRadius={1} justifyContent="center" bgcolor="grey.100">
                 Bạn quên mật khẩu?
-                <LinkBox title="Đặt lại mật khẩu" href="/reset-password" />
+                <LinkBox title="Đặt lại mật khẩu" href="/forgot-password" />
             </FlexBox>
         </Fragment>
     );

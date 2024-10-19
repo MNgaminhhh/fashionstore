@@ -5,11 +5,12 @@ import (
 	"backend/internal/repository"
 	"backend/pkg/response"
 	"fmt"
-	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const Secret = "super-secret"
@@ -211,14 +212,9 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 		return response.ErrCodeInternal
 	}
 
-	emailService := NewEmailService(SMTPServer{
-		Host:     "smtp.gmail.com",
-		Port:     587,
-		Username: "taihk2@gmail.com",
-		Password: "whyw mxby ezkq cqdh",
-	})
+	emailService := NewEmailService()
 
-	link := fmt.Sprintf("http://localhost:8080%s?token=%s", linkPath, token)
+	link := fmt.Sprintf("http://localhost:3000%s?token=%s", linkPath, token)
 	content := fmt.Sprintf(`
 	<html>
 		<body>
@@ -230,18 +226,18 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 
 	smtpErr := emailService.SendEmail(subject, content, email)
 	if smtpErr != nil {
-		return response.ErrCodeInternal
+		return response.ErrCodeCannotVerifyThisEmail
 	}
 
 	return response.SuccessCode
 }
 
 func (us *userService) SendEmailResetPassword(email string) int {
-	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/api/v1/auth/reset-password", "MTShop Reset Password", time.Minute*5, ResetSecret)
+	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/reset-password", "MTShop Reset Password", time.Minute*5, ResetSecret)
 }
 
 func (us *userService) SendEmailVerify(email string) int {
-	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/api/v1/auth/verify-email", "MTShop Verify Email", time.Minute*5, ActiveSecret)
+	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/verify-account", "[MTShop] Xác thực tài khoản", time.Minute*5, ActiveSecret)
 }
 
 func HashPassword(password string) (string, error) {

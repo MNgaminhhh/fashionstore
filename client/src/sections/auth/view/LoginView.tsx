@@ -9,6 +9,7 @@ import { useFormik } from "formik";
 import Auth from "../../../services/Auth";
 import {router} from "next/client";
 import {notifyError, notifySuccess} from "../../../utils/ToastNotification";
+import {useRouter} from "next/navigation";
 interface LoginViewProps {
     closeDialog?: () => void;
 }
@@ -20,7 +21,7 @@ interface LoginFormValues {
 
 export const LoginView = ({ closeDialog }: LoginViewProps) => {
     const { visible, toggleVisible } = usePasswordVisible();
-
+    const router = useRouter();
     const fields = [
         {
             name: "email", label: "Email", type: "email", placeholder: "test@email.com",
@@ -82,8 +83,15 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
                 />
             ))}
 
-            <Button fullWidth type="submit" color="primary" variant="contained" size="large">
-                Login
+            <Button
+                sx={{ textTransform: 'none' }}
+                fullWidth
+                type="submit"
+                color="primary"
+                variant="contained"
+                size="large"
+            >
+                Đăng Nhập
             </Button>
         </form>
     );

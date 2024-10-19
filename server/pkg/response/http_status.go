@@ -21,7 +21,7 @@ var msg = map[int]string{
 	SuccessCode:         "Thành công",
 	ErrCodeParamInvalid: "Thông tin nhập vào không hợp lệ",
 	ErrCodeNotFound:     "Không tìm thấy",
-	ErrCodeInternal:     "Lỗi hệ tống",
+	ErrCodeInternal:     "Lỗi hệ thống",
 	//========
 	ErrCodeEmailNotFound:              "Email này chưa được đăng ký. Vui lòng thử lại sau!!",
 	ErrCodeIncorrectPassword:          "Mật khẩu không chính xác. Vui lòng kiểm tra lại!!",

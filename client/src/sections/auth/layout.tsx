@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: PropsWithChildren) {
     const pathname = usePathname();
     const isLogin = pathname === "/login";
     const isRegister = pathname === "/register";
-    const isResetPassword = pathname === "/reset-password";
+    const isResetPassword = pathname === "/reset-password" || pathname === "/forgot-password";
 
     const CONTENT_BOTTOM = isLogin ? <LoginBottom /> : isRegister ? (
         <FlexCenterRow gap={1} mt={3}>
