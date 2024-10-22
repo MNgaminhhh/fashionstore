@@ -2,6 +2,8 @@ import {Open_Sans} from "next/font/google";
 import "./globals.css";
 import React from "react";
 import {Toaster} from "react-hot-toast";
+import AppProvider from "../context/AppContext";
+import {cookies} from "next/headers";
 
 export const inter = Open_Sans({ subsets: ["latin"] });
 
@@ -11,11 +13,15 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+    const cookieStore = cookies()
+    const sessionToken = cookieStore.get('token')
     return (
         <html lang="en" suppressHydrationWarning >
             <body className={inter.className}>
-                <Toaster />
-                {children}
+                <AppProvider initialToken={sessionToken?.value}>
+                    <Toaster />
+                    {children}
+                </AppProvider>
             </body>
         </html>
     );

@@ -10,7 +10,7 @@ class Auth extends Base {
         });
     }
 
-    async login(email?: string, password?: string) {
+    async login(email?: string, password?: string, withCredentials: boolean = true) {
         const rs = await this.execute({
             url: "auth/login",
             method: "post",
@@ -21,12 +21,8 @@ class Auth extends Base {
                 email,
                 password,
             },
+            withCredentials: withCredentials,
         });
-
-        if (rs.success) {
-            const token = get(rs, "data.access_token");
-            set("token", token || "");
-        }
         return rs;
     }
     async register(email?: string, password?: string, confirm_password?: string) {
@@ -45,28 +41,33 @@ class Auth extends Base {
         return rs;
     }
     checkLogin(router: any) {
-        const token = getFromLocalStorage("token");
+        if (typeof window !== "undefined") {
+            const token = getFromLocalStorage("token");
 
-        if (token) {
-            try {
-                const decodedToken: any = jwtDecode(token);
-                if (decodedToken.exp < Date.now() / 1000) {
+            if (token) {
+                try {
+                    const decodedToken: any = jwtDecode(token);
+                    if (decodedToken.exp < Date.now() / 1000) {
+                        set("token", "");
+                        router.push("/login");
+                        return false;
+                    }
+
+                    return true;
+                } catch (error) {
                     set("token", "");
                     router.push("/login");
                     return false;
                 }
-
-                return true;
-            } catch (error) {
-                set("token", "");
+            } else {
                 router.push("/login");
                 return false;
             }
         } else {
-            router.push("/login");
             return false;
         }
     }
+
 
     async verifyAccount(email?: string, status?: string) {
         const formData = new FormData();

@@ -7,9 +7,12 @@ import usePasswordVisible from "../hook/usePasswordVisible";
 import EyeToggle from "../components/EyeToggle";
 import { useFormik } from "formik";
 import Auth from "../../../services/Auth";
-import {router} from "next/client";
 import {notifyError, notifySuccess} from "../../../utils/ToastNotification";
 import {useRouter} from "next/navigation";
+import {get} from "lodash";
+import {set} from "../../../hooks/useLocalStorage";
+import {useAppContext} from "../../../context/AppContext";
+import Cookies from 'js-cookie';
 interface LoginViewProps {
     closeDialog?: () => void;
 }
@@ -22,6 +25,7 @@ interface LoginFormValues {
 export const LoginView = ({ closeDialog }: LoginViewProps) => {
     const { visible, toggleVisible } = usePasswordVisible();
     const router = useRouter();
+    const {setSessionToken} = useAppContext();
     const fields = [
         {
             name: "email", label: "Email", type: "email", placeholder: "test@email.com",
@@ -50,6 +54,10 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
                 const response = await Auth.login(values.email, values.password);
                 if (response.data.success) {
                     notifySuccess("Đăng nhập thành công!");
+                    const token = get(response, "data.data.access_token", true);
+                    set("token", token || "");
+                    setSessionToken(token)
+                    Cookies.set('token', token, { expires: 1 });
                     formik.resetForm();
                     await router.push("/");
                 } else {

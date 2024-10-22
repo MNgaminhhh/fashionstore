@@ -1,4 +1,4 @@
-import {BaseApi} from "@mngaminhhh/mn/lib/services";
+import {BaseApi} from "@mngaminhhh/mn/dist/services";
 
 class Base extends BaseApi {
     constructor(data: any) {
@@ -7,6 +7,7 @@ class Base extends BaseApi {
             ...data,
             baseURL: baseUrl,
             timeout: 7000,
+            withCredentials: true
         });
     }
 }

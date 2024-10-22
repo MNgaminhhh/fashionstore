@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/pkg/response"
 	"fmt"
@@ -18,7 +17,7 @@ const ResetSecret = "reset-password"
 const ActiveSecret = "active-user"
 
 type IUserService interface {
-	Login(email string, password string) (int, map[string]interface{})
+	Login(email string, password string, w http.ResponseWriter) (int, map[string]interface{})
 	UpdateUserStatus(email string, status string) int
 	CreateNewUser(email string, password string, confirmed string) int
 	SendEmailResetPassword(email string) int
@@ -40,7 +39,6 @@ func NewUserService(
 		auth: Auth{
 			Issuer:        "mtshop.com",
 			Audience:      "",
-			Secret:        Secret,
 			TokenExpiry:   time.Minute * 15,
 			RefreshExpiry: time.Hour * 24,
 			CookieDomain:  "localhost",
@@ -50,7 +48,7 @@ func NewUserService(
 	}
 }
 
-func (us *userService) Login(email string, password string) (int, map[string]interface{}) {
+func (us *userService) Login(email string, password string, w http.ResponseWriter) (int, map[string]interface{}) {
 	user, err := us.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return response.ErrCodeEmailNotFound, nil
@@ -58,24 +56,16 @@ func (us *userService) Login(email string, password string) (int, map[string]int
 	if !CheckPasswordHash(password, user.Password) {
 		return response.ErrCodeIncorrectPassword, nil
 	}
-	if user.Status == database.UserStatusInactive {
-		return response.ErrCodeUserInactive, nil
-	}
-	if user.Status == database.UserStatusLock {
-		return response.ErrCodeUserLocked, nil
-	}
 
 	tokens, err := us.auth.GenerateToken(user)
-
 	if err != nil {
 		return response.ErrCodeInternal, nil
 	}
-
-	cookie := us.auth.GetRefreshCookie(tokens.RefreshToken)
+	refreshCookie := us.auth.GetRefreshCookie(tokens.RefreshToken)
+	http.SetCookie(w, refreshCookie)
 
 	data := map[string]interface{}{
-		"access_token":   tokens.Token,
-		"refresh_cookie": cookie,
+		"access_token": tokens.Token,
 	}
 
 	return response.SuccessCode, data

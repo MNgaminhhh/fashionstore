@@ -4,9 +4,9 @@ import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 
 import { StyledContainer, StyledWrapper } from "./styles";
 import CategoryList from "./components/CategoryList";
-import {NavChild} from "./utils/types";
+import { NavChild } from "./utils/types";
 import useEleOverflow from "../../../../hooks/useEleOverflow";
-import {FlexCenterRow} from "../../../flexbox";
+import { FlexCenterRow } from "../../../flexbox";
 
 interface MegaMenuProps {
     title: string;
@@ -28,8 +28,7 @@ export default function MegaMenu({ title, menuList }: MegaMenuProps) {
 
     const {
         elementRef,
-        isLeftOverflowing,
-        isRightOverflowing,
+        isOverflowing: { right, overflowRightAmount },
         checkOverflow
     } = useEleOverflow();
 
@@ -47,8 +46,11 @@ export default function MegaMenu({ title, menuList }: MegaMenuProps) {
             <StyledContainer
                 ref={elementRef}
                 className="menu-list"
-                left={isLeftOverflowing}
-                right={isRightOverflowing}>
+                sx={{
+                    position: "absolute",
+                    transform: right ? `translateX(-${overflowRightAmount}px)` : "none",
+                }}
+            >
                 <Card
                     className="card"
                     elevation={3}

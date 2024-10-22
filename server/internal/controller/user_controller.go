@@ -6,7 +6,6 @@ import (
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"github.com/labstack/echo"
-	"net/http"
 )
 
 type UserController struct {
@@ -29,15 +28,10 @@ func (uc *UserController) Login(c echo.Context) error {
 	if err := c.Validate(params); err != nil {
 		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
 	}
-	code, data := uc.userService.Login(params.Email, params.Password)
+
+	code, data := uc.userService.Login(params.Email, params.Password, c.Response().Writer)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Login failed")
-	}
-
-	cookie := data["refresh_cookie"]
-	refreshCookie, ok := cookie.(*http.Cookie)
-	if ok {
-		c.SetCookie(refreshCookie)
 	}
 
 	return response.SuccessResponse(c, response.SuccessCode, data)

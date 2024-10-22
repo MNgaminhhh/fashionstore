@@ -23,7 +23,18 @@ export default function Header({ isFixed, className, midSlot }: Props) {
     return (
         <HeaderWrapper className={clsx(className)}>
             <StyledContainer>{screenMD
-                ? (<></>)
+                ? (<>
+                    <Fragment>
+                        <FlexBox minWidth={100} alignItems="center">
+                            <Link href="/">
+                                <BaseImage src={logo} alt="mtshop" width={125}/>
+                            </Link>
+                            {isFixed ? <CategoriesMenu /> : null}
+                        </FlexBox>
+                        {midSlot}
+                        <NotificationButtons/>
+                    </Fragment>
+                </>)
                 : (<>
                     <Fragment>
                         <FlexBox minWidth={100} alignItems="center">
@@ -34,7 +45,8 @@ export default function Header({ isFixed, className, midSlot }: Props) {
                         </FlexBox>
                         {midSlot}
                         <NotificationButtons/>
-                    </Fragment></>
+                    </Fragment>
+                    </>
                 )}
             </StyledContainer>
         </HeaderWrapper>
