@@ -8,22 +8,16 @@ import (
 )
 
 type Auth struct {
-	Issuer        string
-	Audience      string
-	Secret        string
-	TokenExpiry   time.Duration
-	RefreshExpiry time.Duration
-	CookieDomain  string
-	CookiePath    string
-	CookieName    string
+	Issuer       string
+	Audience     string
+	Secret       string
+	TokenExpiry  time.Duration
+	CookieDomain string
+	CookiePath   string
+	CookieName   string
 }
 
-type TokenPairs struct {
-	Token        string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-func (j *Auth) GenerateToken(user *database.User) (TokenPairs, error) {
+func (j *Auth) GenerateToken(user *database.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -37,50 +31,20 @@ func (j *Auth) GenerateToken(user *database.User) (TokenPairs, error) {
 
 	signedAccessToken, err := token.SignedString([]byte(j.Secret))
 	if err != nil {
-		return TokenPairs{}, err
+		return "", err
 	}
 
-	refreshToken := jwt.New(jwt.SigningMethodHS256)
-	refreshClaims := refreshToken.Claims.(jwt.MapClaims)
-	refreshClaims["iss"] = j.Issuer
-	refreshClaims["iat"] = time.Now().Unix()
-	refreshClaims["exp"] = time.Now().Add(j.RefreshExpiry).Unix()
-
-	signedRefreshToken, err := refreshToken.SignedString([]byte(j.Secret))
-	if err != nil {
-		return TokenPairs{}, err
-	}
-
-	var tokenPairs = TokenPairs{
-		Token:        signedAccessToken,
-		RefreshToken: signedRefreshToken,
-	}
-
-	return tokenPairs, nil
+	return signedAccessToken, nil
 }
 
-func (j *Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
+func (j *Auth) getCookie(token string) *http.Cookie {
 	return &http.Cookie{
 		Name:     j.CookieName,
 		Path:     j.CookiePath,
-		Value:    refreshToken,
+		Value:    token,
 		Domain:   j.CookieDomain,
-		Expires:  time.Now().Add(j.RefreshExpiry),
-		MaxAge:   int(j.RefreshExpiry.Seconds()),
-		SameSite: http.SameSiteStrictMode,
-		HttpOnly: true,
-		Secure:   true,
-	}
-}
-
-func (j *Auth) GetExpiredRefreshCookie() *http.Cookie {
-	return &http.Cookie{
-		Name:     j.CookieName,
-		Path:     j.CookiePath,
-		Value:    "",
-		Domain:   j.CookieDomain,
-		Expires:  time.Unix(0, 0),
-		MaxAge:   -1,
+		Expires:  time.Now().Add(j.TokenExpiry),
+		MaxAge:   int(j.TokenExpiry.Seconds()),
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
 		Secure:   true,

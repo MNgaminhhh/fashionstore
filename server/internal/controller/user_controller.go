@@ -6,6 +6,8 @@ import (
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"github.com/labstack/echo"
+	"net/http"
+	"os"
 )
 
 type UserController struct {
@@ -28,10 +30,15 @@ func (uc *UserController) Login(c echo.Context) error {
 	if err := c.Validate(params); err != nil {
 		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
 	}
-
-	code, data := uc.userService.Login(params.Email, params.Password, c.Response().Writer)
+	code, data := uc.userService.Login(params.Email, params.Password)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Login failed")
+	}
+
+	cookie := data["cookie"]
+	refreshCookie, ok := cookie.(*http.Cookie)
+	if ok {
+		c.SetCookie(refreshCookie)
 	}
 
 	return response.SuccessResponse(c, response.SuccessCode, data)
@@ -91,7 +98,7 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 
-	code, email := uc.userService.ValidateToken(token, service.ResetSecret)
+	code, email := uc.userService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -128,9 +135,9 @@ func (uc *UserController) SendEmailActiveUser(c echo.Context) error {
 func (uc *UserController) ActiveUser(c echo.Context) error {
 	token := c.QueryParam("token")
 	if token == "" {
-		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "token is empty")
+		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
-	code, email := uc.userService.ValidateToken(token, service.ActiveSecret)
+	code, email := uc.userService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -139,4 +146,19 @@ func (uc *UserController) ActiveUser(c echo.Context) error {
 		return response.ErrorResponse(c, updateStatusCode, "Update user status failed")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Update user status successful")
+}
+
+func (uc *UserController) ResendEmailActive(c echo.Context) error {
+	var params validator.SendEmailRequest
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := uc.userService.SendEmailVerify(params.Email)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Send email active user failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Đã gửi lai email kích hoạt!")
 }

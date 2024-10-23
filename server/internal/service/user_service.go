@@ -1,23 +1,19 @@
 package service
 
 import (
+	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/pkg/response"
 	"fmt"
-	"log"
-	"net/http"
-	"time"
-
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"os"
+	"time"
 )
 
-const Secret = "super-secret"
-const ResetSecret = "reset-password"
-const ActiveSecret = "active-user"
-
 type IUserService interface {
-	Login(email string, password string, w http.ResponseWriter) (int, map[string]interface{})
+	Login(email string, password string) (int, map[string]interface{})
 	UpdateUserStatus(email string, status string) int
 	CreateNewUser(email string, password string, confirmed string) int
 	SendEmailResetPassword(email string) int
@@ -37,18 +33,18 @@ func NewUserService(
 	return &userService{
 		userRepo: userRepo,
 		auth: Auth{
-			Issuer:        "mtshop.com",
-			Audience:      "",
-			TokenExpiry:   time.Minute * 15,
-			RefreshExpiry: time.Hour * 24,
-			CookieDomain:  "localhost",
-			CookiePath:    "/",
-			CookieName:    "refresh-token",
+			Issuer:       "mtshop.com",
+			Audience:     "",
+			Secret:       os.Getenv("ACCESS_SECRET"),
+			TokenExpiry:  time.Minute * 15,
+			CookieDomain: "localhost",
+			CookiePath:   "/",
+			CookieName:   "access_cookie",
 		},
 	}
 }
 
-func (us *userService) Login(email string, password string, w http.ResponseWriter) (int, map[string]interface{}) {
+func (us *userService) Login(email string, password string) (int, map[string]interface{}) {
 	user, err := us.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return response.ErrCodeEmailNotFound, nil
@@ -56,16 +52,24 @@ func (us *userService) Login(email string, password string, w http.ResponseWrite
 	if !CheckPasswordHash(password, user.Password) {
 		return response.ErrCodeIncorrectPassword, nil
 	}
+	if user.Status == database.UserStatusInactive {
+		return response.ErrCodeUserInactive, nil
+	}
+	if user.Status == database.UserStatusLock {
+		return response.ErrCodeUserLocked, nil
+	}
 
 	tokens, err := us.auth.GenerateToken(user)
+
 	if err != nil {
 		return response.ErrCodeInternal, nil
 	}
-	refreshCookie := us.auth.GetRefreshCookie(tokens.RefreshToken)
-	http.SetCookie(w, refreshCookie)
+
+	cookie := us.auth.getCookie(tokens)
 
 	data := map[string]interface{}{
-		"access_token": tokens.Token,
+		"access_token": tokens,
+		"cookie":       cookie,
 	}
 
 	return response.SuccessCode, data
@@ -148,44 +152,6 @@ func (us *userService) ResetPassword(email string, newPassword string, confirmPa
 	return response.SuccessCode
 }
 
-func (us *userService) RefreshToken(cookies []*http.Cookie) (int, map[string]interface{}) {
-	for _, cookie := range cookies {
-		if cookie.Name == us.auth.CookieName {
-			claims := jwt.MapClaims{}
-			refreshToken := cookie.Value
-
-			_, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
-				return []byte(us.auth.Secret), nil
-			})
-			if err != nil {
-				return response.ErrCodeTokenInvalid, nil
-			}
-
-			email, ok := claims["email"].(string)
-			if !ok {
-				return response.ErrCodeTokenInvalid, nil
-			}
-
-			user, err := us.userRepo.GetUserByEmail(email)
-			if err != nil {
-				return response.ErrCodeEmailNotFound, nil
-			}
-
-			tokensPairs, err := us.auth.GenerateToken(user)
-			if err != nil {
-				return response.ErrCodeInternal, nil
-			}
-
-			data := map[string]interface{}{
-				"access_token":   tokensPairs.Token,
-				"refresh_cookie": us.auth.GetRefreshCookie(tokensPairs.RefreshToken),
-			}
-			return response.SuccessCode, data
-		}
-	}
-	return response.ErrCodeUnauthorized, nil
-}
-
 func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject string, tokenExpiry time.Duration, secret string) int {
 	auth := Auth{
 		Issuer:       "mtshop.com",
@@ -202,9 +168,14 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 		return response.ErrCodeInternal
 	}
 
-	emailService := NewEmailService()
+	emailService := NewEmailService(SMTPServer{
+		Host:     "sandbox.smtp.mailtrap.io",
+		Port:     2525,
+		Username: "75450a29e28cd1",
+		Password: "4835aafc0d3d8e",
+	})
 
-	link := fmt.Sprintf("http://localhost:3000%s?token=%s", linkPath, token)
+	link := fmt.Sprintf("http://localhost:8080%s?token=%s", linkPath, token)
 	content := fmt.Sprintf(`
 	<html>
 		<body>
@@ -216,18 +187,19 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 
 	smtpErr := emailService.SendEmail(subject, content, email)
 	if smtpErr != nil {
-		return response.ErrCodeCannotVerifyThisEmail
+		log.Fatal("Error sending email:", smtpErr)
+		return response.ErrCodeInternal
 	}
 
 	return response.SuccessCode
 }
 
 func (us *userService) SendEmailResetPassword(email string) int {
-	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/reset-password", "MTShop Reset Password", time.Minute*5, ResetSecret)
+	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/api/v1/auth/reset-password", "MTShop Reset Password", time.Minute*5, os.Getenv("RESET_PASSWORD_SECRET"))
 }
 
 func (us *userService) SendEmailVerify(email string) int {
-	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/verify-account", "[MTShop] Xác thực tài khoản", time.Minute*5, ActiveSecret)
+	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/api/v1/auth/verify-email", "MTShop Verify Email", time.Minute*5, os.Getenv("ACTIVE_SECRET"))
 }
 
 func HashPassword(password string) (string, error) {
