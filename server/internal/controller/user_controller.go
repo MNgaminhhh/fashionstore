@@ -5,9 +5,15 @@ import (
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"database/sql"
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/labstack/echo"
+	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 type UserController struct {
@@ -98,11 +104,14 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 
-	code, email := uc.userService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
+	code, claims := uc.userService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
-
+	email, ok := claims["email"].(string)
+	if !ok {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "invalid token")
+	}
 	requestParams := validator.ForgetPasswordRequest{}
 	if err := c.Bind(&requestParams); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
@@ -137,9 +146,13 @@ func (uc *UserController) ActiveUser(c echo.Context) error {
 	if token == "" {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
-	code, email := uc.userService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
+	code, claims := uc.userService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
+	}
+	email, ok := claims["email"].(string)
+	if !ok {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "invalid token")
 	}
 	updateStatusCode := uc.userService.UpdateUserStatus(email, enum.ACTIVE.String())
 	if updateStatusCode != response.SuccessCode {
@@ -158,7 +171,90 @@ func (uc *UserController) ResendEmailActive(c echo.Context) error {
 	}
 	code := uc.userService.SendEmailVerify(params.Email)
 	if code != response.SuccessCode {
-		return response.ErrorResponse(c, code, "Send email active user failed")
+		return response.ErrorResponse(c, code, "Gửi email xác thực thất bại!")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Đã gửi lai email kích hoạt!")
+}
+
+func (uc *UserController) GetUserInformation(c echo.Context) error {
+	valid, claims := uc.CheckAuthorization(c)
+	if valid != response.SuccessCode {
+		return response.ErrorResponse(c, valid, "Invalid token")
+	}
+	log.Println("claims")
+	id, ok := claims["sub"].(string)
+	if !ok {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "invalid token")
+	}
+	userId, _ := uuid.Parse(id)
+	code, user := uc.userService.GetUserInformation(userId)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get user info failed")
+	}
+	data := map[string]interface{}{
+		"id":        user.ID,
+		"email":     user.Email,
+		"full_name": user.FullName.String,
+		"dob":       user.Dob.Time,
+	}
+	return response.SuccessResponse(c, response.SuccessCode, data)
+}
+
+func (uc *UserController) UpdateUser(c echo.Context) error {
+	valid, claims := uc.CheckAuthorization(c)
+	if valid != response.SuccessCode {
+		return response.ErrorResponse(c, valid, "Invalid token")
+	}
+	id := claims["sub"].(string)
+	userId, _ := uuid.Parse(id)
+	code, user := uc.userService.GetUserInformation(userId)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get user info failed")
+	}
+	var params validator.UpdateUserRequest
+	if err := c.Bind(&params); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(params); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	if params.PhoneNumber != "" {
+		user.PhoneNumber = sql.NullString{
+			String: params.PhoneNumber,
+			Valid:  true,
+		}
+	}
+	if params.FullName != "" {
+		user.FullName = sql.NullString{
+			String: params.FullName,
+			Valid:  true,
+		}
+	}
+	if params.Dob != "" {
+		user.Dob = sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
+	}
+	code = uc.userService.UpdateUserInformation(user)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update user info failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Update user info successful")
+}
+
+func (uc *UserController) CheckAuthorization(c echo.Context) (int, jwt.MapClaims) {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return response.ErrCodeUnauthorized, nil
+	}
+	if strings.HasPrefix(authHeader, "Bearer ") {
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		code, claims := uc.userService.ValidateToken(token, os.Getenv("ACCESS_SECRET"))
+		if code != response.SuccessCode {
+			return response.ErrCodeUnauthorized, nil
+		}
+		return response.SuccessCode, claims
+	}
+	return response.ErrCodeUnauthorized, nil
 }

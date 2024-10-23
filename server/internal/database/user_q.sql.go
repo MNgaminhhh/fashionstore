@@ -7,10 +7,14 @@ package database
 
 import (
 	"context"
+	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const createNewUser = `-- name: CreateNewUser :exec
-INSERT INTO users (email, password) VALUES ($1, $2)
+INSERT INTO users (email, password)
+VALUES ($1, $2)
 `
 
 type CreateNewUserParams struct {
@@ -24,9 +28,8 @@ func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) (e
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT
-    id, email, password, status
-  FROM users
+SELECT id, email, password, status, full_name, phone_number, dob
+FROM users
 `
 
 func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
@@ -43,6 +46,9 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.Email,
 			&i.Password,
 			&i.Status,
+			&i.FullName,
+			&i.PhoneNumber,
+			&i.Dob,
 		); err != nil {
 			return nil, err
 		}
@@ -58,7 +64,9 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUserActived = `-- name: GetUserActived :many
-SELECT id, email, password, status FROM users WHERE status = $1
+SELECT id, email, password, status, full_name, phone_number, dob
+FROM users
+WHERE status = $1
 `
 
 func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User, error) {
@@ -75,6 +83,9 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 			&i.Email,
 			&i.Password,
 			&i.Status,
+			&i.FullName,
+			&i.PhoneNumber,
+			&i.Dob,
 		); err != nil {
 			return nil, err
 		}
@@ -90,7 +101,9 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, status From users WHERE email = $1 LIMIT 1
+SELECT id, email, password, status, full_name, phone_number, dob
+From users
+WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -101,6 +114,29 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.Password,
 		&i.Status,
+		&i.FullName,
+		&i.PhoneNumber,
+		&i.Dob,
+	)
+	return i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT id, email, password, status, full_name, phone_number, dob FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserById, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Status,
+		&i.FullName,
+		&i.PhoneNumber,
+		&i.Dob,
 	)
 	return i, err
 }
@@ -118,6 +154,29 @@ type UpdateNewPasswordParams struct {
 
 func (q *Queries) UpdateNewPassword(ctx context.Context, arg UpdateNewPasswordParams) (error, error) {
 	_, err := q.db.ExecContext(ctx, updateNewPassword, arg.Password, arg.Email)
+	return err, nil
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE  users
+SET full_name = $1, phone_number = $2, dob = $3
+WHERE id = $4
+`
+
+type UpdateUserParams struct {
+	FullName    sql.NullString
+	PhoneNumber sql.NullString
+	Dob         sql.NullTime
+	ID          uuid.UUID
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (error, error) {
+	_, err := q.db.ExecContext(ctx, updateUser,
+		arg.FullName,
+		arg.PhoneNumber,
+		arg.Dob,
+		arg.ID,
+	)
 	return err, nil
 }
 

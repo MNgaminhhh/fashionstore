@@ -10,20 +10,26 @@ type UserRouter struct{}
 func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 	userController, _ := wire.InitUserRouterHandler()
 
-	userRouterPublic := router.Group("/auth")
+	authRouterGroup := router.Group("/auth")
 	{
 		//GET
-		userRouterPublic.GET("/verify-email", userController.ActiveUser)
+		authRouterGroup.GET("/verify-email", userController.ActiveUser)
 
 		//POST
-		userRouterPublic.POST("/login", userController.Login)
-		userRouterPublic.POST("/register", userController.CreateNewUser)
-		userRouterPublic.POST("/forgot-password/send-email", userController.SendEmailResetPassword)
-		userRouterPublic.POST("/verify-email/send-email", userController.SendEmailActiveUser)
-		userRouterPublic.POST("/verify-email/resend", userController.ResendEmailActive)
+		authRouterGroup.POST("/login", userController.Login)
+		authRouterGroup.POST("/register", userController.CreateNewUser)
+		authRouterGroup.POST("/forgot-password/send-email", userController.SendEmailResetPassword)
+		authRouterGroup.POST("/verify-email/send-email", userController.SendEmailActiveUser)
+		authRouterGroup.POST("/verify-email/resend", userController.ResendEmailActive)
 
 		//PUT
-		userRouterPublic.PUT("/update-status", userController.UpdateUserStatus)
-		userRouterPublic.PUT("/forgot-password", userController.ForgetPassword)
+		authRouterGroup.PUT("/update-status", userController.UpdateUserStatus)
+		authRouterGroup.PUT("/forgot-password", userController.ForgetPassword)
+	}
+
+	userRouterGroup := router.Group("/user")
+	{
+		userRouterGroup.GET("/profile", userController.GetUserInformation)
+		userRouterGroup.POST("/profile", userController.UpdateUser)
 	}
 }

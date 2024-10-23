@@ -24,3 +24,9 @@ type ForgetPasswordRequest struct {
 	NewPassword     string `json:"new_password" validate:"required,min=5,max=32"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,min=5,max=32"`
 }
+
+type UpdateUserRequest struct {
+	FullName    string `json:"full_name"`
+	PhoneNumber string `json:"phone_number"`
+	Dob         string `json:"dob"`
+}

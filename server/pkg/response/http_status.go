@@ -5,6 +5,7 @@ const (
 	ErrCodeParamInvalid = 400
 	ErrCodeNotFound     = 404
 	ErrCodeInternal     = 500
+	ErrCodeUnauthorized = 401
 	//========
 	ErrCodeEmailNotFound              = 50001
 	ErrCodeIncorrectPassword          = 50002
@@ -13,8 +14,8 @@ const (
 	ErrCodeIncorrectConfirmedPassword = 50005
 	ErrCodeEmailAlreadyUsed           = 50006
 	ErrCodeTokenInvalid               = 50007
-	ErrCodeUnauthorized               = 50008
 	ErrCodeCannotVerifyThisEmail      = 50009
+	ErrCodeUserNotFound               = 500010
 )
 
 var msg = map[int]string{
@@ -32,4 +33,4 @@ var msg = map[int]string{
 	ErrCodeTokenInvalid:               "Đường dẫn đã hết hạn hoặc không hợp lệ!!",
 	ErrCodeUnauthorized:               "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại !!",
 	ErrCodeCannotVerifyThisEmail:      "Không thể gửi email xác thực. Vui lòng thử lại sau!!",
-}
+	ErrCodeUserNotFound:               "Không tìm thấy thông tin người dùng"}

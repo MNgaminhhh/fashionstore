@@ -5,6 +5,7 @@
 package database
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 
@@ -55,8 +56,11 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 }
 
 type User struct {
-	ID       uuid.UUID
-	Email    string
-	Password string
-	Status   UserStatus
+	ID          uuid.UUID
+	Email       string
+	Password    string
+	Status      UserStatus
+	FullName    sql.NullString
+	PhoneNumber sql.NullString
+	Dob         sql.NullTime
 }

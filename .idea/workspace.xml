@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="use mailtrap, edit cookie to access token" />
+    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="use mailtrap, edit cookie to access token">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/sections/auth/components/LoginBottom.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/sections/auth/components/LoginBottom.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/sections/auth/view/VerifyAccountView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/sections/auth/view/VerifyAccountView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/server/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/controller/user_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/controller/user_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/database/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/database/models.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/database/user_q.sql.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/database/user_q.sql.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/repository/user_repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/repository/user_repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/routers/user/user_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/routers/user/user_router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/service/user_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/service/user_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/validator/user_validator.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/validator/user_validator.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pkg/response/http_status.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/pkg/response/http_status.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/queries/user_q.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/queries/user_q.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/00001_user.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/00001_user.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/00002_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/00002_schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/00003_insert_data.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/storages/logs/dev.001.log" beforeDir="false" afterPath="$PROJECT_DIR$/server/storages/logs/dev.001.log" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,7 +79,7 @@
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.language.and.region",
+    "settings.editor.selected.configurable": "preferences.keymap",
     "ts.external.directory.path": "D:\\TLCN\\FashionStore\\fashionstore\\client\\node_modules\\typescript\\lib"
   }
 }]]></component>

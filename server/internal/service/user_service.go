@@ -6,6 +6,7 @@ import (
 	"backend/pkg/response"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
@@ -17,9 +18,11 @@ type IUserService interface {
 	UpdateUserStatus(email string, status string) int
 	CreateNewUser(email string, password string, confirmed string) int
 	SendEmailResetPassword(email string) int
-	ValidateToken(token string, secret string) (int, string)
+	ValidateToken(token string, secret string) (int, jwt.MapClaims)
 	ResetPassword(email string, newPassword string, confirmPassword string) int
 	SendEmailVerify(email string) int
+	GetUserInformation(uuid uuid.UUID) (int, *database.User)
+	UpdateUserInformation(newUser *database.User) int
 }
 
 type userService struct {
@@ -109,7 +112,7 @@ func (us *userService) CreateNewUser(email string, password string, confirmed st
 	return response.SuccessCode
 }
 
-func (us *userService) ValidateToken(token string, secret string) (int, string) {
+func (us *userService) ValidateToken(token string, secret string) (int, jwt.MapClaims) {
 	claims := jwt.MapClaims{}
 	log.Println(token)
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
@@ -121,19 +124,13 @@ func (us *userService) ValidateToken(token string, secret string) (int, string) 
 
 	if err != nil {
 		log.Println("Error parsing token:", err)
-		return response.ErrCodeTokenInvalid, ""
+		return response.ErrCodeTokenInvalid, nil
 	}
 
 	if tkn.Valid {
-		if email, ok := claims["email"].(string); ok {
-			log.Println("Valid email:", email)
-			return response.SuccessCode, email
-		} else {
-			log.Println("Email field not found in token")
-			return response.ErrCodeTokenInvalid, ""
-		}
+		return response.SuccessCode, claims
 	}
-	return response.ErrCodeTokenInvalid, ""
+	return response.ErrCodeTokenInvalid, nil
 }
 
 func (us *userService) ResetPassword(email string, newPassword string, confirmPassword string) int {
@@ -210,4 +207,20 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func (us *userService) GetUserInformation(uuid uuid.UUID) (int, *database.User) {
+	user, err := us.userRepo.FindByID(uuid)
+	if err != nil {
+		return response.ErrCodeUserNotFound, nil
+	}
+	return response.SuccessCode, user
+}
+
+func (us *userService) UpdateUserInformation(newUser *database.User) int {
+	_, err := us.userRepo.UpdateUser(newUser)
+	if err != nil {
+		return response.ErrCodeUserNotFound
+	}
+	return response.SuccessCode
 }

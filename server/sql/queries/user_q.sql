@@ -26,3 +26,12 @@ WHERE status = $1;
 UPDATE users
 SET password = $1
 WHERE email = $2;
+
+-- name: UpdateUser :exec
+UPDATE  users
+SET full_name = $1, phone_number = $2, dob = $3
+WHERE id = $4;
+
+-- name: GetUserById :one
+SELECT * FROM users
+WHERE id = $1;
