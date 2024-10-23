@@ -27,7 +27,7 @@ func NewEmailService(smtpServer SMTPServer) IEmailService {
 
 func (es EmailService) SendEmail(subject string, content string, receiver string) error {
 	message := gomail.NewMessage()
-	message.SetHeader("From", es.SMTPServer.Username)
+	message.SetHeader("From", "mtshop@gmail.com")
 	message.SetHeader("To", receiver)
 	message.SetHeader("Subject", subject)
 	message.AddAlternative("text/html", content)

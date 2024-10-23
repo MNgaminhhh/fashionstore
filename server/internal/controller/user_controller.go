@@ -7,6 +7,7 @@ import (
 	"backend/pkg/response"
 	"github.com/labstack/echo"
 	"net/http"
+	"os"
 )
 
 type UserController struct {
@@ -34,7 +35,7 @@ func (uc *UserController) Login(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Login failed")
 	}
 
-	cookie := data["refresh_cookie"]
+	cookie := data["cookie"]
 	refreshCookie, ok := cookie.(*http.Cookie)
 	if ok {
 		c.SetCookie(refreshCookie)
@@ -97,7 +98,7 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 
-	code, email := uc.userService.ValidateToken(token, service.ResetSecret)
+	code, email := uc.userService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -136,7 +137,7 @@ func (uc *UserController) ActiveUser(c echo.Context) error {
 	if token == "" {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
-	code, email := uc.userService.ValidateToken(token, service.ActiveSecret)
+	code, email := uc.userService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
