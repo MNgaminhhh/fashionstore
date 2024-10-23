@@ -36,7 +36,7 @@ func NewUserService(
 			Issuer:       "mtshop.com",
 			Audience:     "",
 			Secret:       os.Getenv("ACCESS_SECRET"),
-			TokenExpiry:  time.Minute * 15,
+			TokenExpiry:  time.Hour * 24 * 7,
 			CookieDomain: "localhost",
 			CookiePath:   "/",
 			CookieName:   "access_cookie",
