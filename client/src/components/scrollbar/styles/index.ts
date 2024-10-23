@@ -3,15 +3,30 @@ import { alpha, styled } from "@mui/material/styles";
 import SimpleBar from "simplebar-react";
 
 export const StyledScrollBar = styled(SimpleBar)(({ theme }) => ({
-    maxHeight: "100%",
-    "& .sbar-scrollbar": {
-        "&.sbar-visible:before": { opacity: 1 },
-        "&:before": {
-            backgroundColor: alpha(theme.palette.grey[400], 0.6),
-            transition: "opacity 0.2s ease"
+    maxHeight: "90vh",
+    height: "100%",
+    overflowY: "auto",
+    "& .simplebar-scrollbar": {
+        width: "8px",
+        height: "8px",
+        borderRadius: "8px",
+        backgroundColor: alpha(theme.palette.grey[600], 0.3),
+        transition: "background-color 0.3s ease, opacity 0.3s ease",
+        "&.simplebar-visible:before": {
+            opacity: 1,
+            backgroundColor: alpha(theme.palette.grey[600], 0.8),
+        },
+        "&:hover": {
+            backgroundColor: alpha(theme.palette.grey[600], 0.6),
         },
     },
-    "& .sbar-track.sbar-vertical": { width: 9 },
-    "& .sbar-track.sbar-horizontal .sbar-scrollbar": { height: 6 },
-    "& .sbar-mask": { zIndex: "inherit" }
+    "& .simplebar-track.simplebar-vertical": {
+        width: "8px",
+    },
+    "& .simplebar-track.simplebar-horizontal .simplebar-scrollbar": {
+        height: "6px",
+    },
+    "& .simplebar-mask": {
+        zIndex: "inherit",
+    },
 }));

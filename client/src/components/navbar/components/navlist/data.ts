@@ -132,6 +132,14 @@ const navbarNavigation = [
     {
         megaMenu: false,
         megaMenuWithSub: false,
+        title: "User Account",
+        child: [
+            { title: "Hồ Sơ Thông Tin", url: "/profile" },
+            { title: "Cài Đặt", url: "/settings" }
+        ]
+    },{
+        megaMenu: false,
+        megaMenuWithSub: false,
         title: "Vendor Account",
         child: [
             { title: "Dashboard", url: "/vendor/dashboard" },
@@ -152,6 +160,7 @@ const navbarNavigation = [
             { title: "Settings", url: "/vendor/settings" }
         ]
     }
+
 ];
 
 export default navbarNavigation;

@@ -21,10 +21,10 @@ var msg = map[int]string{
 	SuccessCode:         "Thành công",
 	ErrCodeParamInvalid: "Thông tin nhập vào không hợp lệ",
 	ErrCodeNotFound:     "Không tìm thấy",
-	ErrCodeInternal:     "Lỗi hệ tống",
+	ErrCodeInternal:     "Lỗi hệ thống",
 	//========
 	ErrCodeEmailNotFound:              "Email này chưa được đăng ký. Vui lòng thử lại sau!!",
-	ErrCodeIncorrectPassword:          "Mật khẩu không chính xác. Vui lòng kiểm tra lại!!",
+	ErrCodeIncorrectPassword:          "Tài khoản hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!!",
 	ErrCodeUserInactive:               "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt!!",
 	ErrCodeUserLocked:                 "Tài khoản đã bị khóa. Liên hệ admin để được hỗ trợ!!",
 	ErrCodeIncorrectConfirmedPassword: "Mật khẩu xác nhận không khớp. Vui lòng thử lại!!",

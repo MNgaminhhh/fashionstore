@@ -10,6 +10,11 @@ import (
 
 func InitRouter() *echo.Echo {
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
+		AllowCredentials: true,
+	}))
 	e.Validator = controller.NewCustomValidator()
 	if global.Config.Server.Mode == "dev" {
 		e.Debug = true
@@ -19,7 +24,6 @@ func InitRouter() *echo.Echo {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
 
 	userRouter := routers.AllRouterGroup.User
 	MainGroup := e.Group("/api/v1")

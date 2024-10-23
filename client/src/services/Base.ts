@@ -1,11 +1,13 @@
-import {BaseApi} from "@mngaminhhh/mn/lib/services";
-
+import {BaseApi} from "@mngaminhhh/mn/dist/services";
 
 class Base extends BaseApi {
     constructor(data: any) {
+        const baseUrl = process.env.api;
         super({
             ...data,
-            timeout: 5000,
+            baseURL: baseUrl,
+            timeout: 7000,
+            withCredentials: true
         });
     }
 }
