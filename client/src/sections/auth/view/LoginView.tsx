@@ -12,7 +12,6 @@ import {useRouter} from "next/navigation";
 import {get} from "lodash";
 import {set} from "../../../hooks/useLocalStorage";
 import {useAppContext} from "../../../context/AppContext";
-import Cookies from 'js-cookie';
 interface LoginViewProps {
     closeDialog?: () => void;
 }
@@ -57,7 +56,6 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
                     const token = get(response, "data.data.access_token", true);
                     set("token", token || "");
                     setSessionToken(token)
-                    Cookies.set('token', token, { expires: 1 });
                     formik.resetForm();
                     await router.push("/");
                 } else {
