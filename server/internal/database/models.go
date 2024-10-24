@@ -17,7 +17,7 @@ type UserRole string
 const (
 	UserRoleAdmin    UserRole = "admin"
 	UserRoleCustomer UserRole = "customer"
-	UserRoleVendor   UserRole = "vendor"
+	UserRoleVendor   UserRole = "vendors"
 )
 
 func (e *UserRole) Scan(src interface{}) error {
@@ -106,5 +106,21 @@ type User struct {
 	FullName    sql.NullString
 	PhoneNumber sql.NullString
 	Dob         sql.NullTime
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
 	Role        UserRole
+}
+
+type Vendor struct {
+	ID          int32
+	UserID      uuid.UUID
+	FullName    string
+	Email       string
+	PhoneNumber string
+	StoreName   string
+	Description sql.NullString
+	Address     string
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+	CreatedBy   uuid.UUID
 }

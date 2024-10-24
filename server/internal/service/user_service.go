@@ -77,7 +77,7 @@ func (us *userService) Login(email string, password string) (int, map[string]int
 }
 
 func (us *userService) UpdateUserStatus(email string, status string) int {
-	_, err := us.userRepo.UpdateStatus(email, status)
+	err := us.userRepo.UpdateStatus(email, status)
 	if err != nil {
 		return response.ErrCodeEmailNotFound
 	}
@@ -93,7 +93,7 @@ func (us *userService) CreateNewUser(email string, password string, confirmed st
 		return response.ErrCodeIncorrectConfirmedPassword
 	}
 	passwordHash, _ := HashPassword(password)
-	_, err := us.userRepo.CreateNewUser(email, passwordHash)
+	err := us.userRepo.CreateNewUser(email, passwordHash)
 	if err != nil {
 		return response.ErrCodeInternal
 	}
@@ -119,7 +119,7 @@ func (us *userService) ResetPassword(email string, newPassword string, confirmPa
 	if err != nil {
 		return response.ErrCodeInternal
 	}
-	_, errResetPass := us.userRepo.UpdatePassword(email, hash)
+	errResetPass := us.userRepo.UpdatePassword(email, hash)
 	if errResetPass != nil {
 		return response.ErrCodeInternal
 	}
@@ -195,7 +195,7 @@ func (us *userService) GetUserInformation(uuid uuid.UUID) (int, *database.User) 
 }
 
 func (us *userService) UpdateUserInformation(newUser *database.User) int {
-	_, err := us.userRepo.UpdateUser(newUser)
+	err := us.userRepo.UpdateUser(newUser)
 	if err != nil {
 		return response.ErrCodeUserNotFound
 	}

@@ -26,9 +26,11 @@ func InitRouter() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	userRouter := routers.AllRouterGroup.User
+	vendorRouter := routers.AllRouterGroup.Vendor
 	MainGroup := e.Group("/api/v1")
 	{
 		userRouter.InitUserRouter(MainGroup)
+		vendorRouter.InitVendorRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
 		return c.JSON(200, map[string]string{"status": "OK"})

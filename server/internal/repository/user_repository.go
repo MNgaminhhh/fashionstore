@@ -10,11 +10,11 @@ import (
 
 type IUserRepository interface {
 	GetUserByEmail(email string) (*database.User, error)
-	UpdateStatus(email string, status string) (error, error)
-	CreateNewUser(email string, password string) (error, error)
-	UpdatePassword(email, newPassword string) (error, error)
+	UpdateStatus(email string, status string) error
+	CreateNewUser(email string, password string) error
+	UpdatePassword(email, newPassword string) error
 	FindByID(uuid uuid.UUID) (*database.User, error)
-	UpdateUser(newUser *database.User) (error, error)
+	UpdateUser(newUser *database.User) error
 }
 
 type userRepository struct {
@@ -30,41 +30,35 @@ func (ur *userRepository) GetUserByEmail(email string) (*database.User, error) {
 	return &user, nil
 }
 
-func (ur *userRepository) UpdateStatus(email string, userStatus string) (error, error) {
+func (ur *userRepository) UpdateStatus(email string, userStatus string) error {
 	status := database.UserStatus(strings.ToLower(userStatus))
 	params := database.UpdateUserStatusParams{
 		Status: status,
 		Email:  email,
 	}
-	updatedUser, err := ur.sqlc.UpdateUserStatus(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-	return updatedUser, nil
+	err := ur.sqlc.UpdateUserStatus(ctx, params)
+	return err
 }
 
-func (ur *userRepository) CreateNewUser(email string, password string) (error, error) {
+func (ur *userRepository) CreateNewUser(email string, password string) error {
 	params := database.CreateNewUserParams{
 		Email:    email,
 		Password: password,
 	}
-	createdUser, err := ur.sqlc.CreateNewUser(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-	return createdUser, nil
+	err := ur.sqlc.CreateNewUser(ctx, params)
+	return err
 }
 
-func (ur *userRepository) UpdatePassword(email, newPassword string) (error, error) {
+func (ur *userRepository) UpdatePassword(email, newPassword string) error {
 	params := database.UpdateNewPasswordParams{
 		Email:    email,
 		Password: newPassword,
 	}
-	updatedUser, err := ur.sqlc.UpdateNewPassword(ctx, params)
+	err := ur.sqlc.UpdateNewPassword(ctx, params)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return updatedUser, nil
+	return nil
 }
 
 func (ur *userRepository) FindByID(uuid uuid.UUID) (*database.User, error) {
@@ -75,18 +69,15 @@ func (ur *userRepository) FindByID(uuid uuid.UUID) (*database.User, error) {
 	return &user, nil
 }
 
-func (ur *userRepository) UpdateUser(newUser *database.User) (error, error) {
+func (ur *userRepository) UpdateUser(newUser *database.User) error {
 	params := database.UpdateUserParams{
 		FullName:    newUser.FullName,
 		PhoneNumber: newUser.PhoneNumber,
 		Dob:         newUser.Dob,
 		ID:          newUser.ID,
 	}
-	updatedUser, err := ur.sqlc.UpdateUser(ctx, params)
-	if err != nil {
-		return err, nil
-	}
-	return updatedUser, nil
+	err := ur.sqlc.UpdateUser(ctx, params)
+	return err
 }
 
 func NewUserRepository() IUserRepository {

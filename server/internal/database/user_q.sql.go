@@ -22,13 +22,13 @@ type CreateNewUserParams struct {
 	Password string
 }
 
-func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) (error, error) {
+func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) error {
 	_, err := q.db.ExecContext(ctx, createNewUser, arg.Email, arg.Password)
-	return err, nil
+	return err
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT id, email, password, status, full_name, phone_number, dob, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
 FROM users
 `
 
@@ -49,6 +49,8 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.FullName,
 			&i.PhoneNumber,
 			&i.Dob,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.Role,
 		); err != nil {
 			return nil, err
@@ -65,7 +67,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUserActived = `-- name: GetUserActived :many
-SELECT id, email, password, status, full_name, phone_number, dob, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
 FROM users
 WHERE status = $1
 `
@@ -87,6 +89,8 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 			&i.FullName,
 			&i.PhoneNumber,
 			&i.Dob,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.Role,
 		); err != nil {
 			return nil, err
@@ -103,7 +107,7 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, status, full_name, phone_number, dob, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
 From users
 WHERE email = $1 LIMIT 1
 `
@@ -119,13 +123,15 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.Dob,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.Role,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, password, status, full_name, phone_number, dob, role FROM users
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role FROM users
 WHERE id = $1
 `
 
@@ -140,6 +146,8 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.Dob,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.Role,
 	)
 	return i, err
@@ -156,9 +164,9 @@ type UpdateNewPasswordParams struct {
 	Email    string
 }
 
-func (q *Queries) UpdateNewPassword(ctx context.Context, arg UpdateNewPasswordParams) (error, error) {
+func (q *Queries) UpdateNewPassword(ctx context.Context, arg UpdateNewPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateNewPassword, arg.Password, arg.Email)
-	return err, nil
+	return err
 }
 
 const updateUser = `-- name: UpdateUser :exec
@@ -174,14 +182,14 @@ type UpdateUserParams struct {
 	ID          uuid.UUID
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (error, error) {
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.FullName,
 		arg.PhoneNumber,
 		arg.Dob,
 		arg.ID,
 	)
-	return err, nil
+	return err
 }
 
 const updateUserStatus = `-- name: UpdateUserStatus :exec
@@ -195,7 +203,7 @@ type UpdateUserStatusParams struct {
 	Email  string
 }
 
-func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (error, error) {
+func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserStatus, arg.Status, arg.Email)
-	return err, nil
+	return err
 }

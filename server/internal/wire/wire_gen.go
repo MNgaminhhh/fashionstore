@@ -21,3 +21,12 @@ func InitUserRouterHandler() (*controller.UserController, error) {
 	userController := controller.NewUserController(iUserService, iAuthService)
 	return userController, nil
 }
+
+// Injectors from vendor_wire.go:
+
+func InitVendorRouterHandler() (*controller.VendorController, error) {
+	iVendorRepository := repository.NewVendorRepository()
+	iVendorService := service.NewVendorService(iVendorRepository)
+	vendorController := controller.NewVendorController(iVendorService)
+	return vendorController, nil
+}
