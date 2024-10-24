@@ -17,7 +17,7 @@ type UserRole string
 const (
 	UserRoleAdmin    UserRole = "admin"
 	UserRoleCustomer UserRole = "customer"
-	UserRoleVendor   UserRole = "vendors"
+	UserRoleVendors  UserRole = "vendors"
 )
 
 func (e *UserRole) Scan(src interface{}) error {
@@ -98,6 +98,49 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 	return string(ns.UserStatus), nil
 }
 
+type VendorsStatus string
+
+const (
+	VendorsStatusPending  VendorsStatus = "pending"
+	VendorsStatusAccepted VendorsStatus = "accepted"
+	VendorsStatusRejected VendorsStatus = "rejected"
+)
+
+func (e *VendorsStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VendorsStatus(s)
+	case string:
+		*e = VendorsStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VendorsStatus: %T", src)
+	}
+	return nil
+}
+
+type NullVendorsStatus struct {
+	VendorsStatus VendorsStatus
+	Valid         bool // Valid is true if VendorsStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVendorsStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.VendorsStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VendorsStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVendorsStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VendorsStatus), nil
+}
+
 type User struct {
 	ID          uuid.UUID
 	Email       string
@@ -118,9 +161,11 @@ type Vendor struct {
 	Email       string
 	PhoneNumber string
 	StoreName   string
+	Status      VendorsStatus
 	Description sql.NullString
 	Address     string
 	CreatedAt   sql.NullTime
 	UpdatedAt   sql.NullTime
 	CreatedBy   uuid.UUID
+	UpdatedBy   uuid.UUID
 }

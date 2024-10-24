@@ -14,14 +14,15 @@ import (
 
 const addVendor = `-- name: AddVendor :exec
 INSERT INTO vendors (user_id,
-                       full_name,
-                       email,
-                       phone_number,
-                       store_name,
-                       description,
-                       address,
-                       created_by)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                     full_name,
+                     email,
+                     phone_number,
+                     store_name,
+                     description,
+                     address,
+                     created_by,
+                     updated_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type AddVendorParams struct {
@@ -33,6 +34,7 @@ type AddVendorParams struct {
 	Description sql.NullString
 	Address     string
 	CreatedBy   uuid.UUID
+	UpdatedBy   uuid.UUID
 }
 
 func (q *Queries) AddVendor(ctx context.Context, arg AddVendorParams) error {
@@ -45,12 +47,13 @@ func (q *Queries) AddVendor(ctx context.Context, arg AddVendorParams) error {
 		arg.Description,
 		arg.Address,
 		arg.CreatedBy,
+		arg.UpdatedBy,
 	)
 	return err
 }
 
 const getVendorByUUID = `-- name: GetVendorByUUID :one
-SELECT id, user_id, full_name, email, phone_number, store_name, description, address, created_at, updated_at, created_by FROM vendors
+SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, created_at, updated_at, created_by, updated_by FROM vendors
 WHERE vendors.user_id = $1
 `
 
@@ -64,11 +67,29 @@ func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor
 		&i.Email,
 		&i.PhoneNumber,
 		&i.StoreName,
+		&i.Status,
 		&i.Description,
 		&i.Address,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CreatedBy,
+		&i.UpdatedBy,
 	)
 	return i, err
+}
+
+const updateStatus = `-- name: UpdateStatus :exec
+UPDATE vendors
+SET status = $1
+WHERE user_id = $2
+`
+
+type UpdateStatusParams struct {
+	Status VendorsStatus
+	UserID uuid.UUID
+}
+
+func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateStatus, arg.Status, arg.UserID)
+	return err
 }
