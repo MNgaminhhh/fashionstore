@@ -4,7 +4,7 @@ CREATE TYPE vendors_status AS ENUM ('pending', 'accepted', 'rejected');
 
 CREATE TABLE vendors (
                          id SERIAL PRIMARY KEY,
-                         user_id UUID NOT NULL,
+                         user_id UUID NOT NULL UNIQUE ,
                          full_name VARCHAR(255) NOT NULL,
                          email VARCHAR(255) NOT NULL,
                          phone_number VARCHAR(10) NOT NULL,
