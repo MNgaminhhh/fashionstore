@@ -27,6 +27,7 @@ func (j *Auth) GenerateToken(user *database.User) (string, error) {
 	claims["sub"] = user.ID.String()
 	claims["aud"] = j.Audience
 	claims["email"] = user.Email
+	claims["role"] = user.Role
 	claims["typ"] = "JWT"
 
 	signedAccessToken, err := token.SignedString([]byte(j.Secret))

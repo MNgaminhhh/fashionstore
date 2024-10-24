@@ -5,22 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="use mailtrap, edit cookie to access token">
+      <change afterPath="$PROJECT_DIR$/server/internal/middleware/jwt_middleware.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/internal/service/auth_service.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/sections/auth/components/LoginBottom.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/sections/auth/components/LoginBottom.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/sections/auth/view/VerifyAccountView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/sections/auth/view/VerifyAccountView.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/server/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/controller/user_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/controller/user_controller.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/database/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/database/models.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/database/user_q.sql.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/database/user_q.sql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/internal/repository/user_repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/repository/user_repository.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/routers/user/user_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/routers/user/user_router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/service/token_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/service/token_service.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/service/user_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/service/user_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/internal/validator/user_validator.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/validator/user_validator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/pkg/response/http_status.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/pkg/response/http_status.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/sql/queries/user_q.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/queries/user_q.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/sql/schema/00001_user.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/00001_user.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/wire/wire_gen.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/wire/wire_gen.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/sql/schema/00002_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/00002_schema.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/sql/schema/00003_insert_data.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/20241023144852_insert_user_infor.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/server/storages/logs/dev.001.log" beforeDir="false" afterPath="$PROJECT_DIR$/server/storages/logs/dev.001.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -65,24 +61,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "MTanTai",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "D:/TLCN/FashionStore/fashionstore",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.keymap",
-    "ts.external.directory.path": "D:\\TLCN\\FashionStore\\fashionstore\\client\\node_modules\\typescript\\lib"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;MTanTai&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/TLCN/FashionStore/fashionstore&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\TLCN\\FashionStore\\fashionstore\\client\\node_modules\\typescript\\lib&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\TLCN\FashionStore\fashionstore\server\internal\service" />

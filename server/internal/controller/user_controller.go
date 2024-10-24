@@ -6,25 +6,25 @@ import (
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"database/sql"
-	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
-	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
 type UserController struct {
 	userService service.IUserService
+	authService service.IAuthService
 }
 
 func NewUserController(
 	userService service.IUserService,
+	authService service.IAuthService,
 ) *UserController {
 	return &UserController{
 		userService: userService,
+		authService: authService,
 	}
 }
 
@@ -104,7 +104,7 @@ func (uc *UserController) ForgetPassword(c echo.Context) error {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
 
-	code, claims := uc.userService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
+	code, claims := uc.authService.ValidateToken(token, os.Getenv("RESET_PASSWORD_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -146,7 +146,7 @@ func (uc *UserController) ActiveUser(c echo.Context) error {
 	if token == "" {
 		return response.ErrorResponse(c, response.ErrCodeTokenInvalid, "token is empty")
 	}
-	code, claims := uc.userService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
+	code, claims := uc.authService.ValidateToken(token, os.Getenv("ACTIVE_SECRET"))
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "invalid token")
 	}
@@ -177,15 +177,7 @@ func (uc *UserController) ResendEmailActive(c echo.Context) error {
 }
 
 func (uc *UserController) GetUserInformation(c echo.Context) error {
-	valid, claims := uc.CheckAuthorization(c)
-	if valid != response.SuccessCode {
-		return response.ErrorResponse(c, valid, "Invalid token")
-	}
-	log.Println("claims")
-	id, ok := claims["sub"].(string)
-	if !ok {
-		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "invalid token")
-	}
+	id := c.Get("uuid").(string)
 	userId, _ := uuid.Parse(id)
 	code, user := uc.userService.GetUserInformation(userId)
 	if code != response.SuccessCode {
@@ -201,11 +193,7 @@ func (uc *UserController) GetUserInformation(c echo.Context) error {
 }
 
 func (uc *UserController) UpdateUser(c echo.Context) error {
-	valid, claims := uc.CheckAuthorization(c)
-	if valid != response.SuccessCode {
-		return response.ErrorResponse(c, valid, "Invalid token")
-	}
-	id := claims["sub"].(string)
+	id := c.Get("uuid").(string)
 	userId, _ := uuid.Parse(id)
 	code, user := uc.userService.GetUserInformation(userId)
 	if code != response.SuccessCode {
@@ -241,20 +229,4 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Update user info failed")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Update user info successful")
-}
-
-func (uc *UserController) CheckAuthorization(c echo.Context) (int, jwt.MapClaims) {
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return response.ErrCodeUnauthorized, nil
-	}
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		token := strings.TrimPrefix(authHeader, "Bearer ")
-		code, claims := uc.userService.ValidateToken(token, os.Getenv("ACCESS_SECRET"))
-		if code != response.SuccessCode {
-			return response.ErrCodeUnauthorized, nil
-		}
-		return response.SuccessCode, claims
-	}
-	return response.ErrCodeUnauthorized, nil
 }

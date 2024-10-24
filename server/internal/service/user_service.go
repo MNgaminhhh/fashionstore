@@ -5,7 +5,6 @@ import (
 	"backend/internal/repository"
 	"backend/pkg/response"
 	"fmt"
-	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -18,7 +17,6 @@ type IUserService interface {
 	UpdateUserStatus(email string, status string) int
 	CreateNewUser(email string, password string, confirmed string) int
 	SendEmailResetPassword(email string) int
-	ValidateToken(token string, secret string) (int, jwt.MapClaims)
 	ResetPassword(email string, newPassword string, confirmPassword string) int
 	SendEmailVerify(email string) int
 	GetUserInformation(uuid uuid.UUID) (int, *database.User)
@@ -110,27 +108,6 @@ func (us *userService) CreateNewUser(email string, password string, confirmed st
 	}
 
 	return response.SuccessCode
-}
-
-func (us *userService) ValidateToken(token string, secret string) (int, jwt.MapClaims) {
-	claims := jwt.MapClaims{}
-	log.Println(token)
-	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
-
-	if err != nil {
-		log.Println("Error parsing token:", err)
-		return response.ErrCodeTokenInvalid, nil
-	}
-
-	if tkn.Valid {
-		return response.SuccessCode, claims
-	}
-	return response.ErrCodeTokenInvalid, nil
 }
 
 func (us *userService) ResetPassword(email string, newPassword string, confirmPassword string) int {

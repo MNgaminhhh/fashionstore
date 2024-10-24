@@ -28,7 +28,7 @@ func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) (e
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT id, email, password, status, full_name, phone_number, dob
+SELECT id, email, password, status, full_name, phone_number, dob, role
 FROM users
 `
 
@@ -49,6 +49,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.FullName,
 			&i.PhoneNumber,
 			&i.Dob,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}
@@ -64,7 +65,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUserActived = `-- name: GetUserActived :many
-SELECT id, email, password, status, full_name, phone_number, dob
+SELECT id, email, password, status, full_name, phone_number, dob, role
 FROM users
 WHERE status = $1
 `
@@ -86,6 +87,7 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 			&i.FullName,
 			&i.PhoneNumber,
 			&i.Dob,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}
@@ -101,7 +103,7 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, status, full_name, phone_number, dob
+SELECT id, email, password, status, full_name, phone_number, dob, role
 From users
 WHERE email = $1 LIMIT 1
 `
@@ -117,12 +119,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.Dob,
+		&i.Role,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, password, status, full_name, phone_number, dob FROM users
+SELECT id, email, password, status, full_name, phone_number, dob, role FROM users
 WHERE id = $1
 `
 
@@ -137,6 +140,7 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.Dob,
+		&i.Role,
 	)
 	return i, err
 }

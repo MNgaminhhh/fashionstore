@@ -1,6 +1,7 @@
 package user
 
 import (
+	"backend/internal/middleware"
 	"backend/internal/wire"
 	"github.com/labstack/echo"
 )
@@ -29,7 +30,7 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 
 	userRouterGroup := router.Group("/user")
 	{
-		userRouterGroup.GET("/profile", userController.GetUserInformation)
-		userRouterGroup.POST("/profile", userController.UpdateUser)
+		userRouterGroup.GET("/profile", userController.GetUserInformation, middleware.JWTMiddleware)
+		userRouterGroup.POST("/profile", userController.UpdateUser, middleware.JWTMiddleware)
 	}
 }
