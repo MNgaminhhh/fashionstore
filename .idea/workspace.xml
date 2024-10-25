@@ -4,16 +4,12 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="add banner to sql vendor">
+    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="admin update status vendor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/controller/vendor_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/controller/vendor_controller.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/internal/database/vendor_q.sql.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/database/vendor_q.sql.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/repository/vendor_repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/repository/vendor_repository.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/routers/vendors/vendor_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/routers/vendors/vendor_router.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/internal/service/vendor_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/service/vendor_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/internal/validator/vendor_validator.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/validator/vendor_validator.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/pkg/response/http_status.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/pkg/response/http_status.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/sql/queries/vendor_q.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/queries/vendor_q.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/storages/logs/dev.001.log" beforeDir="false" afterPath="$PROJECT_DIR$/server/storages/logs/dev.001.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +118,8 @@
     <MESSAGE value="wire vendor, add vendor router" />
     <MESSAGE value="complete become a vendor" />
     <MESSAGE value="add banner to sql vendor" />
-    <option name="LAST_COMMIT_MESSAGE" value="add banner to sql vendor" />
+    <MESSAGE value="admin update status vendor" />
+    <option name="LAST_COMMIT_MESSAGE" value="admin update status vendor" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

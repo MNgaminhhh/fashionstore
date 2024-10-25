@@ -9,6 +9,7 @@ import (
 type IVendorRepository interface {
 	BecomeVendor(nVendor *database.Vendor) error
 	UpdateStatus(userId, updatedBy uuid.UUID, status database.VendorsStatus) error
+	GetVendor(userId uuid.UUID) (*database.Vendor, error)
 }
 
 type VendorRepository struct {
@@ -46,4 +47,12 @@ func (vr *VendorRepository) UpdateStatus(userId, updatedBy uuid.UUID, status dat
 		UserID: userId,
 	}
 	return vr.sqlc.UpdateVendorStatus(ctx, params)
+}
+
+func (vr *VendorRepository) GetVendor(userId uuid.UUID) (*database.Vendor, error) {
+	vendor, err := vr.sqlc.GetVendorByUserId(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return &vendor, nil
 }

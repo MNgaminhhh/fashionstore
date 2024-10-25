@@ -10,6 +10,7 @@ import (
 type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
+	GetVendor(userId uuid.UUID) (int, *database.Vendor)
 }
 
 type VendorService struct {
@@ -34,4 +35,12 @@ func (vs *VendorService) UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID,
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
+}
+
+func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *database.Vendor) {
+	vendor, err := vs.vendorRepository.GetVendor(userId)
+	if err != nil {
+		return response.ErrCodeNotFound, nil
+	}
+	return response.SuccessCode, vendor
 }

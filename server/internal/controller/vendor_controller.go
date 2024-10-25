@@ -77,3 +77,27 @@ func (vc *VendorController) UpdateVendorStatusByAdmin(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Update a vendor successfully")
 }
+
+func (vc *VendorController) GetVendor(c echo.Context) error {
+	id := c.Param("user_id")
+	if id == "" {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Vendor ID is empty")
+	}
+	userId, _ := uuid.Parse(id)
+	code, vendor := vc.vendorService.GetVendor(userId)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get a vendor fail")
+	}
+	data := map[string]interface{}{
+		"id":           vendor.ID,
+		"user_id":      vendor.UserID,
+		"full_name":    vendor.FullName,
+		"email":        vendor.Email,
+		"phone_number": vendor.PhoneNumber,
+		"store_name":   vendor.StoreName,
+		"banner":       vendor.Banner,
+		"description":  vendor.Description.String,
+		"status":       vendor.Status,
+	}
+	return response.SuccessResponse(c, code, data)
+}
