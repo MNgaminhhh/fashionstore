@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
-	"log"
 )
 
 type VendorController struct {
@@ -24,7 +23,6 @@ func NewVendorController(vendorService service.IVendorService) *VendorController
 func (vc *VendorController) BecomeVendor(c echo.Context) error {
 	role := c.Get("role").(database.UserRole)
 	if role != database.UserRoleCustomer {
-		log.Println("aaaaaaaaaa", role)
 		return response.ErrorResponse(c, response.ErrCodeUnauthorized, "You are not authorized to perform this action")
 	}
 	id := c.Get("uuid").(string)
@@ -42,12 +40,13 @@ func (vc *VendorController) BecomeVendor(c echo.Context) error {
 		Email:       reqParams.Email,
 		PhoneNumber: reqParams.PhoneNumber,
 		StoreName:   reqParams.StoreName,
+		Banner:      reqParams.Banner,
 		Description: sql.NullString{
 			String: reqParams.Description,
 		},
 		Address:   reqParams.Address,
-		CreatedBy: userId,
-		UpdatedBy: userId,
+		CreatedBy: uuid.NullUUID{UUID: userId, Valid: true},
+		UpdatedBy: uuid.NullUUID{UUID: userId, Valid: true},
 	}
 
 	code := vc.vendorService.BecomeVendor(vendor)

@@ -1,4 +1,4 @@
--- name: GetVendorByUUID :one
+-- name: GetVendorByUserId :one
 SELECT * FROM vendors
 WHERE vendors.user_id = $1;
 
@@ -10,9 +10,10 @@ INSERT INTO vendors (user_id,
                      store_name,
                      description,
                      address,
+                     banner,
                      created_by,
                      updated_by)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
 -- name: UpdateStatus :exec
 UPDATE vendors

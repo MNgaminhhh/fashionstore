@@ -24,6 +24,7 @@ func (vr *VendorRepository) BecomeVendor(nVendor *database.Vendor) error {
 		Email:       nVendor.Email,
 		PhoneNumber: nVendor.PhoneNumber,
 		StoreName:   nVendor.StoreName,
+		Banner:      nVendor.Banner,
 		Description: nVendor.Description,
 		Address:     nVendor.Address,
 		CreatedBy:   nVendor.CreatedBy,
