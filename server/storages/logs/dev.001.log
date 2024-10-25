@@ -96,3 +96,15 @@
 {"level":"INFO","time":"2024-10-25T00:48:04.839+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
 {"level":"INFO","time":"2024-10-25T00:50:00.267+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
 {"level":"INFO","time":"2024-10-25T00:50:00.267+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T00:55:40.928+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T00:55:40.928+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T10:27:15.538+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T10:27:15.539+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T21:21:00.170+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T21:21:00.178+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T21:25:22.676+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T21:25:22.676+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T21:26:49.203+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T21:26:49.203+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}
+{"level":"INFO","time":"2024-10-25T21:28:56.373+0700","caller":"initialize/start.go:14","msg":"Config logger, ok!","ok":"success"}
+{"level":"INFO","time":"2024-10-25T21:28:56.373+0700","caller":"initialize/postgres.go:29","msg":"Initializing PostgreSQL Successfully"}

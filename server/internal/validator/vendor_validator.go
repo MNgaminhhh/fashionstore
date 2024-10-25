@@ -9,3 +9,8 @@ type BecomeVendorRequest struct {
 	Description string `json:"description"`
 	Address     string `json:"address" validate:"required"`
 }
+
+type AdminUpdateVendorStatusRequest struct {
+	UserId string `json:"user_id" validate:"required"`
+	Status string `json:"status" validate:"required,oneof=pending accepted rejected"`
+}

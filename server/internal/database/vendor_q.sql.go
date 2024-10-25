@@ -82,18 +82,19 @@ func (q *Queries) GetVendorByUserId(ctx context.Context, userID uuid.UUID) (Vend
 	return i, err
 }
 
-const updateStatus = `-- name: UpdateStatus :exec
+const updateVendorStatus = `-- name: UpdateVendorStatus :exec
 UPDATE vendors
-SET status = $1
-WHERE user_id = $2
+SET status = $1, updated_by = $2
+WHERE user_id = $3
 `
 
-type UpdateStatusParams struct {
-	Status VendorsStatus
-	UserID uuid.UUID
+type UpdateVendorStatusParams struct {
+	Status    VendorsStatus
+	UpdatedBy uuid.NullUUID
+	UserID    uuid.UUID
 }
 
-func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) error {
-	_, err := q.db.ExecContext(ctx, updateStatus, arg.Status, arg.UserID)
+func (q *Queries) UpdateVendorStatus(ctx context.Context, arg UpdateVendorStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateVendorStatus, arg.Status, arg.UpdatedBy, arg.UserID)
 	return err
 }

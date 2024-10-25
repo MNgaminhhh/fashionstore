@@ -14,5 +14,6 @@ func (VendorRouter *VendorRouter) InitVendorRouter(router *echo.Group) {
 	vendorRouterGroup := router.Group("/vendor")
 	{
 		vendorRouterGroup.POST("/new", vendorController.BecomeVendor, middleware.JWTMiddleware)
+		vendorRouterGroup.PUT("/status", vendorController.UpdateVendorStatusByAdmin, middleware.JWTMiddleware)
 	}
 }

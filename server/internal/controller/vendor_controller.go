@@ -23,7 +23,7 @@ func NewVendorController(vendorService service.IVendorService) *VendorController
 func (vc *VendorController) BecomeVendor(c echo.Context) error {
 	role := c.Get("role").(database.UserRole)
 	if role != database.UserRoleCustomer {
-		return response.ErrorResponse(c, response.ErrCodeUnauthorized, "You are not authorized to perform this action")
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Role must be customer")
 	}
 	id := c.Get("uuid").(string)
 	userId, _ := uuid.Parse(id)
@@ -54,4 +54,26 @@ func (vc *VendorController) BecomeVendor(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Become a vendor fail")
 	}
 	return response.SuccessResponse(c, code, "Become a vendor successfully")
+}
+
+func (vc *VendorController) UpdateVendorStatusByAdmin(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Role must be admin")
+	}
+	id := c.Get("uuid").(string)
+	adminId, _ := uuid.Parse(id)
+	var reqParams validator.AdminUpdateVendorStatusRequest
+	if err := c.Bind(&reqParams); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(reqParams); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	userId, _ := uuid.Parse(reqParams.UserId)
+	code := vc.vendorService.UpdateVendorStatus(userId, adminId, database.VendorsStatus(reqParams.Status))
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update a vendor fail")
+	}
+	return response.SuccessResponse(c, code, "Update a vendor successfully")
 }
