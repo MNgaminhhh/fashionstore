@@ -104,6 +104,7 @@ const (
 	VendorsStatusPending  VendorsStatus = "pending"
 	VendorsStatusAccepted VendorsStatus = "accepted"
 	VendorsStatusRejected VendorsStatus = "rejected"
+	VendorsStatusNull     VendorsStatus = "null"
 )
 
 func (e *VendorsStatus) Scan(src interface{}) error {
@@ -161,7 +162,7 @@ type Vendor struct {
 	Email       string
 	PhoneNumber string
 	StoreName   string
-	Status      VendorsStatus
+	Status      NullVendorsStatus
 	Description sql.NullString
 	Address     string
 	Banner      string

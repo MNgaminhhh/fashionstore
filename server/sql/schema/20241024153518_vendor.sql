@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TYPE vendors_status AS ENUM ('pending', 'accepted', 'rejected');
+CREATE TYPE vendors_status AS ENUM ('pending', 'accepted', 'rejected', 'null');
 
 CREATE TABLE vendors (
                          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -9,7 +9,7 @@ CREATE TABLE vendors (
                          email VARCHAR(255) NOT NULL,
                          phone_number VARCHAR(10) NOT NULL,
                          store_name VARCHAR(255) NOT NULL,
-                         status vendors_status DEFAULT 'pending' NOT NULL,
+                         status vendors_status DEFAULT 'pending',
                          description TEXT,
                          address VARCHAR(255) NOT NULL ,
                          banner VARCHAR(255) NOT NULL ,
@@ -32,6 +32,7 @@ CREATE TRIGGER set_vendor_updated_at
     BEFORE UPDATE ON vendors
     FOR EACH ROW
     EXECUTE FUNCTION update_vendor_timestamp();
+
 -- +goose StatementEnd
 
 -- +goose Down
