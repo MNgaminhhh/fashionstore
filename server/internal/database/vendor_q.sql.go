@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -55,6 +56,66 @@ func (q *Queries) AddVendor(ctx context.Context, arg AddVendorParams) error {
 	return err
 }
 
+const getAllVendors = `-- name: GetAllVendors :many
+SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, banner, created_at, updated_at, created_by, updated_by
+FROM vendors
+WHERE
+    ($1::vendors_status = 'null' OR status = $1)
+  AND (store_name ILIKE '%' || $2::text || '%' OR $2 = '')
+  AND (created_at >= $3::timestamp OR $3 = '0001-01-01 00:00:00' )
+  AND (created_at <= $4::timestamp OR $4 = '0001-01-01 00:00:00')
+`
+
+type GetAllVendorsParams struct {
+	Column1 VendorsStatus
+	Column2 string
+	Column3 time.Time
+	Column4 time.Time
+}
+
+func (q *Queries) GetAllVendors(ctx context.Context, arg GetAllVendorsParams) ([]Vendor, error) {
+	rows, err := q.db.QueryContext(ctx, getAllVendors,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Vendor
+	for rows.Next() {
+		var i Vendor
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FullName,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.StoreName,
+			&i.Status,
+			&i.Description,
+			&i.Address,
+			&i.Banner,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CreatedBy,
+			&i.UpdatedBy,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVendorByUserId = `-- name: GetVendorByUserId :one
 SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, banner, created_at, updated_at, created_by, updated_by FROM vendors
 WHERE vendors.user_id = $1
@@ -89,7 +150,7 @@ WHERE user_id = $3
 `
 
 type UpdateVendorStatusParams struct {
-	Status    VendorsStatus
+	Status    NullVendorsStatus
 	UpdatedBy uuid.NullUUID
 	UserID    uuid.UUID
 }
