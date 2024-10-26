@@ -5,7 +5,9 @@ import (
 	"backend/internal/params"
 	"backend/internal/repository"
 	"backend/pkg/response"
+	"errors"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"log"
 	"time"
 )
@@ -42,7 +44,19 @@ func NewVendorService(repository repository.IVendorRepository) IVendorService {
 func (vs *VendorService) BecomeVendor(nVendor *database.Vendor) int {
 	err := vs.vendorRepository.BecomeVendor(nVendor)
 	if err != nil {
-		return response.ErrCodeInternal
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23505" {
+				log.Println("unique")
+				if pqErr.Constraint == "vendors_email_key" {
+					return response.ErrCodeEmailAlreadyUsed
+				}
+				if pqErr.Constraint == "vendors_phone_number_key" {
+					return response.ErrPhoneNumberAlreadyUsed
+				}
+			}
+			return response.ErrCodeInternal
+		}
 	}
 	return response.SuccessCode
 }

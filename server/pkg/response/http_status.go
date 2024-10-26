@@ -17,6 +17,7 @@ const (
 	ErrCodeCannotVerifyThisEmail      = 50009
 	ErrCodeUserNotFound               = 50010
 	ErrCodeInvalidRole                = 50011
+	ErrPhoneNumberAlreadyUsed         = 50012
 )
 
 var msg = map[int]string{
@@ -35,4 +36,5 @@ var msg = map[int]string{
 	ErrCodeUnauthorized:               "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại !!",
 	ErrCodeCannotVerifyThisEmail:      "Không thể gửi email xác thực. Vui lòng thử lại sau!!",
 	ErrCodeUserNotFound:               "Không tìm thấy thông tin người dùng",
-	ErrCodeInvalidRole:                "Người dùng hiện tại không có quyền thực hiện hành động này!!"}
+	ErrCodeInvalidRole:                "Người dùng hiện tại không có quyền thực hiện hành động này!!",
+	ErrPhoneNumberAlreadyUsed:         "Số điện thoại này đã được sử dụng!!"}

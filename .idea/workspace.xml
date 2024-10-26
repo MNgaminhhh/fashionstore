@@ -6,6 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="new">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/controller/vendor_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/controller/vendor_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/params/params.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/params/params.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/internal/service/vendor_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/internal/service/vendor_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pkg/response/http_status.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/pkg/response/http_status.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/20241024153518_vendor.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/20241024153518_vendor.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/storages/logs/dev.001.log" beforeDir="false" afterPath="$PROJECT_DIR$/server/storages/logs/dev.001.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,6 +62,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "MTanTai",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "D:/TLCN/FashionStore/fashionstore",

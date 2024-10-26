@@ -104,7 +104,7 @@ func (vc *VendorController) GetAllVendors(c echo.Context) error {
 	sortOrder := c.QueryParam("sort_order")
 	limit := c.QueryParam("limit")
 	page := c.QueryParam("page")
-	startDate, _ := time.Parse("02-04-2006", startDateStr)
+	startDate, _ := time.Parse("02-01-2006", startDateStr)
 	customParams := params.GetAllVendorsParams{
 		Status:    nil,
 		StoreName: nil,

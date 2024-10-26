@@ -1,14 +1,20 @@
 package params
 
-import "time"
+import (
+	"backend/internal/database"
+	"time"
+)
 
 type GetAllVendorsParams struct {
-	Status    *string
+	Status    database.VendorsStatus
 	StoreName *string
 	StartDate *time.Time
 	EndDate   *time.Time
 	SortBy    string
 	SortOrder string
-	Limit     int
-	Offset    int
+}
+
+type Pagination struct {
+	Limit  int
+	Offset int
 }
