@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -87,6 +88,15 @@ func (vs *VendorService) GetAllVendors(customParams params.GetAllVendorsParams) 
 	for i, vendor := range vendors {
 		responseData[i] = *MapVendorToResponse(&vendor)
 	}
+	sortBy := "createdAt"
+	sortOrder := "desc"
+	if customParams.SortOrder != "" {
+		sortOrder = customParams.SortOrder
+	}
+	if customParams.SortBy != "" {
+		sortBy = customParams.SortBy
+	}
+	responseData = SortData(responseData, sortBy, sortOrder)
 	return response.SuccessCode, responseData
 }
 
@@ -104,4 +114,32 @@ func MapVendorToResponse(vendor *database.Vendor) *ResponseVendorData {
 		CreatedAt:   vendor.CreatedAt.Time,
 		UpdatedAt:   vendor.UpdatedAt.Time,
 	}
+}
+
+func SortData(data []ResponseVendorData, sortBy, sortOrder string) []ResponseVendorData {
+	switch sortBy {
+	case "storeName":
+		sort.Slice(data, func(i, j int) bool {
+			if sortOrder == "desc" {
+				return data[i].StoreName > data[j].StoreName
+			}
+			return data[i].StoreName < (data[j].StoreName)
+		})
+
+	case "status":
+		sort.Slice(data, func(i, j int) bool {
+			if sortOrder == "desc" {
+				return data[i].Status > data[j].Status
+			}
+			return data[i].Status < (data[j].Status)
+		})
+	default:
+		sort.Slice(data, func(i, j int) bool {
+			if sortOrder == "desc" {
+				return data[i].CreatedAt.After(data[j].CreatedAt)
+			}
+			return data[i].CreatedAt.Before(data[j].CreatedAt)
+		})
+	}
+	return data
 }
