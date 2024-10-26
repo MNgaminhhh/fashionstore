@@ -78,7 +78,7 @@
     "ts.external.directory.path": "D:\\TLCN\\FashionStore\\fashionstore\\client\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\TLCN\FashionStore\fashionstore\server\sql\schema" />
@@ -135,7 +135,9 @@
     <MESSAGE value="add role into user, add jwt middleware validate" />
     <MESSAGE value="wire vendor, add vendor router" />
     <MESSAGE value="complete become a vendor" />
-    <option name="LAST_COMMIT_MESSAGE" value="complete become a vendor" />
+    <MESSAGE value="add banner to sql vendor" />
+    <MESSAGE value="admin update status vendor" />
+    <option name="LAST_COMMIT_MESSAGE" value="admin update status vendor" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

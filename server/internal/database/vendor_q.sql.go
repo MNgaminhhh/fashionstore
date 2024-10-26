@@ -20,9 +20,10 @@ INSERT INTO vendors (user_id,
                      store_name,
                      description,
                      address,
+                     banner,
                      created_by,
                      updated_by)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 type AddVendorParams struct {
@@ -33,8 +34,9 @@ type AddVendorParams struct {
 	StoreName   string
 	Description sql.NullString
 	Address     string
-	CreatedBy   uuid.UUID
-	UpdatedBy   uuid.UUID
+	Banner      string
+	CreatedBy   uuid.NullUUID
+	UpdatedBy   uuid.NullUUID
 }
 
 func (q *Queries) AddVendor(ctx context.Context, arg AddVendorParams) error {
@@ -46,19 +48,20 @@ func (q *Queries) AddVendor(ctx context.Context, arg AddVendorParams) error {
 		arg.StoreName,
 		arg.Description,
 		arg.Address,
+		arg.Banner,
 		arg.CreatedBy,
 		arg.UpdatedBy,
 	)
 	return err
 }
 
-const getVendorByUUID = `-- name: GetVendorByUUID :one
-SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, created_at, updated_at, created_by, updated_by FROM vendors
+const getVendorByUserId = `-- name: GetVendorByUserId :one
+SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, banner, created_at, updated_at, created_by, updated_by FROM vendors
 WHERE vendors.user_id = $1
 `
 
-func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor, error) {
-	row := q.db.QueryRowContext(ctx, getVendorByUUID, userID)
+func (q *Queries) GetVendorByUserId(ctx context.Context, userID uuid.UUID) (Vendor, error) {
+	row := q.db.QueryRowContext(ctx, getVendorByUserId, userID)
 	var i Vendor
 	err := row.Scan(
 		&i.ID,
@@ -70,6 +73,7 @@ func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor
 		&i.Status,
 		&i.Description,
 		&i.Address,
+		&i.Banner,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CreatedBy,
@@ -78,18 +82,19 @@ func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor
 	return i, err
 }
 
-const updateStatus = `-- name: UpdateStatus :exec
+const updateVendorStatus = `-- name: UpdateVendorStatus :exec
 UPDATE vendors
-SET status = $1
-WHERE user_id = $2
+SET status = $1, updated_by = $2
+WHERE user_id = $3
 `
 
-type UpdateStatusParams struct {
-	Status VendorsStatus
-	UserID uuid.UUID
+type UpdateVendorStatusParams struct {
+	Status    VendorsStatus
+	UpdatedBy uuid.NullUUID
+	UserID    uuid.UUID
 }
 
-func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) error {
-	_, err := q.db.ExecContext(ctx, updateStatus, arg.Status, arg.UserID)
+func (q *Queries) UpdateVendorStatus(ctx context.Context, arg UpdateVendorStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateVendorStatus, arg.Status, arg.UpdatedBy, arg.UserID)
 	return err
 }

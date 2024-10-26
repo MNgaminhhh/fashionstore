@@ -155,7 +155,7 @@ type User struct {
 }
 
 type Vendor struct {
-	ID          int32
+	ID          uuid.UUID
 	UserID      uuid.UUID
 	FullName    string
 	Email       string
@@ -164,8 +164,9 @@ type Vendor struct {
 	Status      VendorsStatus
 	Description sql.NullString
 	Address     string
+	Banner      string
 	CreatedAt   sql.NullTime
 	UpdatedAt   sql.NullTime
-	CreatedBy   uuid.UUID
-	UpdatedBy   uuid.UUID
+	CreatedBy   uuid.NullUUID
+	UpdatedBy   uuid.NullUUID
 }

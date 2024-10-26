@@ -3,7 +3,7 @@
 CREATE TYPE vendors_status AS ENUM ('pending', 'accepted', 'rejected');
 
 CREATE TABLE vendors (
-                         id SERIAL PRIMARY KEY,
+                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                          user_id UUID NOT NULL UNIQUE ,
                          full_name VARCHAR(255) NOT NULL,
                          email VARCHAR(255) NOT NULL,
@@ -11,14 +11,13 @@ CREATE TABLE vendors (
                          store_name VARCHAR(255) NOT NULL,
                          status vendors_status DEFAULT 'pending' NOT NULL,
                          description TEXT,
-                         address VARCHAR(255) NOT NULL,
+                         address VARCHAR(255) NOT NULL ,
+                         banner VARCHAR(255) NOT NULL ,
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                         created_by UUID NOT NULL,
-                         updated_by UUID NOT NULL,
-                         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                         FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
-                         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE CASCADE
+                         created_by UUID,
+                         updated_by UUID,
+                         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE FUNCTION update_vendor_timestamp()
