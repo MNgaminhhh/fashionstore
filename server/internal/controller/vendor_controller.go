@@ -2,12 +2,16 @@ package controller
 
 import (
 	"backend/internal/database"
+	"backend/internal/params"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
+	"log"
+	"strconv"
+	"time"
 )
 
 type VendorController struct {
@@ -88,16 +92,53 @@ func (vc *VendorController) GetVendor(c echo.Context) error {
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Get a vendor fail")
 	}
-	data := map[string]interface{}{
-		"id":           vendor.ID,
-		"user_id":      vendor.UserID,
-		"full_name":    vendor.FullName,
-		"email":        vendor.Email,
-		"phone_number": vendor.PhoneNumber,
-		"store_name":   vendor.StoreName,
-		"banner":       vendor.Banner,
-		"description":  vendor.Description.String,
-		"status":       vendor.Status,
+	return response.SuccessResponse(c, code, vendor)
+}
+
+func (vc *VendorController) GetAllVendors(c echo.Context) error {
+	status := c.QueryParam("status")
+	storeName := c.QueryParam("store_name")
+	startDateStr := c.QueryParam("start_date")
+	//endDate := c.QueryParam("end_date")
+	sortBy := c.QueryParam("sort_by")
+	sortOrder := c.QueryParam("sort_order")
+	limit := c.QueryParam("limit")
+	page := c.QueryParam("page")
+	startDate, _ := time.Parse("02-04-2006", startDateStr)
+	customParams := params.GetAllVendorsParams{
+		Status:    nil,
+		StoreName: nil,
+		StartDate: &startDate,
+		EndDate:   nil,
+		SortBy:    "",
+		SortOrder: "",
+		Limit:     0,
+		Offset:    0,
 	}
-	return response.SuccessResponse(c, code, data)
+	if status != "" {
+		log.Println("111111111111")
+		customParams.Status = &status
+	}
+	if storeName != "" {
+		customParams.StoreName = &storeName
+	}
+	if sortBy != "" {
+		customParams.SortBy = sortBy
+	}
+	if sortOrder != "" {
+		customParams.SortOrder = sortOrder
+	}
+	if limit != "" {
+		limitInt, _ := strconv.Atoi(limit)
+		customParams.Limit = limitInt
+	}
+	if page != "" {
+		pageInt, _ := strconv.Atoi(page)
+		customParams.Offset = pageInt
+	}
+	code, vendors := vc.vendorService.GetAllVendors(customParams)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get vendor fail")
+	}
+	return response.SuccessResponse(c, code, vendors)
 }

@@ -2,15 +2,33 @@ package service
 
 import (
 	"backend/internal/database"
+	"backend/internal/params"
 	"backend/internal/repository"
 	"backend/pkg/response"
 	"github.com/google/uuid"
+	"log"
+	"time"
 )
+
+type ResponseVendorData struct {
+	ID          string    `json:"id"`
+	UserID      string    `json:"user_id"`
+	FullName    string    `json:"full_name"`
+	PhoneNumber string    `json:"phone_number"`
+	StoreName   string    `json:"store_name"`
+	Status      string    `json:"status"`
+	Description string    `json:"description"`
+	Address     string    `json:"address"`
+	Banner      string    `json:"banner"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
 
 type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
-	GetVendor(userId uuid.UUID) (int, *database.Vendor)
+	GetVendor(userId uuid.UUID) (int, *ResponseVendorData)
+	GetAllVendors(customParams params.GetAllVendorsParams) (int, []ResponseVendorData)
 }
 
 type VendorService struct {
@@ -37,10 +55,39 @@ func (vs *VendorService) UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID,
 	return response.SuccessCode
 }
 
-func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *database.Vendor) {
+func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *ResponseVendorData) {
 	vendor, err := vs.vendorRepository.GetVendor(userId)
 	if err != nil {
 		return response.ErrCodeNotFound, nil
 	}
-	return response.SuccessCode, vendor
+	return response.SuccessCode, MapVendorToResponse(vendor)
+}
+
+func (vs *VendorService) GetAllVendors(customParams params.GetAllVendorsParams) (int, []ResponseVendorData) {
+	vendors, err := vs.vendorRepository.GetAllVendors(customParams)
+	if err != nil {
+		log.Fatal(err)
+		return response.ErrCodeInternal, nil
+	}
+	responseData := make([]ResponseVendorData, len(vendors))
+	for i, vendor := range vendors {
+		responseData[i] = *MapVendorToResponse(&vendor)
+	}
+	return response.SuccessCode, responseData
+}
+
+func MapVendorToResponse(vendor *database.Vendor) *ResponseVendorData {
+	return &ResponseVendorData{
+		ID:          vendor.ID.String(),
+		UserID:      vendor.UserID.String(),
+		FullName:    vendor.FullName,
+		PhoneNumber: vendor.PhoneNumber,
+		StoreName:   vendor.StoreName,
+		Status:      string(vendor.Status.VendorsStatus),
+		Description: vendor.Description.String,
+		Address:     vendor.Address,
+		Banner:      vendor.Banner,
+		CreatedAt:   vendor.CreatedAt.Time,
+		UpdatedAt:   vendor.UpdatedAt.Time,
+	}
 }
