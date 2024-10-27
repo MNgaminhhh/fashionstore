@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/params"
 	"backend/internal/service"
@@ -9,7 +10,6 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
-	"log"
 	"strconv"
 	"time"
 )
@@ -99,24 +99,20 @@ func (vc *VendorController) GetAllVendors(c echo.Context) error {
 	status := c.QueryParam("status")
 	storeName := c.QueryParam("store_name")
 	startDateStr := c.QueryParam("start_date")
-	//endDate := c.QueryParam("end_date")
+	endDateStr := c.QueryParam("end_date")
 	sortBy := c.QueryParam("sort_by")
 	sortOrder := c.QueryParam("sort_order")
 	limit := c.QueryParam("limit")
 	page := c.QueryParam("page")
-	startDate, _ := time.Parse("02-04-2006", startDateStr)
 	customParams := params.GetAllVendorsParams{
 		Status:    nil,
 		StoreName: nil,
-		StartDate: &startDate,
+		StartDate: nil,
 		EndDate:   nil,
 		SortBy:    "",
 		SortOrder: "",
-		Limit:     0,
-		Offset:    0,
 	}
 	if status != "" {
-		log.Println("111111111111")
 		customParams.Status = &status
 	}
 	if storeName != "" {
@@ -128,17 +124,33 @@ func (vc *VendorController) GetAllVendors(c echo.Context) error {
 	if sortOrder != "" {
 		customParams.SortOrder = sortOrder
 	}
-	if limit != "" {
-		limitInt, _ := strconv.Atoi(limit)
-		customParams.Limit = limitInt
+	if startDateStr != "" {
+		startDate, _ := time.Parse("02-01-2006", startDateStr)
+		customParams.StartDate = &startDate
 	}
-	if page != "" {
-		pageInt, _ := strconv.Atoi(page)
-		customParams.Offset = pageInt
+	if endDateStr != "" {
+		endDate, _ := time.Parse("02-01-2006", endDateStr)
+		customParams.EndDate = &endDate
 	}
 	code, vendors := vc.vendorService.GetAllVendors(customParams)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Get vendor fail")
 	}
-	return response.SuccessResponse(c, code, vendors)
+	pageSize := 10
+	currentPage := 1
+	if limit != "" {
+		pageSize, _ = strconv.Atoi(limit)
+	}
+	if page != "" {
+		currentPage, _ = strconv.Atoi(page)
+	}
+	totalPages := internal.CalculateTotalPages(len(vendors), pageSize)
+	vendorsPagination := internal.Paginate(vendors, currentPage, pageSize)
+	data := map[string]interface{}{
+		"vendors":       vendorsPagination,
+		"total_results": len(vendorsPagination),
+		"total_pages":   totalPages,
+		"current_page":  currentPage,
+	}
+	return response.SuccessResponse(c, code, data)
 }

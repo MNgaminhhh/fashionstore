@@ -1,6 +1,8 @@
 package params
 
-import "time"
+import (
+	"time"
+)
 
 type GetAllVendorsParams struct {
 	Status    *string
@@ -9,6 +11,4 @@ type GetAllVendorsParams struct {
 	EndDate   *time.Time
 	SortBy    string
 	SortOrder string
-	Limit     int
-	Offset    int
 }
