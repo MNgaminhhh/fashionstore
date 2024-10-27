@@ -184,10 +184,12 @@ func (uc *UserController) GetUserInformation(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Get user info failed")
 	}
 	data := map[string]interface{}{
-		"id":        user.ID,
-		"email":     user.Email,
-		"full_name": user.FullName.String,
-		"dob":       user.Dob.Time,
+		"id":           user.ID,
+		"email":        user.Email,
+		"full_name":    user.FullName.String,
+		"dob":          user.Dob.Time,
+		"phone_number": user.PhoneNumber.String,
+		"avt":          user.Avt.String,
 	}
 	return response.SuccessResponse(c, response.SuccessCode, data)
 }
@@ -219,9 +221,19 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
 		}
 	}
 	if params.Dob != "" {
+		dob, err := time.Parse("02-01-2006", params.Dob)
+		if err != nil {
+			return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+		}
 		user.Dob = sql.NullTime{
-			Time:  time.Now(),
+			Time:  dob,
 			Valid: true,
+		}
+	}
+	if params.Avt != "" {
+		user.Avt = sql.NullString{
+			String: params.Avt,
+			Valid:  true,
 		}
 	}
 	code = uc.userService.UpdateUserInformation(user)

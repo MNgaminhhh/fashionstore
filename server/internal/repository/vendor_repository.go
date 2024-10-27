@@ -3,18 +3,18 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
-	"backend/internal/params"
+	"backend/internal/validator"
+	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"strings"
-	"time"
 )
 
 type IVendorRepository interface {
 	BecomeVendor(nVendor *database.Vendor) error
 	UpdateStatus(userId, updatedBy uuid.UUID, status database.VendorsStatus) error
 	GetVendor(userId uuid.UUID) (*database.Vendor, error)
-	GetAllVendors(customParams params.GetAllVendorsParams) ([]database.Vendor, error)
+	GetAllVendors(customParams validator.FilterVendorRequest) ([]database.Vendor, error)
 }
 
 type VendorRepository struct {
@@ -65,24 +65,19 @@ func (vr *VendorRepository) GetVendor(userId uuid.UUID) (*database.Vendor, error
 	return &vendor, nil
 }
 
-func (vr *VendorRepository) GetAllVendors(customParams params.GetAllVendorsParams) ([]database.Vendor, error) {
+func (vr *VendorRepository) GetAllVendors(customParams validator.FilterVendorRequest) ([]database.Vendor, error) {
 	param := database.GetAllVendorsParams{
 		Column1: database.VendorsStatusNull,
-		Column2: "",
-		Column3: time.Time{},
-		Column4: time.Time{},
+		Column2: customParams.StoreName,
+		Column3: customParams.FullName,
+		Column4: customParams.Address,
+		Column5: "",
 	}
-	if customParams.Status != nil {
-		param.Column1 = database.VendorsStatus(strings.ToLower(*customParams.Status))
+	if customParams.Status != "" {
+		param.Column1 = database.VendorsStatus(strings.ToLower(customParams.Status))
 	}
-	if customParams.StartDate != nil {
-		param.Column3 = *customParams.StartDate
-	}
-	if customParams.EndDate != nil {
-		param.Column4 = *customParams.EndDate
-	}
-	if customParams.StoreName != nil {
-		param.Column2 = *customParams.StoreName
+	if customParams.Description != "" {
+		param.Column5 = fmt.Sprintf("%%%s%%", customParams.Description)
 	}
 	log.Println("Params: ", param)
 	vendors, err := vr.sqlc.GetAllVendors(ctx, param)

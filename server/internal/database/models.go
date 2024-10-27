@@ -142,6 +142,15 @@ func (ns NullVendorsStatus) Value() (driver.Value, error) {
 	return string(ns.VendorsStatus), nil
 }
 
+type Brand struct {
+	ID       uuid.NullUUID
+	Sequence sql.NullInt32
+	StoreID  uuid.UUID
+	Name     string
+	Image    string
+	Visible  sql.NullBool
+}
+
 type User struct {
 	ID          uuid.UUID
 	Email       string
@@ -153,6 +162,7 @@ type User struct {
 	CreatedAt   sql.NullTime
 	UpdatedAt   sql.NullTime
 	Role        UserRole
+	Avt         sql.NullString
 }
 
 type Vendor struct {

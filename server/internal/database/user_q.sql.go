@@ -28,7 +28,7 @@ func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) er
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt
 FROM users
 `
 
@@ -52,6 +52,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Role,
+			&i.Avt,
 		); err != nil {
 			return nil, err
 		}
@@ -67,7 +68,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUserActived = `-- name: GetUserActived :many
-SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt
 FROM users
 WHERE status = $1
 `
@@ -92,6 +93,7 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Role,
+			&i.Avt,
 		); err != nil {
 			return nil, err
 		}
@@ -107,7 +109,7 @@ func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt
 From users
 WHERE email = $1 LIMIT 1
 `
@@ -126,12 +128,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Role,
+		&i.Avt,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role FROM users
+SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt FROM users
 WHERE id = $1
 `
 
@@ -149,6 +152,7 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Role,
+		&i.Avt,
 	)
 	return i, err
 }
@@ -171,14 +175,15 @@ func (q *Queries) UpdateNewPassword(ctx context.Context, arg UpdateNewPasswordPa
 
 const updateUser = `-- name: UpdateUser :exec
 UPDATE  users
-SET full_name = $1, phone_number = $2, dob = $3
-WHERE id = $4
+SET full_name = $1, phone_number = $2, dob = $3, avt = $4
+WHERE id = $5
 `
 
 type UpdateUserParams struct {
 	FullName    sql.NullString
 	PhoneNumber sql.NullString
 	Dob         sql.NullTime
+	Avt         sql.NullString
 	ID          uuid.UUID
 }
 
@@ -187,6 +192,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.FullName,
 		arg.PhoneNumber,
 		arg.Dob,
+		arg.Avt,
 		arg.ID,
 	)
 	return err
