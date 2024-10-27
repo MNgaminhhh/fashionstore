@@ -18,6 +18,7 @@ const (
 	ErrCodeUserNotFound               = 50010
 	ErrCodeInvalidRole                = 50011
 	ErrPhoneNumberAlreadyUsed         = 50012
+	ErrCodeIncorrectDateFormat        = 50013
 )
 
 var msg = map[int]string{
@@ -37,4 +38,5 @@ var msg = map[int]string{
 	ErrCodeCannotVerifyThisEmail:      "Không thể gửi email xác thực. Vui lòng thử lại sau!!",
 	ErrCodeUserNotFound:               "Không tìm thấy thông tin người dùng",
 	ErrCodeInvalidRole:                "Người dùng hiện tại không có quyền thực hiện hành động này!!",
-	ErrPhoneNumberAlreadyUsed:         "Số điện thoại này đã được sử dụng!!"}
+	ErrPhoneNumberAlreadyUsed:         "Số điện thoại này đã được sử dụng!!",
+	ErrCodeIncorrectDateFormat:        "Vui lòng nhập đúng định dạng ngày dd-mm-yyyy"}

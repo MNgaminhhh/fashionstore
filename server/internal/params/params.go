@@ -12,3 +12,8 @@ type GetAllVendorsParams struct {
 	SortBy    string
 	SortOrder string
 }
+
+type GetBrandsParams struct {
+	visible bool
+	name    *string
+}
