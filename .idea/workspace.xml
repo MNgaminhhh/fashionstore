@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="update api users profile">
+    <list default="true" id="35bb8c8b-e7ec-43f3-839d-42920bbfbde5" name="Changes" comment="update api vendors">
       <change afterPath="$PROJECT_DIR$/server/internal/controller/brands_controller.go" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/internal/repository/brands_repository.go" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/internal/service/brands_service.go" afterDir="false" />
@@ -129,7 +129,8 @@
     <MESSAGE value="new" />
     <MESSAGE value="pagination" />
     <MESSAGE value="update api users profile" />
-    <option name="LAST_COMMIT_MESSAGE" value="update api users profile" />
+    <MESSAGE value="update api vendors" />
+    <option name="LAST_COMMIT_MESSAGE" value="update api vendors" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
