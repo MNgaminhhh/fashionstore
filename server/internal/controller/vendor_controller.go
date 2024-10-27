@@ -98,9 +98,6 @@ func (vc *VendorController) GetAllVendors(c echo.Context) error {
 	if err := c.Bind(&param); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
 	}
-	if err := c.Validate(param); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
-	}
 	sortBy := c.QueryParam("sort_by")
 	sortOrder := c.QueryParam("sort_order")
 	limit := c.QueryParam("limit")
