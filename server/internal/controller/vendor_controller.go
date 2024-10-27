@@ -3,7 +3,6 @@ package controller
 import (
 	"backend/internal"
 	"backend/internal/database"
-	"backend/internal/params"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -11,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"strconv"
-	"time"
 )
 
 type VendorController struct {
@@ -96,43 +94,18 @@ func (vc *VendorController) GetVendor(c echo.Context) error {
 }
 
 func (vc *VendorController) GetAllVendors(c echo.Context) error {
-	status := c.QueryParam("status")
-	storeName := c.QueryParam("store_name")
-	startDateStr := c.QueryParam("start_date")
-	endDateStr := c.QueryParam("end_date")
+	var param validator.FilterVendorRequest
+	if err := c.Bind(&param); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(param); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
 	sortBy := c.QueryParam("sort_by")
 	sortOrder := c.QueryParam("sort_order")
 	limit := c.QueryParam("limit")
 	page := c.QueryParam("page")
-	customParams := params.GetAllVendorsParams{
-		Status:    nil,
-		StoreName: nil,
-		StartDate: nil,
-		EndDate:   nil,
-		SortBy:    "",
-		SortOrder: "",
-	}
-	if status != "" {
-		customParams.Status = &status
-	}
-	if storeName != "" {
-		customParams.StoreName = &storeName
-	}
-	if sortBy != "" {
-		customParams.SortBy = sortBy
-	}
-	if sortOrder != "" {
-		customParams.SortOrder = sortOrder
-	}
-	if startDateStr != "" {
-		startDate, _ := time.Parse("02-01-2006", startDateStr)
-		customParams.StartDate = &startDate
-	}
-	if endDateStr != "" {
-		endDate, _ := time.Parse("02-01-2006", endDateStr)
-		customParams.EndDate = &endDate
-	}
-	code, vendors := vc.vendorService.GetAllVendors(customParams)
+	code, vendors := vc.vendorService.GetAllVendors(param, sortBy, sortOrder)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Get vendor fail")
 	}
