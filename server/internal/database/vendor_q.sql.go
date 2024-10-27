@@ -8,7 +8,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -62,15 +61,17 @@ FROM vendors
 WHERE
     ($1::vendors_status = 'null' OR status = $1)
   AND (store_name ILIKE '%' || $2::text || '%' OR $2 = '')
-  AND (created_at >= $3::timestamp OR $3 = '0001-01-01 00:00:00' )
-  AND (created_at <= $4::timestamp OR $4 = '0001-01-01 00:00:00')
+  AND (full_name ILIKE '%' || $3::text || '%' OR $3 = '')
+  AND (address ILIKE '%' || $4::text || '%' OR $4 = '')
+  AND (description ILIKE $5::text OR $5 = '')
 `
 
 type GetAllVendorsParams struct {
 	Column1 VendorsStatus
 	Column2 string
-	Column3 time.Time
-	Column4 time.Time
+	Column3 string
+	Column4 string
+	Column5 string
 }
 
 func (q *Queries) GetAllVendors(ctx context.Context, arg GetAllVendorsParams) ([]Vendor, error) {
@@ -79,6 +80,7 @@ func (q *Queries) GetAllVendors(ctx context.Context, arg GetAllVendorsParams) ([
 		arg.Column2,
 		arg.Column3,
 		arg.Column4,
+		arg.Column5,
 	)
 	if err != nil {
 		return nil, err

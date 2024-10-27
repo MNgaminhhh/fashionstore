@@ -4,8 +4,10 @@ import (
 	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/pkg/response"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
@@ -197,7 +199,16 @@ func (us *userService) GetUserInformation(uuid uuid.UUID) (int, *database.User) 
 func (us *userService) UpdateUserInformation(newUser *database.User) int {
 	err := us.userRepo.UpdateUser(newUser)
 	if err != nil {
-		return response.ErrCodeUserNotFound
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23505" {
+				log.Println("unique")
+				if pqErr.Constraint == "users_phone_number_key" {
+					return response.ErrPhoneNumberAlreadyUsed
+				}
+			}
+			return response.ErrCodeInternal
+		}
 	}
 	return response.SuccessCode
 }

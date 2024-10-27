@@ -14,3 +14,11 @@ type AdminUpdateVendorStatusRequest struct {
 	UserId string `json:"user_id" validate:"required"`
 	Status string `json:"status" validate:"required,oneof=pending accepted rejected"`
 }
+
+type FilterVendorRequest struct {
+	Status      string `query:"status" validate:"oneof=pending accepted rejected"`
+	FullName    string `query:"full_name"`
+	StoreName   string `query:"store_name"`
+	Description string `query:"description"`
+	Address     string `query:"address"`
+}

@@ -74,6 +74,7 @@ func (ur *userRepository) UpdateUser(newUser *database.User) error {
 		FullName:    newUser.FullName,
 		PhoneNumber: newUser.PhoneNumber,
 		Dob:         newUser.Dob,
+		Avt:         newUser.Avt,
 		ID:          newUser.ID,
 	}
 	err := ur.sqlc.UpdateUser(ctx, params)

@@ -2,8 +2,8 @@ package service
 
 import (
 	"backend/internal/database"
-	"backend/internal/params"
 	"backend/internal/repository"
+	"backend/internal/validator"
 	"backend/pkg/response"
 	"errors"
 	"github.com/google/uuid"
@@ -31,7 +31,7 @@ type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
 	GetVendor(userId uuid.UUID) (int, *ResponseVendorData)
-	GetAllVendors(customParams params.GetAllVendorsParams) (int, []ResponseVendorData)
+	GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, []ResponseVendorData)
 }
 
 type VendorService struct {
@@ -78,7 +78,7 @@ func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *ResponseVendorData) 
 	return response.SuccessCode, MapVendorToResponse(vendor)
 }
 
-func (vs *VendorService) GetAllVendors(customParams params.GetAllVendorsParams) (int, []ResponseVendorData) {
+func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, []ResponseVendorData) {
 	vendors, err := vs.vendorRepository.GetAllVendors(customParams)
 	if err != nil {
 		log.Fatal(err)
@@ -88,13 +88,11 @@ func (vs *VendorService) GetAllVendors(customParams params.GetAllVendorsParams) 
 	for i, vendor := range vendors {
 		responseData[i] = *MapVendorToResponse(&vendor)
 	}
-	sortBy := "createdAt"
-	sortOrder := "desc"
-	if customParams.SortOrder != "" {
-		sortOrder = customParams.SortOrder
+	if sortBy == "" {
+		sortBy = "createdAt"
 	}
-	if customParams.SortBy != "" {
-		sortBy = customParams.SortBy
+	if sortOrder == "" {
+		sortOrder = "desc"
 	}
 	responseData = SortData(responseData, sortBy, sortOrder)
 	return response.SuccessCode, responseData

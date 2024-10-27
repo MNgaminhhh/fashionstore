@@ -26,5 +26,6 @@ FROM vendors
 WHERE
     ($1::vendors_status = 'null' OR status = $1)
   AND (store_name ILIKE '%' || $2::text || '%' OR $2 = '')
-  AND (created_at >= $3::timestamp OR $3 = '0001-01-01 00:00:00' )
-  AND (created_at <= $4::timestamp OR $4 = '0001-01-01 00:00:00');
+  AND (full_name ILIKE '%' || $3::text || '%' OR $3 = '')
+  AND (address ILIKE '%' || $4::text || '%' OR $4 = '')
+  AND (description ILIKE $5::text OR $5 = '');
