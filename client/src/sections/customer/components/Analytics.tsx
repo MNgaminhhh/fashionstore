@@ -1,11 +1,11 @@
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
-import User from "../../../models/User.model";
+import UserModel from "../../../models/User.model";
 import { FlexBetween, FlexBox } from "../../../components/flexbox";
 import { H3, H5, Paragraph, Small } from "../../../components/Typography";
 
-type Props = { user: User };
+type Props = { user: UserModel };
 
 export default function Analytics({ user }: Props) {
   const LIST_ORDER = [

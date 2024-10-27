@@ -2,9 +2,9 @@ import Card from "@mui/material/Card";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { FlexBox } from "../../../components/flexbox";
 import { Small, Span } from "../../../components/Typography"; // Đã sửa lại import từ Typography đúng component
-import User from "../../../models/User.model";
-
-type Props = { user: User };
+import UserModel from "../../../models/User.model";
+import * as moment from "moment";
+type Props = { user: UserModel };
 
 export default function UserInfo({ user }: Props) {
   const downMd = useMediaQuery("(max-width: 600px)");
@@ -27,7 +27,10 @@ export default function UserInfo({ user }: Props) {
     >
       <TableRowItem title="Họ và Tên" value={user.full_name} />
       <TableRowItem title="Email" value={user.email} />
-      <TableRowItem title="Mô tả" value={user.dob || ""} />
+      <TableRowItem
+        title="Ngày Tháng Năm Sinh"
+        value={user.dob ? moment(user.dob).format("DD/MM/YYYY") : ""}
+      />
     </Card>
   );
 }

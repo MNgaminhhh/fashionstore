@@ -1,8 +1,9 @@
-interface User {
+interface UserModel {
   id: string;
   email: string;
+  phone_number: string;
   full_name: string;
-  dob: string;
+  dob: Date;
 }
 
-export default User;
+export default UserModel;
