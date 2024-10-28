@@ -12,6 +12,15 @@ import (
 	"backend/internal/service"
 )
 
+// Injectors from upload_wire.go:
+
+func InitUploadFileRouterHandler() (*controller.UploadFileController, error) {
+	iUploadFileRepository := repository.NewUploadFileRepository()
+	iUploadFileService := service.NewUploadFileService(iUploadFileRepository)
+	uploadFileController := controller.NewUploadFileController(iUploadFileService)
+	return uploadFileController, nil
+}
+
 // Injectors from user_wire.go:
 
 func InitUserRouterHandler() (*controller.UserController, error) {

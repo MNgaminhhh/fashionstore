@@ -27,10 +27,12 @@ func InitRouter() *echo.Echo {
 
 	userRouter := routers.AllRouterGroup.User
 	vendorRouter := routers.AllRouterGroup.Vendor
+	uploadFileRouter := routers.AllRouterGroup.UploadFile
 	MainGroup := e.Group("/api/v1")
 	{
 		userRouter.InitUserRouter(MainGroup)
 		vendorRouter.InitVendorRouter(MainGroup)
+		uploadFileRouter.InitUserRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
 		return c.JSON(200, map[string]string{"status": "OK"})

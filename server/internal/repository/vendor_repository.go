@@ -6,7 +6,6 @@ import (
 	"backend/internal/validator"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"strings"
 )
 
@@ -71,15 +70,12 @@ func (vr *VendorRepository) GetAllVendors(customParams validator.FilterVendorReq
 		Column2: customParams.StoreName,
 		Column3: customParams.FullName,
 		Column4: customParams.Address,
-		Column5: "",
+		Column5: customParams.Description,
 	}
 	if customParams.Status != "" {
 		param.Column1 = database.VendorsStatus(strings.ToLower(customParams.Status))
 	}
-	if customParams.Description != "" {
-		param.Column5 = fmt.Sprintf("%%%s%%", customParams.Description)
-	}
-	log.Println("Params: ", param)
+	fmt.Printf("Params: %+v\n", param)
 	vendors, err := vr.sqlc.GetAllVendors(ctx, param)
 	if err != nil {
 		return nil, err
