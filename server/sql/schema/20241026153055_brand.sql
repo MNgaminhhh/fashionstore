@@ -3,7 +3,7 @@
 
 CREATE TABLE brands (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sequence int,
+    sequence int NOT NULL ,
     store_id UUID NOT NULL ,
     name VARCHAR(255) NOT NULL ,
     image VARCHAR(255) NOT NULL ,

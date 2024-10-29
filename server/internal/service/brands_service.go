@@ -5,6 +5,8 @@ import (
 	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/internal/validator"
+	"backend/pkg/response"
+	"database/sql"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
@@ -21,6 +23,7 @@ type BrandsResponseData struct {
 
 type IBrandsService interface {
 	GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{})
+	UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int
 }
 
 type BrandsService struct {
@@ -63,12 +66,39 @@ func (bs *BrandsService) GetBrands(customParam validator.FilterBrandsRequest) (i
 	return http.StatusOK, data
 }
 
+func (bs *BrandsService) UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int {
+	newBrand, err := bs.brandsRepository.GetBrandByID(id)
+	if err != nil {
+		return response.ErrCodeBrandNotFound
+	}
+	if customParam.Name != nil {
+		newBrand.Name = *customParam.Name
+	}
+	if customParam.Visible != nil {
+		newBrand.Visible = sql.NullBool{
+			Bool:  *customParam.Visible,
+			Valid: true,
+		}
+	}
+	if customParam.Image != nil {
+		newBrand.Image = *customParam.Image
+	}
+	if customParam.Sequence != nil {
+		newBrand.Sequence = int32(*customParam.Sequence)
+	}
+	err = bs.brandsRepository.SaveBrands(newBrand)
+	if err != nil {
+		return response.ErrCodeBrandNotFound
+	}
+	return response.SuccessCode
+}
+
 func MapBrandToResponseData(brand database.Brand) BrandsResponseData {
 	return BrandsResponseData{
 		ID:       brand.ID,
 		StoreID:  brand.StoreID,
 		Name:     brand.Name,
-		Sequence: int(brand.Sequence.Int32),
+		Sequence: int(brand.Sequence),
 		Visible:  brand.Visible.Bool,
 		Image:    brand.Image,
 	}

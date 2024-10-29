@@ -20,6 +20,7 @@ const (
 	ErrPhoneNumberAlreadyUsed         = 50012
 	ErrCodeIncorrectDateFormat        = 50013
 	ErrCodeCannotUploadFile           = 50014
+	ErrCodeBrandNotFound              = 50015
 )
 
 var msg = map[int]string{
@@ -41,4 +42,5 @@ var msg = map[int]string{
 	ErrCodeInvalidRole:                "Người dùng hiện tại không có quyền thực hiện hành động này!!",
 	ErrPhoneNumberAlreadyUsed:         "Số điện thoại này đã được sử dụng!!",
 	ErrCodeIncorrectDateFormat:        "Vui lòng nhập đúng định dạng ngày dd-mm-yyyy",
-	ErrCodeCannotUploadFile:           "Không thể tải file lên hệ thống. Vui lòng thử lại!!"}
+	ErrCodeCannotUploadFile:           "Không thể tải file lên hệ thống. Vui lòng thử lại!!",
+	ErrCodeBrandNotFound:              "Brand này không tồn tại. Vui lòng kiểm tra lại!!"}

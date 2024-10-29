@@ -11,3 +11,8 @@ INSERT INTO brands (name, visible, sequence, store_id, image) VALUES ($1, $2,$3,
 UPDATE brands
 SET name = $1, visible = $2, sequence = $3, image = $4
 WHERE id = $5;
+
+-- name: GetBrandById :one
+SELECT *
+FROM brands
+WHERE id = $1;

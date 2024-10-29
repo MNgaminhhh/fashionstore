@@ -5,10 +5,14 @@ import (
 	"backend/internal/database"
 	"backend/internal/validator"
 	"database/sql"
+	"github.com/google/uuid"
+	"log"
 )
 
 type IBrandsRepository interface {
 	GetBrands(customParam validator.FilterBrandsRequest) ([]database.Brand, error)
+	SaveBrands(newBrand *database.Brand) error
+	GetBrandByID(id uuid.UUID) (*database.Brand, error)
 }
 
 type BrandsRepository struct {
@@ -38,4 +42,28 @@ func (br *BrandsRepository) GetBrands(customParam validator.FilterBrandsRequest)
 		return nil, err
 	}
 	return brands, nil
+}
+
+func (br *BrandsRepository) SaveBrands(newBrand *database.Brand) error {
+	param := database.UpdateBrandParams{
+		Name:     newBrand.Name,
+		Visible:  newBrand.Visible,
+		Sequence: newBrand.Sequence,
+		Image:    newBrand.Image,
+		ID:       newBrand.ID,
+	}
+	err := br.sqlc.UpdateBrand(ctx, param)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (br *BrandsRepository) GetBrandByID(id uuid.UUID) (*database.Brand, error) {
+	brand, err := br.sqlc.GetBrandById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &brand, err
 }

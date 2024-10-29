@@ -144,7 +144,7 @@ func (ns NullVendorsStatus) Value() (driver.Value, error) {
 
 type Brand struct {
 	ID       uuid.UUID
-	Sequence sql.NullInt32
+	Sequence int32
 	StoreID  uuid.UUID
 	Name     string
 	Image    string
