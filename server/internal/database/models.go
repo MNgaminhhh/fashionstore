@@ -219,7 +219,7 @@ type ChildCategory struct {
 
 type SubCategory struct {
 	ID         uuid.UUID
-	CategoryID uuid.NullUUID
+	CategoryID uuid.UUID
 	Name       string
 	NameCode   string
 	Url        sql.NullString

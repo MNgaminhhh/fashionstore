@@ -10,6 +10,7 @@ import (
 
 type ICategoriesService interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) int
+	AddSubCate(customParam validator.AddSubCateRequest) int
 }
 
 type CategoriesService struct {
@@ -31,6 +32,28 @@ func (cs *CategoriesService) AddNewCategory(customParam validator.AddCategoryReq
 				} else if pqError.Constraint == "categories_name_key" {
 					return response.ErrCodeNameAlreadyUsed
 				}
+			}
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (cs *CategoriesService) AddSubCate(customParam validator.AddSubCateRequest) int {
+	err := cs.cateRepo.AddNewSubCategory(customParam)
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			if pqError.Code == "23505" {
+				if pqError.Constraint == "unique_sub_name_per_category" {
+					return response.ErrCodeNameAlreadyUsed
+				}
+				if pqError.Constraint == "unique_sub_name_code_per_category" {
+					return response.ErrCodeNameCodeAlreadyUsed
+				}
+			}
+			if pqError.Code == "23502" {
+				return response.ErrCodeCateNotFound
 			}
 		}
 		return response.ErrCodeInternal

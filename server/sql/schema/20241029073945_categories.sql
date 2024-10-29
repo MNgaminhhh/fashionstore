@@ -17,7 +17,7 @@ CREATE TABLE categories (
 
 CREATE TABLE sub_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    category_id UUID,
+    category_id UUID NOT NULL ,
     name VARCHAR(255) NOT NULL ,
     name_code VARCHAR(255) NOT NULL ,
     url VARCHAR(255),
@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION set_default_url_for_categories()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.url IS NULL THEN
-        NEW.url := '/categories/' || NEW.name_code; -- Sử dụng name_code (lưu ý là name_code, không phải namecode)
+        NEW.url := '/categories/' || NEW.name_code;
 END IF;
 RETURN NEW;
 END;

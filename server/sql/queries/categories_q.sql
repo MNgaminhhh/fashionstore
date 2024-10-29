@@ -16,3 +16,21 @@ FROM
 
 -- name: AddCategory :exec
 INSERT INTO categories (name, name_code, icon, component) Values ($1, $2, $3, $4);
+
+
+-- name: AddSubcategory :exec
+INSERT INTO sub_categories (category_id, name, name_code, component)
+VALUES (
+(SELECT categories.id FROM categories WHERE categories.name = $1),
+$2,
+        $3,
+$4
+);
+
+-- name: AddChildCategory :exec
+INSERT INTO child_categories (sub_category_id, name, name_code)
+VALUES (
+(SELECT sub_categories.id FROM sub_categories WHERE sub_categories.name = $1),
+        $2,
+        $3
+);

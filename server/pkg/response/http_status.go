@@ -23,6 +23,7 @@ const (
 	ErrCodeBrandNotFound              = 50015
 	ErrCodeNameCodeAlreadyUsed        = 50016
 	ErrCodeNameAlreadyUsed            = 50017
+	ErrCodeCateNotFound               = 50018
 )
 
 var msg = map[int]string{
@@ -47,4 +48,5 @@ var msg = map[int]string{
 	ErrCodeCannotUploadFile:           "Không thể tải file lên hệ thống. Vui lòng thử lại!!",
 	ErrCodeBrandNotFound:              "Brand này không tồn tại. Vui lòng kiểm tra lại!!",
 	ErrCodeNameCodeAlreadyUsed:        "Name code này đã được sử dụng rồi!!",
-	ErrCodeNameAlreadyUsed:            "Loại này đã tồn tại!!"}
+	ErrCodeNameAlreadyUsed:            "Loại này đã tồn tại!!",
+	ErrCodeCateNotFound:               "Category không tồn tại!!"}

@@ -33,6 +33,53 @@ func (q *Queries) AddCategory(ctx context.Context, arg AddCategoryParams) error 
 	return err
 }
 
+const addChildCategory = `-- name: AddChildCategory :exec
+INSERT INTO child_categories (sub_category_id, name, name_code)
+VALUES (
+(SELECT sub_categories.id FROM sub_categories WHERE sub_categories.name = $1),
+        $2,
+        $3
+)
+`
+
+type AddChildCategoryParams struct {
+	Name     string
+	Name_2   string
+	NameCode string
+}
+
+func (q *Queries) AddChildCategory(ctx context.Context, arg AddChildCategoryParams) error {
+	_, err := q.db.ExecContext(ctx, addChildCategory, arg.Name, arg.Name_2, arg.NameCode)
+	return err
+}
+
+const addSubcategory = `-- name: AddSubcategory :exec
+INSERT INTO sub_categories (category_id, name, name_code, component)
+VALUES (
+(SELECT categories.id FROM categories WHERE categories.name = $1),
+$2,
+        $3,
+$4
+)
+`
+
+type AddSubcategoryParams struct {
+	Name      string
+	Name_2    string
+	NameCode  string
+	Component NullComponentsType
+}
+
+func (q *Queries) AddSubcategory(ctx context.Context, arg AddSubcategoryParams) error {
+	_, err := q.db.ExecContext(ctx, addSubcategory,
+		arg.Name,
+		arg.Name_2,
+		arg.NameCode,
+		arg.Component,
+	)
+	return err
+}
+
 const getFullCategories = `-- name: GetFullCategories :many
 SELECT
     c.id AS category_id,
