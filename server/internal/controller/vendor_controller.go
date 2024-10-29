@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/service"
 	"backend/internal/validator"
@@ -9,7 +8,6 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
-	"strconv"
 )
 
 type VendorController struct {
@@ -100,27 +98,9 @@ func (vc *VendorController) GetAllVendors(c echo.Context) error {
 	}
 	sortBy := c.QueryParam("sort_by")
 	sortOrder := c.QueryParam("sort_order")
-	limit := c.QueryParam("limit")
-	page := c.QueryParam("page")
-	code, vendors := vc.vendorService.GetAllVendors(param, sortBy, sortOrder)
+	code, data := vc.vendorService.GetAllVendors(param, sortBy, sortOrder)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Get vendor fail")
-	}
-	pageSize := 10
-	currentPage := 1
-	if limit != "" {
-		pageSize, _ = strconv.Atoi(limit)
-	}
-	if page != "" {
-		currentPage, _ = strconv.Atoi(page)
-	}
-	totalPages := internal.CalculateTotalPages(len(vendors), pageSize)
-	vendorsPagination := internal.Paginate(vendors, currentPage, pageSize)
-	data := map[string]interface{}{
-		"vendors":       vendorsPagination,
-		"total_results": len(vendorsPagination),
-		"total_pages":   totalPages,
-		"current_page":  currentPage,
 	}
 	return response.SuccessResponse(c, code, data)
 }

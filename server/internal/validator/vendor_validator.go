@@ -21,4 +21,6 @@ type FilterVendorRequest struct {
 	StoreName   string `query:"store_name"`
 	Description string `query:"description"`
 	Address     string `query:"address"`
+	Limit       int    `query:"limit"`
+	Page        int    `query:"page"`
 }

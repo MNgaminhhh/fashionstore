@@ -1,8 +1,8 @@
 -- name: GetBrands :many
 SELECT * FROM brands
 WHERE
-    visible IS NOT DISTINCT FROM $1
-AND name '%' || $2::text || '%' OR $2 = '';
+    visible = $1 OR $1 IS NULL
+AND (name LIKE '%' || $2::text || '%' OR $2 = '');
 
 -- name: AddBrand :exec
 INSERT INTO brands (name, visible, sequence, store_id, image) VALUES ($1, $2,$3,$4,$5);

@@ -28,4 +28,4 @@ WHERE
   AND (store_name ILIKE '%' || $2::text || '%' OR $2 = '')
   AND (full_name ILIKE '%' || $3::text || '%' OR $3 = '')
   AND (address ILIKE '%' || $4::text || '%' OR $4 = '')
-  AND (description ILIKE '%' || $5::text || '%' OR $5 = '')
+  AND (description ILIKE '%' || $5::text || '%' OR $5 = '');
