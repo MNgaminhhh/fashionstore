@@ -5,11 +5,13 @@ import (
 	"backend/internal/database"
 	"backend/internal/validator"
 	"database/sql"
+	"github.com/google/uuid"
 )
 
 type ICategoryRepository interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) error
 	AddNewSubCategory(customParam validator.AddSubCateRequest) error
+	AddChildCate(customParam validator.AddChildCateRequest) error
 }
 
 type CategoryRepository struct {
@@ -55,6 +57,23 @@ func (cr *CategoryRepository) AddNewSubCategory(customParam validator.AddSubCate
 		},
 	}
 	err := cr.sqlc.AddSubcategory(ctx, param)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cr *CategoryRepository) AddChildCate(customParam validator.AddChildCateRequest) error {
+	subId, _ := uuid.Parse(customParam.SubCateId)
+	param := database.AddChildCategoryParams{
+		SubCategoryID: uuid.NullUUID{
+			UUID:  subId,
+			Valid: true,
+		},
+		Name:     customParam.Name,
+		NameCode: customParam.NameCode,
+	}
+	err := cr.sqlc.AddChildCategory(ctx, param)
 	if err != nil {
 		return err
 	}

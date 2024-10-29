@@ -13,3 +13,9 @@ type AddSubCateRequest struct {
 	NameCode  string `json:"name_code" validate:"required"`
 	Component string `json:"component" validate:"required,oneof=MegaMenu1.name MegaMenu2.name"`
 }
+
+type AddChildCateRequest struct {
+	SubCateId string `json:"sub_cate_id" validate:"required"`
+	Name      string `json:"name" validate:"required"`
+	NameCode  string `json:"name_code" validate:"required"`
+}

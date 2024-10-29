@@ -6,11 +6,13 @@ import (
 	"backend/pkg/response"
 	"errors"
 	"github.com/lib/pq"
+	"log"
 )
 
 type ICategoriesService interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) int
 	AddSubCate(customParam validator.AddSubCateRequest) int
+	AddChildCate(customParam validator.AddChildCateRequest) int
 }
 
 type CategoriesService struct {
@@ -54,6 +56,29 @@ func (cs *CategoriesService) AddSubCate(customParam validator.AddSubCateRequest)
 			}
 			if pqError.Code == "23502" {
 				return response.ErrCodeCateNotFound
+			}
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (cs *CategoriesService) AddChildCate(customParam validator.AddChildCateRequest) int {
+	err := cs.cateRepo.AddChildCate(customParam)
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			log.Println(pqError.Code)
+			if pqError.Code == "23505" {
+				if pqError.Constraint == "unique_child_name_per_sub_cate" {
+					return response.ErrCodeNameAlreadyUsed
+				}
+				if pqError.Constraint == "unique_child_name_code_per_sub_cate" {
+					return response.ErrCodeNameCodeAlreadyUsed
+				}
+			}
+			if pqError.Code == "23503" {
+				return response.ErrCodeSubCateNotFound
 			}
 		}
 		return response.ErrCodeInternal

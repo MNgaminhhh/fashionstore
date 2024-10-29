@@ -44,3 +44,18 @@ func (cc *CategoryController) AddSubCate(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Thêm mới thành công!")
 }
+
+func (cc *CategoryController) AddChildCate(c echo.Context) error {
+	var reqParam validator.AddChildCateRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Add child cate fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := cc.cateService.AddChildCate(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Add child cate fail")
+	}
+	return response.SuccessResponse(c, code, "Thêm mới thành công!!")
+}

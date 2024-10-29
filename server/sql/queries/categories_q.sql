@@ -30,7 +30,7 @@ $4
 -- name: AddChildCategory :exec
 INSERT INTO child_categories (sub_category_id, name, name_code)
 VALUES (
-(SELECT sub_categories.id FROM sub_categories WHERE sub_categories.name = $1),
+$1,
         $2,
         $3
 );

@@ -15,5 +15,6 @@ func (cr *CategoryRouter) InitCategoryRouter(router *echo.Group) {
 	{
 		categoriesGroup.POST("/", categoryController.AddNewCategory)
 		categoriesGroup.POST("/sub", categoryController.AddSubCate)
+		categoriesGroup.POST("/child", categoryController.AddChildCate)
 	}
 }

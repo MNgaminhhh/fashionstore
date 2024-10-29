@@ -36,20 +36,20 @@ func (q *Queries) AddCategory(ctx context.Context, arg AddCategoryParams) error 
 const addChildCategory = `-- name: AddChildCategory :exec
 INSERT INTO child_categories (sub_category_id, name, name_code)
 VALUES (
-(SELECT sub_categories.id FROM sub_categories WHERE sub_categories.name = $1),
+$1,
         $2,
         $3
 )
 `
 
 type AddChildCategoryParams struct {
-	Name     string
-	Name_2   string
-	NameCode string
+	SubCategoryID uuid.NullUUID
+	Name          string
+	NameCode      string
 }
 
 func (q *Queries) AddChildCategory(ctx context.Context, arg AddChildCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, addChildCategory, arg.Name, arg.Name_2, arg.NameCode)
+	_, err := q.db.ExecContext(ctx, addChildCategory, arg.SubCategoryID, arg.Name, arg.NameCode)
 	return err
 }
 
