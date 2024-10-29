@@ -13,7 +13,8 @@ func (br *BrandRouter) InitRouter(router *echo.Group) {
 
 	brandRouterGroup := router.Group("/brands")
 	{
-		brandRouterGroup.GET("/", brandController.GetBrands, middleware.JWTMiddleware)
-		brandRouterGroup.POST("/:id", brandController.UpdateBrand, middleware.JWTMiddleware)
+		brandRouterGroup.GET("/", brandController.GetBrands)
+		brandRouterGroup.GET("/:id", brandController.GetBrandById)
+		brandRouterGroup.PUT("/:id", brandController.UpdateBrand, middleware.JWTMiddleware)
 	}
 }

@@ -24,6 +24,7 @@ type BrandsResponseData struct {
 type IBrandsService interface {
 	GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{})
 	UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int
+	GetBrandById(id string) (int, *BrandsResponseData)
 }
 
 type BrandsService struct {
@@ -44,8 +45,8 @@ func (bs *BrandsService) GetBrands(customParam validator.FilterBrandsRequest) (i
 	}
 	var responseData []BrandsResponseData
 	for _, brand := range brands {
-		data := MapBrandToResponseData(brand)
-		responseData = append(responseData, data)
+		data := MapBrandToResponseData(&brand)
+		responseData = append(responseData, *data)
 	}
 	limit := 10
 	page := 1
@@ -93,8 +94,17 @@ func (bs *BrandsService) UpdateBrand(customParam validator.UpdateBrandRequest, i
 	return response.SuccessCode
 }
 
-func MapBrandToResponseData(brand database.Brand) BrandsResponseData {
-	return BrandsResponseData{
+func (bs *BrandsService) GetBrandById(id string) (int, *BrandsResponseData) {
+	brandId, _ := uuid.Parse(id)
+	brand, err := bs.brandsRepository.GetBrandByID(brandId)
+	if err != nil {
+		return response.ErrCodeBrandNotFound, nil
+	}
+	return response.SuccessCode, MapBrandToResponseData(brand)
+}
+
+func MapBrandToResponseData(brand *database.Brand) *BrandsResponseData {
+	return &BrandsResponseData{
 		ID:       brand.ID,
 		StoreID:  brand.StoreID,
 		Name:     brand.Name,

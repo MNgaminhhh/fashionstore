@@ -21,10 +21,6 @@ func NewBrandsController(brandsService service.IBrandsService) *BrandsController
 }
 
 func (bc *BrandsController) GetBrands(c echo.Context) error {
-	role := c.Get("role").(database.UserRole)
-	if role != database.UserRoleAdmin {
-		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "get brands fail")
-	}
 	var reqParam validator.FilterBrandsRequest
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
@@ -54,4 +50,13 @@ func (bc *BrandsController) UpdateBrand(c echo.Context) error {
 		return response.ErrorResponse(c, code, "UpdateBrands fail")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Cập nhật thành công!")
+}
+
+func (bc *BrandsController) GetBrandById(c echo.Context) error {
+	id := c.Param("id")
+	code, data := bc.brandsService.GetBrandById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "GetBrandById fail")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, data)
 }
