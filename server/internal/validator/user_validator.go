@@ -26,8 +26,8 @@ type ForgetPasswordRequest struct {
 }
 
 type UpdateUserRequest struct {
-	FullName    string `json:"full_name"`
-	PhoneNumber string `json:"phone_number"`
-	Dob         string `json:"dob"`
-	Avt         string `json:"avt"`
+	FullName    *string `json:"full_name"`
+	PhoneNumber *string `json:"phone_number"`
+	Dob         *string `json:"dob"`
+	Avt         *string `json:"avt"`
 }

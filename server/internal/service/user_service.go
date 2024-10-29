@@ -3,7 +3,9 @@ package service
 import (
 	"backend/internal/database"
 	"backend/internal/repository"
+	"backend/internal/validator"
 	"backend/pkg/response"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -22,7 +24,7 @@ type IUserService interface {
 	ResetPassword(email string, newPassword string, confirmPassword string) int
 	SendEmailVerify(email string) int
 	GetUserInformation(uuid uuid.UUID) (int, *database.User)
-	UpdateUserInformation(newUser *database.User) int
+	UpdateUserInformation(customParam validator.UpdateUserRequest, email string) int
 }
 
 type userService struct {
@@ -196,8 +198,40 @@ func (us *userService) GetUserInformation(uuid uuid.UUID) (int, *database.User) 
 	return response.SuccessCode, user
 }
 
-func (us *userService) UpdateUserInformation(newUser *database.User) int {
-	err := us.userRepo.UpdateUser(newUser)
+func (us *userService) UpdateUserInformation(customParam validator.UpdateUserRequest, email string) int {
+	newUser, err := us.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return response.ErrCodeUserNotFound
+	}
+	if customParam.FullName != nil {
+		newUser.FullName = sql.NullString{
+			String: *customParam.FullName,
+			Valid:  true,
+		}
+	}
+	if customParam.Dob != nil {
+		dob, changeTimeErr := time.Parse("02-01-2006", *customParam.Dob)
+		if changeTimeErr != nil {
+			return response.ErrCodeIncorrectDateFormat
+		}
+		newUser.Dob = sql.NullTime{
+			Time:  dob,
+			Valid: true,
+		}
+	}
+	if customParam.Avt != nil {
+		newUser.Avt = sql.NullString{
+			String: *customParam.Avt,
+			Valid:  true,
+		}
+	}
+	if customParam.PhoneNumber != nil {
+		newUser.PhoneNumber = sql.NullString{
+			String: *customParam.PhoneNumber,
+			Valid:  true,
+		}
+	}
+	err = us.userRepo.UpdateUser(newUser)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
