@@ -84,11 +84,13 @@ const getFullCategories = `-- name: GetFullCategories :many
 SELECT
     c.id AS category_id,
     c.name AS category_name,
-    c.name_code AS category_name_code,
+    c.url AS category_url,
+    c.icon AS category_icon,
+    c.component AS category_component,
     sc.name AS sub_category_name,
-    sc.url AS sub_category_name_code,
+    sc.url AS sub_category_url,
     cc.name AS child_category_name,
-    cc.url AS child_category_name_code
+    cc.url AS child_category_url
 FROM
     categories c
         LEFT JOIN
@@ -98,13 +100,15 @@ FROM
 `
 
 type GetFullCategoriesRow struct {
-	CategoryID            uuid.UUID
-	CategoryName          string
-	CategoryNameCode      string
-	SubCategoryName       sql.NullString
-	SubCategoryNameCode   sql.NullString
-	ChildCategoryName     sql.NullString
-	ChildCategoryNameCode sql.NullString
+	CategoryID        uuid.UUID
+	CategoryName      string
+	CategoryUrl       sql.NullString
+	CategoryIcon      sql.NullString
+	CategoryComponent NullComponentsType
+	SubCategoryName   sql.NullString
+	SubCategoryUrl    sql.NullString
+	ChildCategoryName sql.NullString
+	ChildCategoryUrl  sql.NullString
 }
 
 func (q *Queries) GetFullCategories(ctx context.Context) ([]GetFullCategoriesRow, error) {
@@ -119,11 +123,13 @@ func (q *Queries) GetFullCategories(ctx context.Context) ([]GetFullCategoriesRow
 		if err := rows.Scan(
 			&i.CategoryID,
 			&i.CategoryName,
-			&i.CategoryNameCode,
+			&i.CategoryUrl,
+			&i.CategoryIcon,
+			&i.CategoryComponent,
 			&i.SubCategoryName,
-			&i.SubCategoryNameCode,
+			&i.SubCategoryUrl,
 			&i.ChildCategoryName,
-			&i.ChildCategoryNameCode,
+			&i.ChildCategoryUrl,
 		); err != nil {
 			return nil, err
 		}

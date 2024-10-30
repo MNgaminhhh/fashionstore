@@ -59,3 +59,11 @@ func (cc *CategoryController) AddChildCate(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Thêm mới thành công!!")
 }
+
+func (cc *CategoryController) GetFullCate(c echo.Context) error {
+	code, data := cc.cateService.GetFullCate()
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Không thể lấy full categories!!")
+	}
+	return response.SuccessResponse(c, code, data)
+}

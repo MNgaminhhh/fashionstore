@@ -6,12 +6,14 @@ import (
 	"backend/internal/validator"
 	"database/sql"
 	"github.com/google/uuid"
+	"log"
 )
 
 type ICategoryRepository interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) error
 	AddNewSubCategory(customParam validator.AddSubCateRequest) error
 	AddChildCate(customParam validator.AddChildCateRequest) error
+	GetFullCate() ([]database.GetFullCategoriesRow, error)
 }
 
 type CategoryRepository struct {
@@ -78,4 +80,13 @@ func (cr *CategoryRepository) AddChildCate(customParam validator.AddChildCateReq
 		return err
 	}
 	return nil
+}
+
+func (cr *CategoryRepository) GetFullCate() ([]database.GetFullCategoriesRow, error) {
+	rows, err := cr.sqlc.GetFullCategories(ctx)
+	log.Println(len(rows))
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -9,10 +10,25 @@ import (
 	"log"
 )
 
+type CateResponse struct {
+	Icon      string                  `json:"icon"`
+	Title     string                  `json:"title"`
+	Href      string                  `json:"href"`
+	Component database.ComponentsType `json:"component"`
+	Children  []ChildItem             `json:"children,omitempty"`
+}
+
+type ChildItem struct {
+	Title    string      `json:"title"`
+	Href     string      `json:"href"`
+	Children []ChildItem `json:"children,omitempty"`
+}
+
 type ICategoriesService interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) int
 	AddSubCate(customParam validator.AddSubCateRequest) int
 	AddChildCate(customParam validator.AddChildCateRequest) int
+	GetFullCate() (int, []CateResponse)
 }
 
 type CategoriesService struct {
@@ -84,4 +100,79 @@ func (cs *CategoriesService) AddChildCate(customParam validator.AddChildCateRequ
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
+}
+
+func (cs *CategoriesService) GetFullCate() (int, []CateResponse) {
+	rows, err := cs.cateRepo.GetFullCate()
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	data := mapResponseTreeData(rows)
+	return response.SuccessCode, data
+}
+
+func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
+	var results []CateResponse
+	if rows != nil {
+		categories := make(map[string]CateResponse)
+
+		for _, row := range rows {
+			cateID := row.CategoryID.String()
+
+			if _, exists := categories[cateID]; !exists {
+				categories[cateID] = CateResponse{
+					Icon:      row.CategoryIcon.String,
+					Title:     row.CategoryName,
+					Href:      row.CategoryUrl.String,
+					Component: row.CategoryComponent.ComponentsType,
+					Children:  []ChildItem{},
+				}
+			}
+
+			category := categories[cateID]
+
+			if row.SubCategoryName.String != "" {
+				subCategory := ChildItem{
+					Title:    row.SubCategoryName.String,
+					Href:     row.SubCategoryUrl.String,
+					Children: []ChildItem{},
+				}
+
+				foundSubCategory := false
+				for i, child := range category.Children {
+					if child.Title == subCategory.Title && child.Href == subCategory.Href {
+						if row.ChildCategoryName.String != "" {
+							child.Children = append(child.Children, ChildItem{
+								Title:    row.ChildCategoryName.String,
+								Href:     row.ChildCategoryUrl.String,
+								Children: nil,
+							})
+						}
+
+						category.Children[i] = child
+						foundSubCategory = true
+						break
+					}
+				}
+
+				if !foundSubCategory {
+					if row.ChildCategoryName.String != "" {
+						subCategory.Children = append(subCategory.Children, ChildItem{
+							Title:    row.ChildCategoryName.String,
+							Href:     row.ChildCategoryUrl.String,
+							Children: nil,
+						})
+					}
+
+					category.Children = append(category.Children, subCategory)
+				}
+			}
+
+			categories[cateID] = category
+		}
+		for _, category := range categories {
+			results = append(results, category)
+		}
+	}
+	return results
 }

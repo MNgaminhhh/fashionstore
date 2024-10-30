@@ -2,11 +2,13 @@
 SELECT
     c.id AS category_id,
     c.name AS category_name,
-    c.name_code AS category_name_code,
+    c.url AS category_url,
+    c.icon AS category_icon,
+    c.component AS category_component,
     sc.name AS sub_category_name,
-    sc.url AS sub_category_name_code,
+    sc.url AS sub_category_url,
     cc.name AS child_category_name,
-    cc.url AS child_category_name_code
+    cc.url AS child_category_url
 FROM
     categories c
         LEFT JOIN
