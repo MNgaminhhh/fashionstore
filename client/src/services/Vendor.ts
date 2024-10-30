@@ -10,7 +10,7 @@ class Vendor extends Base {
   async findAll(
     token?: string,
     withCredentials: boolean = true,
-    limit: number = 2,
+    limit: number = 8,
     page: number = 1
   ) {
     const rs = await this.execute({

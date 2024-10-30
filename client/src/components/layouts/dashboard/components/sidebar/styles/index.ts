@@ -31,7 +31,7 @@ const SidebarWrapper = styled("div", {
   transition: "width .2s ease",
   zIndex: theme.zIndex.drawer,
   color: theme.palette.common.black,
-  backgroundColor: theme.palette.grey[100],
+  backgroundColor: theme.palette.grey[800],
   boxShadow: theme.shadows[3],
   "&:hover": {
     width: compact ? 280 : undefined,
@@ -47,10 +47,11 @@ const NavItemButton = styled(ButtonBase, {
   marginBottom: 4,
   padding: "0 12px 0 16px",
   justifyContent: "flex-start",
+  color: theme.palette.common.white,
   transition: "background-color 0.15s ease",
   ...(active && {
     color: theme.palette.primary.main,
-    backgroundColor: alpha(theme.palette.grey[400], 0.6),
+    backgroundColor: alpha(theme.palette.grey[900], 0.6),
     "& .MuiSvgIcon-root .secondary": {
       color: theme.palette.primary.main,
       opacity: 1,
