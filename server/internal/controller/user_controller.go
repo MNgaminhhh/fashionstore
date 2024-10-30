@@ -5,12 +5,10 @@ import (
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
-	"database/sql"
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"net/http"
 	"os"
-	"time"
 )
 
 type UserController struct {
@@ -195,48 +193,12 @@ func (uc *UserController) GetUserInformation(c echo.Context) error {
 }
 
 func (uc *UserController) UpdateUser(c echo.Context) error {
-	id := c.Get("uuid").(string)
-	userId, _ := uuid.Parse(id)
-	code, user := uc.userService.GetUserInformation(userId)
-	if code != response.SuccessCode {
-		return response.ErrorResponse(c, code, "Get user info failed")
-	}
+	email := c.Get("email").(string)
 	var params validator.UpdateUserRequest
 	if err := c.Bind(&params); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
 	}
-	if err := c.Validate(params); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
-	}
-	if params.PhoneNumber != "" {
-		user.PhoneNumber = sql.NullString{
-			String: params.PhoneNumber,
-			Valid:  true,
-		}
-	}
-	if params.FullName != "" {
-		user.FullName = sql.NullString{
-			String: params.FullName,
-			Valid:  true,
-		}
-	}
-	if params.Dob != "" {
-		dob, err := time.Parse("02-01-2006", params.Dob)
-		if err != nil {
-			return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
-		}
-		user.Dob = sql.NullTime{
-			Time:  dob,
-			Valid: true,
-		}
-	}
-	if params.Avt != "" {
-		user.Avt = sql.NullString{
-			String: params.Avt,
-			Valid:  true,
-		}
-	}
-	code = uc.userService.UpdateUserInformation(user)
+	code := uc.userService.UpdateUserInformation(params, email)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Update user info failed")
 	}

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/internal/validator"
@@ -31,7 +32,7 @@ type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
 	GetVendor(userId uuid.UUID) (int, *ResponseVendorData)
-	GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, []ResponseVendorData)
+	GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, map[string]interface{})
 }
 
 type VendorService struct {
@@ -78,7 +79,7 @@ func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *ResponseVendorData) 
 	return response.SuccessCode, MapVendorToResponse(vendor)
 }
 
-func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, []ResponseVendorData) {
+func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, map[string]interface{}) {
 	vendors, err := vs.vendorRepository.GetAllVendors(customParams)
 	if err != nil {
 		log.Fatal(err)
@@ -94,8 +95,24 @@ func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorReques
 	if sortOrder == "" {
 		sortOrder = "desc"
 	}
+	limit := 10
+	page := 1
+	if customParams.Limit != 0 {
+		limit = customParams.Limit
+	}
+	if customParams.Page != 0 {
+		page = customParams.Page
+	}
+	totalPages := internal.CalculateTotalPages(len(vendors), limit)
+	responseData = internal.Paginate(responseData, page, limit)
 	responseData = SortData(responseData, sortBy, sortOrder)
-	return response.SuccessCode, responseData
+	data := map[string]interface{}{
+		"page":          page,
+		"total_pages":   totalPages,
+		"total_results": len(responseData),
+		"vendors":       responseData,
+	}
+	return response.SuccessCode, data
 }
 
 func MapVendorToResponse(vendor *database.Vendor) *ResponseVendorData {

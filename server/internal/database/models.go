@@ -12,6 +12,49 @@ import (
 	"github.com/google/uuid"
 )
 
+type ComponentsType string
+
+const (
+	ComponentsTypeMegaMenu1name ComponentsType = "MegaMenu1.name"
+	ComponentsTypeMegaMenu2name ComponentsType = "MegaMenu2.name"
+	ComponentsTypeNull          ComponentsType = "null"
+)
+
+func (e *ComponentsType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ComponentsType(s)
+	case string:
+		*e = ComponentsType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ComponentsType: %T", src)
+	}
+	return nil
+}
+
+type NullComponentsType struct {
+	ComponentsType ComponentsType
+	Valid          bool // Valid is true if ComponentsType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullComponentsType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ComponentsType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ComponentsType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullComponentsType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ComponentsType), nil
+}
+
 type UserRole string
 
 const (
@@ -143,12 +186,47 @@ func (ns NullVendorsStatus) Value() (driver.Value, error) {
 }
 
 type Brand struct {
-	ID       uuid.NullUUID
-	Sequence sql.NullInt32
+	ID       uuid.UUID
+	Sequence int32
 	StoreID  uuid.UUID
 	Name     string
 	Image    string
 	Visible  sql.NullBool
+}
+
+type Category struct {
+	ID        uuid.UUID
+	Name      string
+	NameCode  string
+	Url       sql.NullString
+	Icon      sql.NullString
+	Status    sql.NullInt32
+	Component NullComponentsType
+	Created   sql.NullTime
+	Updated   sql.NullTime
+}
+
+type ChildCategory struct {
+	ID            int32
+	SubCategoryID uuid.NullUUID
+	Name          string
+	NameCode      string
+	Url           sql.NullString
+	Status        sql.NullInt32
+	Created       sql.NullTime
+	Updated       sql.NullTime
+}
+
+type SubCategory struct {
+	ID         uuid.UUID
+	CategoryID uuid.UUID
+	Name       string
+	NameCode   string
+	Url        sql.NullString
+	Status     sql.NullInt32
+	Component  NullComponentsType
+	Created    sql.NullTime
+	Updated    sql.NullTime
 }
 
 type User struct {

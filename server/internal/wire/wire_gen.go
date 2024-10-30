@@ -12,6 +12,24 @@ import (
 	"backend/internal/service"
 )
 
+// Injectors from brand_wire.go:
+
+func InitBrandRouterHandler() (*controller.BrandsController, error) {
+	iBrandsRepository := repository.NewBrandsRepository()
+	iBrandsService := service.NewBrandsService(iBrandsRepository)
+	brandsController := controller.NewBrandsController(iBrandsService)
+	return brandsController, nil
+}
+
+// Injectors from categories_wire.go:
+
+func InitCategoriesRouterHandler() (*controller.CategoryController, error) {
+	iCategoryRepository := repository.NewCategoryRepository()
+	iCategoriesService := service.NewCategoriesService(iCategoryRepository)
+	categoryController := controller.NewCategoryController(iCategoriesService)
+	return categoryController, nil
+}
+
 // Injectors from upload_wire.go:
 
 func InitUploadFileRouterHandler() (*controller.UploadFileController, error) {
