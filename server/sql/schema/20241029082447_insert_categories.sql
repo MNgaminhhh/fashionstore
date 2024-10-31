@@ -29,9 +29,9 @@ VALUES
 
 -- +goose Down
 -- +goose StatementBegin
-DELETE FROM child_categories WHERE name IN ('Smartphone', 'Điện Thoại Thông Minh', 'Laptop Gaming', 'Áo Nam', 'Váy Nữ');
-DELETE FROM sub_categories WHERE name IN ('Điện Thoại', 'Laptop', 'Nam', 'Nữ', 'Nhà Bếp');
-DELETE FROM categories WHERE name IN ('Điện Tử', 'Thời Trang', 'Gia Dụng');
+DELETE FROM child_categories;
+DELETE FROM sub_categories;
+DELETE FROM categories;
 
 -- +goose StatementEnd
 

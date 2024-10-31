@@ -12,6 +12,15 @@ import (
 	"backend/internal/service"
 )
 
+// Injectors from banner_wire.go:
+
+func InitBannerRouterHandler() (*controller.BannersController, error) {
+	iBannersRepository := repository.NewBannersRepository()
+	iBannersService := service.NewBannerService(iBannersRepository)
+	bannersController := controller.NewBannersController(iBannersService)
+	return bannersController, nil
+}
+
 // Injectors from brand_wire.go:
 
 func InitBrandRouterHandler() (*controller.BrandsController, error) {

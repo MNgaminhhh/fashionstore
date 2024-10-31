@@ -185,6 +185,19 @@ func (ns NullVendorsStatus) Value() (driver.Value, error) {
 	return string(ns.VendorsStatus), nil
 }
 
+type Banner struct {
+	ID          uuid.UUID
+	BannerImage string
+	Title       string
+	Description sql.NullString
+	Text        string
+	Link        sql.NullString
+	Serial      sql.NullInt32
+	Status      int32
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+}
+
 type Brand struct {
 	ID       uuid.UUID
 	Sequence int32
@@ -202,8 +215,8 @@ type Category struct {
 	Icon      sql.NullString
 	Status    sql.NullInt32
 	Component NullComponentsType
-	Created   sql.NullTime
-	Updated   sql.NullTime
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type ChildCategory struct {
@@ -213,8 +226,8 @@ type ChildCategory struct {
 	NameCode      string
 	Url           sql.NullString
 	Status        sql.NullInt32
-	Created       sql.NullTime
-	Updated       sql.NullTime
+	CreatedAt     sql.NullTime
+	UpdateAt      sql.NullTime
 }
 
 type SubCategory struct {
@@ -225,7 +238,7 @@ type SubCategory struct {
 	Url        sql.NullString
 	Status     sql.NullInt32
 	Component  NullComponentsType
-	Created    sql.NullTime
+	CreatedAt  sql.NullTime
 	Updated    sql.NullTime
 }
 
