@@ -15,23 +15,26 @@ import (
 )
 
 type ResponseVendorData struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"user_id"`
-	FullName    string    `json:"full_name"`
-	PhoneNumber string    `json:"phone_number"`
-	StoreName   string    `json:"store_name"`
-	Status      string    `json:"status"`
-	Description string    `json:"description"`
-	Address     string    `json:"address"`
-	Banner      string    `json:"banner"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID           string    `json:"id"`
+	UserID       string    `json:"user_id"`
+	FullName     string    `json:"full_name"`
+	PhoneNumber  string    `json:"phone_number"`
+	StoreName    string    `json:"store_name"`
+	Status       string    `json:"status"`
+	Description  string    `json:"description"`
+	Address      string    `json:"address"`
+	Banner       string    `json:"banner"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	UserFullName string    `json:"user_full_name,omitempty"`
+	UserAvatar   string    `json:"user_avatar,omitempty"`
+	UserEmail    string    `json:"user_email,omitempty"`
 }
 
 type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
-	GetVendor(userId uuid.UUID) (int, *ResponseVendorData)
+	GetVendor(vendorId uuid.UUID) (int, *ResponseVendorData)
 	GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, map[string]interface{})
 }
 
@@ -71,8 +74,8 @@ func (vs *VendorService) UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID,
 	return response.SuccessCode
 }
 
-func (vs *VendorService) GetVendor(userId uuid.UUID) (int, *ResponseVendorData) {
-	vendor, err := vs.vendorRepository.GetVendor(userId)
+func (vs *VendorService) GetVendor(vendorId uuid.UUID) (int, *ResponseVendorData) {
+	vendor, err := vs.vendorRepository.GetVendor(vendorId)
 	if err != nil {
 		return response.ErrCodeNotFound, nil
 	}
@@ -87,7 +90,19 @@ func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorReques
 	}
 	responseData := make([]ResponseVendorData, len(vendors))
 	for i, vendor := range vendors {
-		responseData[i] = *MapVendorToResponse(&vendor)
+		responseData[i] = ResponseVendorData{
+			ID:          vendor.ID.String(),
+			UserID:      vendor.UserID.String(),
+			FullName:    vendor.FullName,
+			PhoneNumber: vendor.PhoneNumber,
+			StoreName:   vendor.StoreName,
+			Status:      string(vendor.Status.VendorsStatus),
+			Description: vendor.Description.String,
+			Address:     vendor.Address,
+			Banner:      vendor.Banner,
+			CreatedAt:   vendor.CreatedAt.Time,
+			UpdatedAt:   vendor.UpdatedAt.Time,
+		}
 	}
 	if sortBy == "" {
 		sortBy = "createdAt"
@@ -115,19 +130,22 @@ func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorReques
 	return response.SuccessCode, data
 }
 
-func MapVendorToResponse(vendor *database.Vendor) *ResponseVendorData {
+func MapVendorToResponse(vendor *database.GetVendorByIdRow) *ResponseVendorData {
 	return &ResponseVendorData{
-		ID:          vendor.ID.String(),
-		UserID:      vendor.UserID.String(),
-		FullName:    vendor.FullName,
-		PhoneNumber: vendor.PhoneNumber,
-		StoreName:   vendor.StoreName,
-		Status:      string(vendor.Status.VendorsStatus),
-		Description: vendor.Description.String,
-		Address:     vendor.Address,
-		Banner:      vendor.Banner,
-		CreatedAt:   vendor.CreatedAt.Time,
-		UpdatedAt:   vendor.UpdatedAt.Time,
+		ID:           vendor.VendorID.String(),
+		UserID:       vendor.UserID.String(),
+		FullName:     vendor.VendorFullName,
+		PhoneNumber:  vendor.PhoneNumber,
+		StoreName:    vendor.StoreName,
+		Status:       string(vendor.Status.VendorsStatus),
+		Description:  vendor.Description.String,
+		Address:      vendor.Address,
+		Banner:       vendor.Banner,
+		CreatedAt:    vendor.CreatedAt.Time,
+		UpdatedAt:    vendor.UpdatedAt.Time,
+		UserFullName: vendor.UserFullName.String,
+		UserAvatar:   vendor.UserAvatar.String,
+		UserEmail:    vendor.UserEmail,
 	}
 }
 

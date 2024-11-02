@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"backend/internal/routers/banner"
 	"backend/internal/routers/brand"
 	"backend/internal/routers/categories"
 	"backend/internal/routers/upload"
@@ -14,6 +15,7 @@ type RouterGroup struct {
 	UploadFile *upload.UploadFileRouter
 	Brand      *brand.BrandRouter
 	Categories *categories.CategoryRouter
+	Banners    *banner.BannerRouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -22,4 +24,5 @@ var AllRouterGroup = &RouterGroup{
 	UploadFile: &upload.UploadFileRouter{},
 	Brand:      &brand.BrandRouter{},
 	Categories: &categories.CategoryRouter{},
+	Banners:    &banner.BannerRouter{},
 }

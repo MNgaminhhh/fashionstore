@@ -12,7 +12,7 @@ import (
 type IVendorRepository interface {
 	BecomeVendor(nVendor *database.Vendor) error
 	UpdateStatus(userId, updatedBy uuid.UUID, status database.VendorsStatus) error
-	GetVendor(userId uuid.UUID) (*database.Vendor, error)
+	GetVendor(vendorId uuid.UUID) (*database.GetVendorByIdRow, error)
 	GetAllVendors(customParams validator.FilterVendorRequest) ([]database.Vendor, error)
 }
 
@@ -56,8 +56,8 @@ func (vr *VendorRepository) UpdateStatus(userId, updatedBy uuid.UUID, status dat
 	return vr.sqlc.UpdateVendorStatus(ctx, param)
 }
 
-func (vr *VendorRepository) GetVendor(userId uuid.UUID) (*database.Vendor, error) {
-	vendor, err := vr.sqlc.GetVendorByUserId(ctx, userId)
+func (vr *VendorRepository) GetVendor(vendorId uuid.UUID) (*database.GetVendorByIdRow, error) {
+	vendor, err := vr.sqlc.GetVendorById(ctx, vendorId)
 	if err != nil {
 		return nil, err
 	}

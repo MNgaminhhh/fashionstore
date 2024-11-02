@@ -79,7 +79,7 @@ func (vc *VendorController) UpdateVendorStatusByAdmin(c echo.Context) error {
 }
 
 func (vc *VendorController) GetVendor(c echo.Context) error {
-	id := c.Param("user_id")
+	id := c.Param("vendor_id")
 	if id == "" {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Vendor ID is empty")
 	}

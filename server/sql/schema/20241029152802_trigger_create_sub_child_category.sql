@@ -73,9 +73,9 @@ DROP CONSTRAINT IF EXISTS unique_sub_name_per_category;
 ALTER TABLE sub_categories
 DROP CONSTRAINT IF EXISTS unique_sub_name_code_per_category;
 
-ALTER TABLE sub_categories
+ALTER TABLE child_categories
 DROP CONSTRAINT IF EXISTS unique_child_name_per_sub_cate;
 
-ALTER TABLE sub_categories
+ALTER TABLE child_categories
 DROP CONSTRAINT IF EXISTS unique_child_name_code_per_sub_cate;
 -- +goose StatementEnd
