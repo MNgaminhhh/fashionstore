@@ -30,7 +30,7 @@ export default function Analytics({ user }: Props) {
         >
           <Avatar
             alt={user.full_name}
-            src={null}
+            src={user.avt}
             sx={{
               height: 80,
               width: 80,

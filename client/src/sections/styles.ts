@@ -5,13 +5,14 @@ import TableCell from "@mui/material/TableCell";
 import IconButton from "@mui/material/IconButton";
 import { alpha, styled } from "@mui/material/styles";
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontSize: 14,
+const StyledTableCell = styled(TableCell)(({ theme, width }) => ({
+  fontSize: 13.5,
   paddingTop: 10,
   fontWeight: 600,
   paddingBottom: 10,
   color: theme.palette.grey[900],
   borderBottom: `1px solid ${theme.palette.grey[300]}`,
+  width: width || "auto",
 }));
 
 const CategoryWrapper = styled(Box)(({ theme }) => ({

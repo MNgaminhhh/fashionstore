@@ -15,7 +15,4 @@ downse:
 resetse:
 	@set GOOSE_DRIVER=postgres&& set GOOSE_DBSTRING=$(GOOSE_DBSTRING)&& goose -dir=$(GOOSE_MIGRATION_DIR) reset
 
-migrate:
-	@set GOOSE_DRIVER=postgres && set GOOSE_DBSTRING=$(GOOSE_DBSTRING) && goose -dir=$(GOOSE_MIGRATION_DIR) up-to-date
-
 .PHONY: run downse upse resetse migrate

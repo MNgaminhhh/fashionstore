@@ -5,14 +5,19 @@ import "simplebar-react/dist/simplebar.min.css";
 import { StyledScrollBar } from "./styles";
 
 interface ScrollbarProps extends Props {
-    autoHide?: boolean;
-    sx?: SxProps<Theme>;
-    children: ReactNode;
+  autoHide?: boolean;
+  sx?: SxProps<Theme>;
+  children: ReactNode;
 }
-export default function Scrollbar({ children, autoHide = true, sx, ...props }: ScrollbarProps) {
-    return (
-        <StyledScrollBar autoHide={autoHide} sx={sx} {...props}>
-            {children}
-        </StyledScrollBar>
-    );
+export default function Scrollbar({
+  children,
+  autoHide = true,
+  sx,
+  ...props
+}: ScrollbarProps) {
+  return (
+    <StyledScrollBar autoHide={autoHide} sx={sx} {...props}>
+      {children}
+    </StyledScrollBar>
+  );
 }
