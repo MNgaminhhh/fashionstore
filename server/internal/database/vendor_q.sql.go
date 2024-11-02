@@ -118,19 +118,60 @@ func (q *Queries) GetAllVendors(ctx context.Context, arg GetAllVendorsParams) ([
 	return items, nil
 }
 
-const getVendorByUserId = `-- name: GetVendorByUserId :one
-SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, banner, created_at, updated_at, created_by, updated_by FROM vendors
-WHERE vendors.user_id = $1
+const getVendorById = `-- name: GetVendorById :one
+SELECT
+    vendors.id AS vendor_id,
+    vendors.full_name AS vendor_full_name,
+    vendors.email AS vendor_email,
+    vendors.phone_number,
+    vendors.store_name,
+    vendors.status,
+    vendors.description,
+    vendors.address,
+    vendors.banner,
+    vendors.created_at,
+    vendors.updated_at,
+    vendors.created_by,
+    vendors.updated_by,
+    vendors.user_id,
+    users.full_name AS user_full_name,
+    users.avt AS user_avatar,
+    users.email AS user_email
+FROM
+    vendors
+        JOIN
+    users ON vendors.user_id = users.id
+WHERE
+    vendors.id = $1
 `
 
-func (q *Queries) GetVendorByUserId(ctx context.Context, userID uuid.UUID) (Vendor, error) {
-	row := q.db.QueryRowContext(ctx, getVendorByUserId, userID)
-	var i Vendor
+type GetVendorByIdRow struct {
+	VendorID       uuid.UUID
+	VendorFullName string
+	VendorEmail    string
+	PhoneNumber    string
+	StoreName      string
+	Status         NullVendorsStatus
+	Description    sql.NullString
+	Address        string
+	Banner         string
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+	CreatedBy      uuid.NullUUID
+	UpdatedBy      uuid.NullUUID
+	UserID         uuid.UUID
+	UserFullName   sql.NullString
+	UserAvatar     sql.NullString
+	UserEmail      string
+}
+
+func (q *Queries) GetVendorById(ctx context.Context, id uuid.UUID) (GetVendorByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getVendorById, id)
+	var i GetVendorByIdRow
 	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.FullName,
-		&i.Email,
+		&i.VendorID,
+		&i.VendorFullName,
+		&i.VendorEmail,
 		&i.PhoneNumber,
 		&i.StoreName,
 		&i.Status,
@@ -141,6 +182,10 @@ func (q *Queries) GetVendorByUserId(ctx context.Context, userID uuid.UUID) (Vend
 		&i.UpdatedAt,
 		&i.CreatedBy,
 		&i.UpdatedBy,
+		&i.UserID,
+		&i.UserFullName,
+		&i.UserAvatar,
+		&i.UserEmail,
 	)
 	return i, err
 }

@@ -1,6 +1,28 @@
--- name: GetVendorByUserId :one
-SELECT * FROM vendors
-WHERE vendors.user_id = $1;
+-- name: GetVendorById :one
+SELECT
+    vendors.id AS vendor_id,
+    vendors.full_name AS vendor_full_name,
+    vendors.email AS vendor_email,
+    vendors.phone_number,
+    vendors.store_name,
+    vendors.status,
+    vendors.description,
+    vendors.address,
+    vendors.banner,
+    vendors.created_at,
+    vendors.updated_at,
+    vendors.created_by,
+    vendors.updated_by,
+    vendors.user_id,
+    users.full_name AS user_full_name,
+    users.avt AS user_avatar,
+    users.email AS user_email
+FROM
+    vendors
+        JOIN
+    users ON vendors.user_id = users.id
+WHERE
+    vendors.id = $1;
 
 -- name: AddVendor :exec
 INSERT INTO vendors (user_id,
