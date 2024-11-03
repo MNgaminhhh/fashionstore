@@ -61,13 +61,14 @@ const NavItemButton = styled(ButtonBase, {
 
 const ListLabel = styled(Paragraph, {
   shouldForwardProp: (prop) => prop !== "compact",
-})<CompactProps>(({ compact }) => ({
+})<CompactProps>(({ theme, compact }) => ({
   fontWeight: 600,
   fontSize: "12px",
   marginTop: "20px",
   marginLeft: "15px",
   marginBottom: "10px",
   textTransform: "uppercase",
+  color: theme.palette.common.white,
   transition: "opacity 0.15s ease, width 0.15s ease",
   opacity: compact ? 0 : 1,
   width: compact ? 0 : "auto",

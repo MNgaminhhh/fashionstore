@@ -11,23 +11,23 @@ import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Scrollbar from "../../../../components/scrollbar";
-import RowVendors from "../components/RowVendors";
+import RowBrands from "../components/RowBrands";
 import WrapperPage from "../../../WrapperPage";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import Vendor from "../../../../services/Vendor";
+import Brand from "../../../../services/Brand";
 import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
-import { tableHeading } from "../components/data";
 import { Box, Button, Divider } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import Link from "next/link";
+import { tableHeading } from "../components/data";
 
-type Props = { vendors: any[]; token: string };
+type Props = { brands: any[]; token: string };
 
-export default function VendorsView({ vendors: initialVendors, token }: Props) {
-  const [vendors, setVendors] = useState(initialVendors.vendors || []);
-  const [totalPages, setTotalPages] = useState(initialVendors.total_pages || 1);
+export default function BrandsView({ brands: initialBrands, token }: Props) {
+  const [brands, setBrands] = useState(initialBrands.brands || []);
+  const [totalPages, setTotalPages] = useState(initialBrands.total_page || 1);
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
@@ -45,17 +45,17 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
     limit: number,
     filters = searchValues
   ) => {
-    const response = await Vendor.findAll(token, true, limit, page, filters);
-    const data = response?.data?.data?.vendors || [];
-    setVendors(data);
-    setTotalPages(response?.data?.data?.total_pages);
+    const response = await Brand.findAll(token, true, limit, page, filters);
+    const data = response?.data?.data?.brands || [];
+    setBrands(data);
+    setTotalPages(response?.data?.data?.total_page);
   };
 
   return (
-    <WrapperPage title="Quản Lý Các Nhà Bán Hàng">
+    <WrapperPage title="Quản Lý Nhãn Hàng">
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href="/admin/vendor/add"
+          href="/admin/brands/create"
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -67,7 +67,7 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
             px: 3,
           }}
         >
-          Thêm nhà bán hàng
+          Thêm thương hiệu
         </Button>
       </Box>
 
@@ -84,7 +84,7 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
         >
           {({ values, handleSubmit, setFieldValue }) => (
             <>
-              <Box sx={{ maxHeight: 900, overflow: "hidden" }}>
+              <Box sx={{ maxHeight: 900, overflow: "hide" }}>
                 <TableContainer component={Scrollbar}>
                   <Table stickyHeader>
                     <TableHead>
@@ -125,8 +125,9 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
                             width={headCell.width}
                             sx={{ backgroundColor: "grey.100" }}
                           >
-                            {headCell.id !== "action" ? (
-                              headCell.id === "status" ? (
+                            {headCell.id !== "action" &&
+                            headCell.id !== "image" ? (
+                              headCell.id === "visible" ? (
                                 <Select
                                   fullWidth
                                   size="small"
@@ -145,15 +146,8 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
                                   <MenuItem value="">
                                     Vui lòng chọn giá trị
                                   </MenuItem>
-                                  <MenuItem value="accepted">
-                                    Hoạt động
-                                  </MenuItem>
-                                  <MenuItem value="pending">
-                                    Đang chờ duyệt
-                                  </MenuItem>
-                                  <MenuItem value="rejected">
-                                    Bị từ chối
-                                  </MenuItem>
+                                  <MenuItem value="true">Hiển thị</MenuItem>
+                                  <MenuItem value="false">Ẩn</MenuItem>
                                 </Select>
                               ) : (
                                 <TextField
@@ -183,10 +177,10 @@ export default function VendorsView({ vendors: initialVendors, token }: Props) {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {vendors.map((vendor) => (
-                        <RowVendors
-                          vendor={vendor}
-                          key={vendor.id}
+                      {brands.map((brand) => (
+                        <RowBrands
+                          brand={brand}
+                          key={brand.id}
                           tableHeading={tableHeading}
                         />
                       ))}

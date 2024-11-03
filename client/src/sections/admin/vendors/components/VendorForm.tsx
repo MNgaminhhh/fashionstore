@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -27,14 +26,14 @@ const VALIDATION_SCHEMA = yup.object().shape({
 type Props = { vendor: VendorModel };
 
 export default function VendorForm({ vendor }: Props) {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<File[]>([]);
 
   const INITIAL_VALUES = {
-    store_name: "",
-    full_name: "",
-    phone_number: "",
-    description: "",
-    status: "active",
+    store_name: vendor.store_name || "",
+    full_name: vendor.full_name || "",
+    phone_number: vendor.phone_number || "",
+    description: vendor.description || "",
+    status: vendor.status || "active",
   };
 
   const handleFormSubmit = () => {};
@@ -56,6 +55,7 @@ export default function VendorForm({ vendor }: Props) {
         onSubmit={handleFormSubmit}
         initialValues={INITIAL_VALUES}
         validationSchema={VALIDATION_SCHEMA}
+        enableReinitialize
       >
         {({
           values,
@@ -70,7 +70,39 @@ export default function VendorForm({ vendor }: Props) {
               Thông tin cửa hàng
             </Typography>
             <Divider sx={{ mb: 3 }} />
-
+            <Grid item xs={12} mb={4}>
+              <MTDropZone
+                title="Kéo và thả hình ảnh cửa hàng"
+                onChange={(files) => handleChangeDropZone(files)}
+              />
+              <FlexBox flexDirection="row" mt={2} flexWrap="wrap" gap={1}>
+                {files.map((file, index) => (
+                  <UploadImageBox
+                    key={index}
+                    sx={{
+                      width: 300,
+                      height: 300,
+                      position: "relative",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      alt="Hình ảnh cửa hàng"
+                      src={file.preview}
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <StyledClear onClick={handleFileDelete(file)} />
+                  </UploadImageBox>
+                ))}
+              </FlexBox>
+            </Grid>
             <Grid container spacing={3}>
               <Grid item sm={6} xs={12}>
                 <TextField
@@ -121,7 +153,7 @@ export default function VendorForm({ vendor }: Props) {
                 <TextField
                   fullWidth
                   multiline
-                  rows={4}
+                  rows={10}
                   name="description"
                   label="Mô tả"
                   color="info"
@@ -150,40 +182,6 @@ export default function VendorForm({ vendor }: Props) {
                   <MenuItem value="pending">Đang chờ duyệt</MenuItem>
                   <MenuItem value="">Không xác định</MenuItem>
                 </TextField>
-              </Grid>
-
-              <Grid item xs={12}>
-                <MTDropZone
-                  title="Kéo và thả hình ảnh cửa hàng"
-                  onChange={(files) => handleChangeDropZone(files)}
-                />
-                <FlexBox flexDirection="row" mt={2} flexWrap="wrap" gap={1}>
-                  {files.map((file, index) => (
-                    <UploadImageBox
-                      key={index}
-                      sx={{
-                        width: 300,
-                        height: 300,
-                        position: "relative",
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        boxShadow: 1,
-                      }}
-                    >
-                      <Box
-                        component="img"
-                        alt="Hình ảnh cửa hàng"
-                        src={file.preview}
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                      <StyledClear onClick={handleFileDelete(file)} />
-                    </UploadImageBox>
-                  ))}
-                </FlexBox>
               </Grid>
 
               <Grid item xs={12} mt={3} textAlign="center">
