@@ -35,6 +35,16 @@ func (q *Queries) AddBrand(ctx context.Context, arg AddBrandParams) error {
 	return err
 }
 
+const deleteById = `-- name: DeleteById :exec
+DELETE FROM brands
+WHERE id = $1
+`
+
+func (q *Queries) DeleteById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteById, id)
+	return err
+}
+
 const getBrandById = `-- name: GetBrandById :one
 SELECT id, sequence, store_id, name, image, visible
 FROM brands

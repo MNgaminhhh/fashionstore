@@ -25,6 +25,7 @@ type IBrandsService interface {
 	GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{})
 	UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int
 	GetBrandById(id string) (int, *BrandsResponseData)
+	DeleteBrandById(id string) int
 }
 
 type BrandsService struct {
@@ -101,6 +102,15 @@ func (bs *BrandsService) GetBrandById(id string) (int, *BrandsResponseData) {
 		return response.ErrCodeBrandNotFound, nil
 	}
 	return response.SuccessCode, MapBrandToResponseData(brand)
+}
+
+func (bs *BrandsService) DeleteBrandById(id string) int {
+	brandId, _ := uuid.Parse(id)
+	err := bs.brandsRepository.DeleteBrandById(brandId)
+	if err != nil {
+		return response.ErrCodeBrandNotFound
+	}
+	return response.SuccessCode
 }
 
 func MapBrandToResponseData(brand *database.Brand) *BrandsResponseData {

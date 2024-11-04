@@ -60,3 +60,16 @@ func (bc *BrandsController) GetBrandById(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, response.SuccessCode, data)
 }
+
+func (bc *BrandsController) DeleteBrand(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "delete brands fail")
+	}
+	id := c.Param("id")
+	code := bc.brandsService.DeleteBrandById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "DeleteBrandById fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
+}

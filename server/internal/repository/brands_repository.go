@@ -13,6 +13,7 @@ type IBrandsRepository interface {
 	GetBrands(customParam validator.FilterBrandsRequest) ([]database.Brand, error)
 	SaveBrands(newBrand *database.Brand) error
 	GetBrandByID(id uuid.UUID) (*database.Brand, error)
+	DeleteBrandById(id uuid.UUID) error
 }
 
 type BrandsRepository struct {
@@ -66,4 +67,9 @@ func (br *BrandsRepository) GetBrandByID(id uuid.UUID) (*database.Brand, error) 
 		return nil, err
 	}
 	return &brand, err
+}
+
+func (br *BrandsRepository) DeleteBrandById(id uuid.UUID) error {
+	err := br.sqlc.DeleteById(ctx, id)
+	return err
 }

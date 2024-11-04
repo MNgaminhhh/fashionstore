@@ -17,5 +17,7 @@ func (br *BannerRouter) InitBannerRouter(router *echo.Group) {
 
 		bannerRouter.GET("/active", bannersController.GetActiveBanners)
 		bannerRouter.GET("", bannersController.GetAllBanners)
+
+		bannerRouter.PUT("/:id", bannersController.UpdateBanner, middleware.JWTMiddleware)
 	}
 }
