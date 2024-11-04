@@ -48,7 +48,7 @@ func (bs *BrandsService) GetBrands(customParam validator.FilterBrandsRequest) (i
 		data := MapBrandToResponseData(&brand)
 		responseData = append(responseData, *data)
 	}
-	limit := 10
+	limit := len(responseData)
 	page := 1
 	if customParam.Limit != 0 {
 		limit = customParam.Limit
