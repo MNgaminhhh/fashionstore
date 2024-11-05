@@ -23,6 +23,8 @@ func (cr *CategoryRouter) InitCategoryRouter(router *echo.Group) {
 		categoriesGroup.GET("/all", categoryController.GetAllCates)
 		categoriesGroup.GET("/:id", categoryController.GetCategoryById)
 
+		categoriesGroup.PUT("/:id", categoryController.UpdateCateById, middleware.JWTMiddleware)
+
 		categoriesGroup.DELETE("/:id", categoryController.DeleteCateById, middleware.JWTMiddleware)
 	}
 }

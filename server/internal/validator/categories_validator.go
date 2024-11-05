@@ -33,6 +33,6 @@ type UpdateCategoryRequest struct {
 	Name      *string `json:"name"`
 	NameCode  *string `json:"name_code"`
 	Icon      *string `json:"icon"`
-	Component *string `json:"component" validate:"oneof=MegaMenu1.name MegaMenu2.name"`
-	Status    *int    `json:"status" validate:"oneof=0 1"`
+	Component *string `json:"component"`
+	Status    *int    `json:"status"`
 }
