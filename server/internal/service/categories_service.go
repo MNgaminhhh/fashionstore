@@ -135,8 +135,8 @@ func (cs *CategoriesService) GetAllCate(param *validator.FilterCategoryRequest) 
 	if param.Limit != nil {
 		limit = *param.Limit
 	}
-	if param.Offset != nil {
-		page = *param.Offset
+	if param.Page != nil {
+		page = *param.Page
 	}
 	totalPages := internal.CalculateTotalPages(len(cates), limit)
 	cates = internal.Paginate(cates, page, limit)

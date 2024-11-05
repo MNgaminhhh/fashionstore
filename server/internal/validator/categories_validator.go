@@ -26,7 +26,7 @@ type FilterCategoryRequest struct {
 	Url      string `json:"url"`
 	Status   *int   `json:"status"`
 	Limit    *int   `json:"limit"`
-	Offset   *int   `json:"offset"`
+	Page     *int   `json:"page"`
 }
 
 type UpdateCategoryRequest struct {
