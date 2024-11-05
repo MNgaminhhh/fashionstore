@@ -199,12 +199,14 @@ type Banner struct {
 }
 
 type Brand struct {
-	ID       uuid.UUID
-	Sequence int32
-	StoreID  uuid.UUID
-	Name     string
-	Image    string
-	Visible  sql.NullBool
+	ID        uuid.UUID
+	Sequence  int32
+	StoreID   uuid.UUID
+	Name      string
+	Image     string
+	Visible   sql.NullBool
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type Category struct {
@@ -220,14 +222,14 @@ type Category struct {
 }
 
 type ChildCategory struct {
-	ID            int32
+	ID            uuid.UUID
 	SubCategoryID uuid.NullUUID
 	Name          string
 	NameCode      string
 	Url           sql.NullString
 	Status        sql.NullInt32
 	CreatedAt     sql.NullTime
-	UpdateAt      sql.NullTime
+	UpdatedAt     sql.NullTime
 }
 
 type SubCategory struct {
@@ -239,14 +241,14 @@ type SubCategory struct {
 	Status     sql.NullInt32
 	Component  NullComponentsType
 	CreatedAt  sql.NullTime
-	Updated    sql.NullTime
+	UpdatedAt  sql.NullTime
 }
 
 type User struct {
 	ID          uuid.UUID
 	Email       string
 	Password    string
-	Status      UserStatus
+	Status      NullUserStatus
 	FullName    sql.NullString
 	PhoneNumber sql.NullString
 	Dob         sql.NullTime

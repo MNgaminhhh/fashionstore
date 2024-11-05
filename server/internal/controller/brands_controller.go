@@ -60,3 +60,35 @@ func (bc *BrandsController) GetBrandById(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, response.SuccessCode, data)
 }
+
+func (bc *BrandsController) DeleteBrand(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "delete brands fail")
+	}
+	id := c.Param("id")
+	code := bc.brandsService.DeleteBrandById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "DeleteBrandById fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
+}
+
+func (bc *BrandsController) AddBrand(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "add brands fail")
+	}
+	var reqParam validator.AddBrandRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(&reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := bc.brandsService.AddBrand(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "AddBrands fail")
+	}
+	return response.SuccessResponse(c, code, "Thêm mới thành công!")
+}

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal/database"
 	"backend/internal/enum"
 	"backend/internal/service"
 	"backend/internal/validator"
@@ -203,4 +204,38 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Update user info failed")
 	}
 	return response.SuccessResponse(c, response.SuccessCode, "Update user info successful")
+}
+
+func (uc *UserController) GetAllUsers(c echo.Context) error {
+	var reqParam validator.FilterUserRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code, result := uc.userService.GetAllUsers(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get all users failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, result)
+}
+
+func (uc *UserController) AdminUpdateStatusUser(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Update status failed")
+	}
+	var param validator.UpdateUserStatusRequest
+	if err := c.Bind(&param); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	if err := c.Validate(param); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := uc.userService.UpdateUserStatus(param.Email, param.Status)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update user status failed")
+	}
+	return response.SuccessResponse(c, response.SuccessCode, "Update user status successful")
 }

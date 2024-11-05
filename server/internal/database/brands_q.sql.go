@@ -35,8 +35,18 @@ func (q *Queries) AddBrand(ctx context.Context, arg AddBrandParams) error {
 	return err
 }
 
+const deleteById = `-- name: DeleteById :exec
+DELETE FROM brands
+WHERE id = $1
+`
+
+func (q *Queries) DeleteById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteById, id)
+	return err
+}
+
 const getBrandById = `-- name: GetBrandById :one
-SELECT id, sequence, store_id, name, image, visible
+SELECT id, sequence, store_id, name, image, visible, created_at, updated_at
 FROM brands
 WHERE id = $1
 `
@@ -51,12 +61,14 @@ func (q *Queries) GetBrandById(ctx context.Context, id uuid.UUID) (Brand, error)
 		&i.Name,
 		&i.Image,
 		&i.Visible,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getBrands = `-- name: GetBrands :many
-SELECT id, sequence, store_id, name, image, visible FROM brands
+SELECT id, sequence, store_id, name, image, visible, created_at, updated_at FROM brands
 WHERE
     visible = $1 OR $1 IS NULL
 AND (name LIKE '%' || $2::text || '%' OR $2 = '')
@@ -83,6 +95,8 @@ func (q *Queries) GetBrands(ctx context.Context, arg GetBrandsParams) ([]Brand, 
 			&i.Name,
 			&i.Image,
 			&i.Visible,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

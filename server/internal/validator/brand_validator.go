@@ -13,3 +13,11 @@ type UpdateBrandRequest struct {
 	Sequence *int    `json:"sequence"`
 	Image    *string `json:"image"`
 }
+
+type AddBrandRequest struct {
+	StoreId  string `json:"store_id" validate:"required"`
+	Visible  bool   `json:"visible" validate:"required"`
+	Name     string `json:"name" validate:"required"`
+	Sequence int    `json:"sequence" validate:"required"`
+	Image    string `json:"image" validate:"required"`
+}

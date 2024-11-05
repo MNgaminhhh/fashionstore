@@ -1,5 +1,7 @@
 package validator
 
+import "time"
+
 type UserLoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=5,max=32"`
@@ -30,4 +32,14 @@ type UpdateUserRequest struct {
 	PhoneNumber *string `json:"phone_number"`
 	Dob         *string `json:"dob"`
 	Avt         *string `json:"avt"`
+}
+
+type FilterUserRequest struct {
+	FullName    *string    `json:"full_name"`
+	PhoneNumber *string    `json:"phone_number"`
+	Dob         *time.Time `json:"dob"`
+	Email       *string    `json:"email"`
+	Status      *string    `json:"status"`
+	Limit       *int       `json:"limit"`
+	Page        *int       `json:"page"`
 }

@@ -16,3 +16,7 @@ WHERE id = $5;
 SELECT *
 FROM brands
 WHERE id = $1;
+
+-- name: DeleteById :exec
+DELETE FROM brands
+WHERE id = $1;

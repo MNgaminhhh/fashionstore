@@ -32,5 +32,7 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 	{
 		userRouterGroup.GET("/profile", userController.GetUserInformation, middleware.JWTMiddleware)
 		userRouterGroup.POST("/profile", userController.UpdateUser, middleware.JWTMiddleware)
+		userRouterGroup.GET("/all", userController.GetAllUsers)
+		userRouterGroup.PUT("/admin/update-status", userController.AdminUpdateStatusUser, middleware.JWTMiddleware)
 	}
 }

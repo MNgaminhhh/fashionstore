@@ -52,3 +52,18 @@ func (bc *BannersController) GetAllBanners(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, data)
 }
+
+func (bc *BannersController) UpdateBanner(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Update banner fail")
+	}
+	var reqParam validator.UpdateBannerRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update banner fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	return response.SuccessResponse(c, 200, reqParam)
+}

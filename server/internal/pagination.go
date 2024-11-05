@@ -13,5 +13,8 @@ func Paginate[T any](data []T, page, limit int) []T {
 }
 
 func CalculateTotalPages(items int, limit int) int {
+	if limit == 0 {
+		return 1
+	}
 	return (items + limit - 1) / limit
 }

@@ -30,10 +30,31 @@ func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) er
 const getAllUser = `-- name: GetAllUser :many
 SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt
 FROM users
+WHERE
+    full_name ILIKE '%'|| $1 ||'%' OR $1 IS NULL
+AND dob = $2 or $2 IS NULL
+AND email ILIKE '%' || $3 || '%' OR $3 IS NULL
+AND status = $4 OR $4 IS NULL
+AND phone_number ILIKE '%' || $5 || '%' OR $5 IS NULL
+ORDER BY updated_at DESC
 `
 
-func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getAllUser)
+type GetAllUserParams struct {
+	Column1 sql.NullString
+	Dob     sql.NullTime
+	Column3 sql.NullString
+	Status  NullUserStatus
+	Column5 sql.NullString
+}
+
+func (q *Queries) GetAllUser(ctx context.Context, arg GetAllUserParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUser,
+		arg.Column1,
+		arg.Dob,
+		arg.Column3,
+		arg.Status,
+		arg.Column5,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +94,7 @@ FROM users
 WHERE status = $1
 `
 
-func (q *Queries) GetUserActived(ctx context.Context, status UserStatus) ([]User, error) {
+func (q *Queries) GetUserActived(ctx context.Context, status NullUserStatus) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, getUserActived, status)
 	if err != nil {
 		return nil, err
@@ -205,7 +226,7 @@ WHERE email = $2
 `
 
 type UpdateUserStatusParams struct {
-	Status UserStatus
+	Status NullUserStatus
 	Email  string
 }
 

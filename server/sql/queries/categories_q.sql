@@ -36,3 +36,93 @@ $1,
         $2,
         $3
 );
+
+-- name: FindAllCategories :many
+SELECT * FROM categories
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (name_code ILIKE '%' || $2 || '%' OR $2 IS NULL)
+  AND (url ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (status = $4 OR $4 = -1)
+ORDER BY updated_at DESC;
+
+
+-- name: FindCategoryById :one
+SELECT *
+FROM categories
+WHERE id = $1;
+
+
+-- name: UpdateCategoryById :exec
+UPDATE categories
+SET name = $1,
+    name_code = $2,
+    icon = $3,
+    component = $4,
+    status = $5
+WHERE id = $6;
+
+-- name: DeleteCategoryById :exec
+DELETE FROM categories
+WHERE id = $1;
+
+
+-- name: FindALlSubCategories :many
+SELECT sc.*, c.name AS category_name
+FROM sub_categories sc
+         JOIN categories c ON sc.category_id = c.id
+WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
+  AND (sc.name ILIKE '%' || $2 || '%' OR $2 IS NULL )
+  AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
+  AND (sc.status = $4 OR $4 = -1)
+  AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+ORDER BY sc.updated_at DESC;
+
+-- name: FindSubCategoryById :one
+SELECT sc.*, c.name AS category_name
+FROM sub_categories sc
+JOIN categories c ON sc.category_id = c.id
+WHERE sc.id = $1;
+
+
+-- name: UpdateSubCategoryById :exec
+UPDATE sub_categories
+SET name = $1,
+    name_code = $2,
+    component = $3,
+    category_id = $4,
+    status = $5
+WHERE id = $6;
+
+-- name: DeleteSubCategoryById :exec
+DELETE FROM sub_categories
+WHERE id = $1;
+
+-- name: FindAllChildCategories :many
+SELECT cc.*, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (cc.name ILIKE '%' || $2 || '%' OR $2 IS NULL)
+  AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (cc.status = $4 OR $4 = -1)
+  AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+ORDER BY cc.updated_at DESC;
+
+-- name: FindChildCategoryById :one
+SELECT cc.*, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE cc.id = $1;
+
+
+-- name: UpdateChildCategoryById :exec
+UPDATE child_categories
+SET name = $1,
+    name_code = $2,
+    sub_category_id = $3,
+    status = $4
+WHERE id = $5;
+
+-- name: DeleteChildCategoryById :exec
+DELETE FROM child_categories
+WHERE id = $1;

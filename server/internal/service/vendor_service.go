@@ -110,7 +110,7 @@ func (vs *VendorService) GetAllVendors(customParams validator.FilterVendorReques
 	if sortOrder == "" {
 		sortOrder = "desc"
 	}
-	limit := 10
+	limit := len(responseData)
 	page := 1
 	if customParams.Limit != 0 {
 		limit = customParams.Limit

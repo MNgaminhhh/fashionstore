@@ -3,11 +3,14 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"database/sql"
+	"errors"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"log"
 	"net/http"
 )
@@ -25,6 +28,8 @@ type IBrandsService interface {
 	GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{})
 	UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int
 	GetBrandById(id string) (int, *BrandsResponseData)
+	DeleteBrandById(id string) int
+	AddBrand(param validator.AddBrandRequest) int
 }
 
 type BrandsService struct {
@@ -48,7 +53,7 @@ func (bs *BrandsService) GetBrands(customParam validator.FilterBrandsRequest) (i
 		data := MapBrandToResponseData(&brand)
 		responseData = append(responseData, *data)
 	}
-	limit := 10
+	limit := len(responseData)
 	page := 1
 	if customParam.Limit != 0 {
 		limit = customParam.Limit
@@ -101,6 +106,43 @@ func (bs *BrandsService) GetBrandById(id string) (int, *BrandsResponseData) {
 		return response.ErrCodeBrandNotFound, nil
 	}
 	return response.SuccessCode, MapBrandToResponseData(brand)
+}
+
+func (bs *BrandsService) DeleteBrandById(id string) int {
+	brandId, _ := uuid.Parse(id)
+	err := bs.brandsRepository.DeleteBrandById(brandId)
+	if err != nil {
+		return response.ErrCodeBrandNotFound
+	}
+	return response.SuccessCode
+}
+
+func (bs *BrandsService) AddBrand(param validator.AddBrandRequest) int {
+	id, _ := uuid.Parse(param.StoreId)
+	log.Println(id)
+	newBrand := database.Brand{
+		Sequence: int32(param.Sequence),
+		StoreID:  id,
+		Name:     param.Name,
+		Image:    param.Image,
+		Visible: sql.NullBool{
+			Bool:  param.Visible,
+			Valid: true,
+		},
+	}
+	err := bs.brandsRepository.AddBrand(&newBrand)
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			if string(pqError.Code) == string(pg_error.ForeignKeyViolation) {
+				if pqError.Constraint == "brands_store_id_fkey" {
+					return response.ErrCodeVendorNotFound
+				}
+			}
+			return response.ErrCodeInternal
+		}
+	}
+	return response.SuccessCode
 }
 
 func MapBrandToResponseData(brand *database.Brand) *BrandsResponseData {

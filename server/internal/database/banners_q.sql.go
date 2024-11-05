@@ -8,6 +8,8 @@ package database
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const addBanner = `-- name: AddBanner :exec
@@ -113,4 +115,35 @@ func (q *Queries) GetBannersByStatus(ctx context.Context, status int32) ([]Banne
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBanner = `-- name: UpdateBanner :exec
+UPDATE banners
+SET title = $2, banner_image = $3, description = $4, text = $5, link = $6, serial = $7, status = $8
+WHERE id = $1
+`
+
+type UpdateBannerParams struct {
+	ID          uuid.UUID
+	Title       string
+	BannerImage string
+	Description sql.NullString
+	Text        string
+	Link        sql.NullString
+	Serial      sql.NullInt32
+	Status      int32
+}
+
+func (q *Queries) UpdateBanner(ctx context.Context, arg UpdateBannerParams) error {
+	_, err := q.db.ExecContext(ctx, updateBanner,
+		arg.ID,
+		arg.Title,
+		arg.BannerImage,
+		arg.Description,
+		arg.Text,
+		arg.Link,
+		arg.Serial,
+		arg.Status,
+	)
+	return err
 }
