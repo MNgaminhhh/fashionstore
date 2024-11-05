@@ -35,6 +35,7 @@ type CategoryDataResponse struct {
 	Icon      string                  `json:"icon,omitempty"`
 	Status    int                     `json:"status"`
 	Component database.ComponentsType `json:"component,omitempty"`
+	Parent    *string                 `json:"parent,omitempty"`
 }
 
 type ICategoriesService interface {
@@ -46,6 +47,10 @@ type ICategoriesService interface {
 	GetCateById(id string) (int, *CategoryDataResponse)
 	DeleteCateById(id string) int
 	UpdateCateById(id string, customParam validator.UpdateCategoryRequest) int
+	GetSubCateById(id string) (int, *CategoryDataResponse)
+	DeleteSubCateById(id string) int
+	UpdateSubCateById(id string, customParam validator.UpdateCategoryRequest) int
+	GetAllSubCates(param *validator.FilterCategoryRequest) (int, map[string]interface{})
 }
 
 type CategoriesService struct {
@@ -209,6 +214,87 @@ func (cs *CategoriesService) UpdateCateById(id string, customParam validator.Upd
 	return response.SuccessCode
 }
 
+func (cs *CategoriesService) GetAllSubCates(param *validator.FilterCategoryRequest) (int, map[string]interface{}) {
+	subCates, err := cs.cateRepo.GetAllSubCategories(param)
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	limit := len(subCates)
+	page := 1
+	if param.Limit != nil {
+		limit = *param.Limit
+	}
+	if param.Page != nil {
+		page = *param.Page
+	}
+	totalPages := internal.CalculateTotalPages(len(subCates), limit)
+	subCates = internal.Paginate(subCates, page, limit)
+	var subCatesResponse []CategoryDataResponse
+	for _, sub := range subCates {
+		data := mapCategoryToResponse(sub)
+		subCatesResponse = append(subCatesResponse, data)
+	}
+	results := map[string]interface{}{
+		"sub_categories": subCatesResponse,
+		"page":           page,
+		"limit":          limit,
+		"total-results":  len(subCates),
+		"total-pages":    totalPages,
+	}
+	return response.SuccessCode, results
+}
+
+func (cs *CategoriesService) GetSubCateById(id string) (int, *CategoryDataResponse) {
+	subCateId, _ := uuid.Parse(id)
+	subCate, err := cs.cateRepo.GetSubCategoryById(subCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound, nil
+	}
+	result := mapCategoryToResponse(subCate)
+	return response.SuccessCode, &result
+}
+
+func (cs *CategoriesService) DeleteSubCateById(id string) int {
+	subCateId, _ := uuid.Parse(id)
+	err := cs.cateRepo.DeleteSubCategoryById(subCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound
+	}
+	return response.SuccessCode
+}
+
+func (cs *CategoriesService) UpdateSubCateById(id string, customParam validator.UpdateCategoryRequest) int {
+	subCateId, _ := uuid.Parse(id)
+	newSubCate, err := cs.cateRepo.GetSubCategoryById(subCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound
+	}
+	if customParam.Name != nil {
+		newSubCate.Name = *customParam.Name
+	}
+	if customParam.NameCode != nil {
+		newSubCate.NameCode = *customParam.NameCode
+	}
+	if customParam.Parent != nil {
+		cateId, _ := uuid.Parse(*customParam.Parent)
+		newSubCate.CategoryID = cateId
+	}
+	if customParam.Status != nil {
+		newSubCate.Status = sql.NullInt32{Int32: int32(*customParam.Status), Valid: true}
+	}
+	if customParam.Component != nil {
+		newSubCate.Component = database.NullComponentsType{
+			ComponentsType: database.ComponentsType(*customParam.Component),
+			Valid:          true,
+		}
+	}
+	err = cs.cateRepo.UpdateSubCategoryById(newSubCate)
+	if err != nil {
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
 func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
 	var results []CateResponse
 	if rows != nil {
@@ -275,14 +361,40 @@ func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
 	return results
 }
 
-func mapCategoryToResponse(category *database.Category) CategoryDataResponse {
-	return CategoryDataResponse{
-		ID:        category.ID.String(),
-		Name:      category.Name,
-		NameCode:  category.NameCode,
-		Url:       category.Url.String,
-		Icon:      category.Icon.String,
-		Status:    int(category.Status.Int32),
-		Component: category.Component.ComponentsType,
+func mapCategoryToResponse[T any](category T) CategoryDataResponse {
+	switch v := any(category).(type) {
+	case *database.Category:
+		return CategoryDataResponse{
+			ID:        v.ID.String(),
+			Name:      v.Name,
+			NameCode:  v.NameCode,
+			Url:       v.Url.String,
+			Icon:      v.Icon.String,
+			Status:    int(v.Status.Int32),
+			Component: v.Component.ComponentsType,
+		}
+	case database.FindALlSubCategoriesRow:
+		return CategoryDataResponse{
+			ID:        v.ID.String(),
+			Name:      v.Name,
+			NameCode:  v.NameCode,
+			Url:       v.Url.String,
+			Status:    int(v.Status.Int32),
+			Component: v.Component.ComponentsType,
+			Parent:    &v.CategoryName,
+		}
+	case database.FindSubCategoryByIdRow:
+		return CategoryDataResponse{
+			ID:        v.ID.String(),
+			Name:      v.Name,
+			NameCode:  v.NameCode,
+			Url:       v.Url.String,
+			Status:    int(v.Status.Int32),
+			Component: v.Component.ComponentsType,
+			Parent:    &v.CategoryName,
+		}
+
+	default:
+		return CategoryDataResponse{}
 	}
 }

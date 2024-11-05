@@ -114,11 +114,11 @@ const findALlSubCategories = `-- name: FindALlSubCategories :many
 SELECT sc.id, sc.category_id, sc.name, sc.name_code, sc.url, sc.status, sc.component, sc.created_at, sc.updated_at, c.name AS category_name
 FROM sub_categories sc
          JOIN categories c ON sc.category_id = c.id
-WHERE (sc.url LIKE '%' || $1 || '%' OR $1 = '')
-  AND (sc.name LIKE '%' || $2 || '%' OR $2 = '')
-  AND (sc.name_code LIKE '%' || $3 || '%' OR $3 = '')
+WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
+  AND (sc.name ILIKE '%' || $2 || '%' OR $2 IS NULL )
+  AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
   AND (sc.status = $4 OR $4 = -1)
-  AND (c.name LIKE '%' || $5 || '%' OR $5 = '')
+  AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
 ORDER BY sc.updated_at DESC
 `
 

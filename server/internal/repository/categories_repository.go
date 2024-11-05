@@ -18,6 +18,10 @@ type ICategoryRepository interface {
 	GetCategoryById(id uuid.UUID) (*database.Category, error)
 	DeleteCategoryById(id uuid.UUID) error
 	UpdateCategoryById(newCate *database.Category) error
+	GetAllSubCategories(customParam *validator.FilterCategoryRequest) ([]database.FindALlSubCategoriesRow, error)
+	GetSubCategoryById(id uuid.UUID) (*database.FindSubCategoryByIdRow, error)
+	DeleteSubCategoryById(id uuid.UUID) error
+	UpdateSubCategoryById(newSubCate *database.FindSubCategoryByIdRow) error
 }
 
 type CategoryRepository struct {
@@ -151,5 +155,66 @@ func (cr *CategoryRepository) UpdateCategoryById(newCate *database.Category) err
 		ID:        newCate.ID,
 	}
 	err := cr.sqlc.UpdateCategoryById(ctx, param)
+	return err
+}
+
+func (cr *CategoryRepository) GetAllSubCategories(customParam *validator.FilterCategoryRequest) ([]database.FindALlSubCategoriesRow, error) {
+	param := database.FindALlSubCategoriesParams{
+		Column1: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
+		Column2: sql.NullString{
+			String: customParam.Name,
+			Valid:  customParam.Name != "",
+		},
+		Column3: sql.NullString{
+			String: customParam.NameCode,
+			Valid:  customParam.NameCode != "",
+		},
+		Status: sql.NullInt32{
+			Int32: -1,
+			Valid: true,
+		},
+		Column5: sql.NullString{
+			String: customParam.ParentName,
+			Valid:  customParam.ParentName != "",
+		},
+	}
+	if customParam.Status != nil {
+		param.Status = sql.NullInt32{
+			Int32: int32(*customParam.Status),
+			Valid: true,
+		}
+	}
+	subCates, err := cr.sqlc.FindALlSubCategories(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return subCates, nil
+}
+
+func (cr *CategoryRepository) GetSubCategoryById(id uuid.UUID) (*database.FindSubCategoryByIdRow, error) {
+	subCate, err := cr.sqlc.FindSubCategoryById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &subCate, err
+}
+
+func (cr *CategoryRepository) DeleteSubCategoryById(id uuid.UUID) error {
+	err := cr.sqlc.DeleteSubCategoryById(ctx, id)
+	return err
+}
+
+func (cr *CategoryRepository) UpdateSubCategoryById(newSubCate *database.FindSubCategoryByIdRow) error {
+	param := database.UpdateSubCategoryByIdParams{
+		Name:       newSubCate.Name,
+		NameCode:   newSubCate.NameCode,
+		Component:  newSubCate.Component,
+		CategoryID: newSubCate.CategoryID,
+		ID:         newSubCate.ID,
+	}
+	err := cr.sqlc.UpdateSubCategoryById(ctx, param)
 	return err
 }

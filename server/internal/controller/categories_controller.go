@@ -119,12 +119,24 @@ func (cc *CategoryController) UpdateCateById(c echo.Context) error {
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update cate by id fail")
 	}
-	if err := c.Validate(reqParam); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
-	}
 	code := cc.cateService.UpdateCateById(id, reqParam)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Update cate by id fail")
 	}
 	return response.SuccessResponse(c, code, "Cập nhật thành công!!")
+}
+
+func (cc *CategoryController) GetAllSubCates(c echo.Context) error {
+	var reqParam validator.FilterCategoryRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Get all cates fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code, results := cc.cateService.GetAllSubCates(&reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get all cates fail")
+	}
+	return response.SuccessResponse(c, code, results)
 }
