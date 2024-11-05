@@ -188,7 +188,6 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                   </Table>
                 </TableContainer>
               </Box>
-
               <Divider />
               <Box display="flex" justifyContent="flex-end" my={4}>
                 <Stack direction="row" spacing={2} alignItems="center">
