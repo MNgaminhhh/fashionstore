@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -13,7 +14,7 @@ import (
 	"log"
 )
 
-type CateResponse struct {
+type FullCatesResponse struct {
 	Icon      string                  `json:"icon"`
 	Title     string                  `json:"title"`
 	Href      string                  `json:"href"`
@@ -42,7 +43,7 @@ type ICategoriesService interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) int
 	AddSubCate(customParam validator.AddSubCateRequest) int
 	AddChildCate(customParam validator.AddChildCateRequest) int
-	GetFullCate() (int, []CateResponse)
+	GetFullCate() (int, []FullCatesResponse)
 	GetAllCate(param *validator.FilterCategoryRequest) (int, map[string]interface{})
 	GetCateById(id string) (int, *CategoryDataResponse)
 	DeleteCateById(id string) int
@@ -51,6 +52,10 @@ type ICategoriesService interface {
 	DeleteSubCateById(id string) int
 	UpdateSubCateById(id string, customParam validator.UpdateCategoryRequest) int
 	GetAllSubCates(param *validator.FilterCategoryRequest) (int, map[string]interface{})
+	GetAllChildCates(customParam validator.FilterCategoryRequest) (int, map[string]interface{})
+	GetChildCateById(id string) (int, *CategoryDataResponse)
+	DeleteChildCateById(id string) int
+	UpdateChildCateById(id string, customParam validator.UpdateCategoryRequest) int
 }
 
 type CategoriesService struct {
@@ -66,13 +71,7 @@ func (cs *CategoriesService) AddNewCategory(customParam validator.AddCategoryReq
 	if err != nil {
 		var pqError *pq.Error
 		if errors.As(err, &pqError) {
-			if pqError.Code == "23505" {
-				if pqError.Constraint == "categories_name_code_key" {
-					return response.ErrCodeNameCodeAlreadyUsed
-				} else if pqError.Constraint == "categories_name_key" {
-					return response.ErrCodeNameAlreadyUsed
-				}
-			}
+			return pg_error.GetMessageError(pqError)
 		}
 		return response.ErrCodeInternal
 	}
@@ -84,17 +83,7 @@ func (cs *CategoriesService) AddSubCate(customParam validator.AddSubCateRequest)
 	if err != nil {
 		var pqError *pq.Error
 		if errors.As(err, &pqError) {
-			if pqError.Code == "23505" {
-				if pqError.Constraint == "unique_sub_name_per_category" {
-					return response.ErrCodeNameAlreadyUsed
-				}
-				if pqError.Constraint == "unique_sub_name_code_per_category" {
-					return response.ErrCodeNameCodeAlreadyUsed
-				}
-			}
-			if pqError.Code == "23502" {
-				return response.ErrCodeCateNotFound
-			}
+			return pg_error.GetMessageError(pqError)
 		}
 		return response.ErrCodeInternal
 	}
@@ -106,25 +95,14 @@ func (cs *CategoriesService) AddChildCate(customParam validator.AddChildCateRequ
 	if err != nil {
 		var pqError *pq.Error
 		if errors.As(err, &pqError) {
-			log.Println(pqError.Code)
-			if pqError.Code == "23505" {
-				if pqError.Constraint == "unique_child_name_per_sub_cate" {
-					return response.ErrCodeNameAlreadyUsed
-				}
-				if pqError.Constraint == "unique_child_name_code_per_sub_cate" {
-					return response.ErrCodeNameCodeAlreadyUsed
-				}
-			}
-			if pqError.Code == "23503" {
-				return response.ErrCodeSubCateNotFound
-			}
+			return pg_error.GetMessageError(pqError)
 		}
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
 }
 
-func (cs *CategoriesService) GetFullCate() (int, []CateResponse) {
+func (cs *CategoriesService) GetFullCate() (int, []FullCatesResponse) {
 	rows, err := cs.cateRepo.GetFullCate()
 	if err != nil {
 		return response.ErrCodeInternal, nil
@@ -209,6 +187,10 @@ func (cs *CategoriesService) UpdateCateById(id string, customParam validator.Upd
 	}
 	err = cs.cateRepo.UpdateCategoryById(newCate)
 	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			return pg_error.GetMessageError(pqError)
+		}
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
@@ -290,21 +272,25 @@ func (cs *CategoriesService) UpdateSubCateById(id string, customParam validator.
 	}
 	err = cs.cateRepo.UpdateSubCategoryById(newSubCate)
 	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			return pg_error.GetMessageError(pqError)
+		}
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
 }
 
-func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
-	var results []CateResponse
+func mapResponseTreeData(rows []database.GetFullCategoriesRow) []FullCatesResponse {
+	var results []FullCatesResponse
 	if rows != nil {
-		categories := make(map[string]CateResponse)
+		categories := make(map[string]FullCatesResponse)
 
 		for _, row := range rows {
 			cateID := row.CategoryID.String()
 
 			if _, exists := categories[cateID]; !exists {
-				categories[cateID] = CateResponse{
+				categories[cateID] = FullCatesResponse{
 					Icon:      row.CategoryIcon.String,
 					Title:     row.CategoryName,
 					Href:      row.CategoryUrl.String,
@@ -361,6 +347,88 @@ func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
 	return results
 }
 
+func (cs *CategoriesService) GetAllChildCates(customParam validator.FilterCategoryRequest) (int, map[string]interface{}) {
+	childCates, err := cs.cateRepo.GetAllChildCategories(customParam)
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	limit := len(childCates)
+	if customParam.Limit != nil {
+		limit = *customParam.Limit
+	}
+	page := 1
+	if customParam.Page != nil {
+		page = *customParam.Page
+	}
+	totalResults := len(childCates)
+	totalPages := internal.CalculateTotalPages(len(childCates), limit)
+	childCates = internal.Paginate(childCates, page, limit)
+	var childResponse []CategoryDataResponse
+	for _, childCate := range childCates {
+		data := mapCategoryToResponse(childCate)
+		childResponse = append(childResponse, data)
+	}
+	result := map[string]interface{}{
+		"total-pages":      totalPages,
+		"page":             page,
+		"total-results":    totalResults,
+		"child_categories": childResponse,
+	}
+	return response.SuccessCode, result
+}
+
+func (cs *CategoriesService) GetChildCateById(id string) (int, *CategoryDataResponse) {
+	childCateId, _ := uuid.Parse(id)
+	childCate, err := cs.cateRepo.GetChildCateById(childCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound, nil
+	}
+	result := mapCategoryToResponse(childCate)
+	return response.SuccessCode, &result
+}
+
+func (cs *CategoriesService) DeleteChildCateById(id string) int {
+	childCateId, _ := uuid.Parse(id)
+	err := cs.cateRepo.DeleteChildCateById(childCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound
+	}
+	return response.SuccessCode
+}
+
+func (cs *CategoriesService) UpdateChildCateById(id string, customParam validator.UpdateCategoryRequest) int {
+	childCateId, _ := uuid.Parse(id)
+	newChildCate, err := cs.cateRepo.GetChildCateById(childCateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound
+	}
+	if customParam.Name != nil {
+		newChildCate.Name = *customParam.Name
+	}
+	if customParam.NameCode != nil {
+		newChildCate.NameCode = *customParam.NameCode
+	}
+	if customParam.Parent != nil {
+		subCateId, _ := uuid.Parse(*customParam.Parent)
+		newChildCate.SubCategoryID = uuid.NullUUID{
+			UUID:  subCateId,
+			Valid: true,
+		}
+	}
+	if customParam.Status != nil {
+		newChildCate.Status = sql.NullInt32{Int32: int32(*customParam.Status), Valid: true}
+	}
+	err = cs.cateRepo.UpdateChildCateById(newChildCate)
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			return pg_error.GetMessageError(pqError)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
 func mapCategoryToResponse[T any](category T) CategoryDataResponse {
 	switch v := any(category).(type) {
 	case *database.Category:
@@ -383,7 +451,7 @@ func mapCategoryToResponse[T any](category T) CategoryDataResponse {
 			Component: v.Component.ComponentsType,
 			Parent:    &v.CategoryName,
 		}
-	case database.FindSubCategoryByIdRow:
+	case *database.FindSubCategoryByIdRow:
 		return CategoryDataResponse{
 			ID:        v.ID.String(),
 			Name:      v.Name,
@@ -392,6 +460,24 @@ func mapCategoryToResponse[T any](category T) CategoryDataResponse {
 			Status:    int(v.Status.Int32),
 			Component: v.Component.ComponentsType,
 			Parent:    &v.CategoryName,
+		}
+	case database.FindAllChildCategoriesRow:
+		return CategoryDataResponse{
+			ID:       v.ID.String(),
+			Name:     v.Name,
+			NameCode: v.NameCode,
+			Url:      v.Url.String,
+			Status:   int(v.Status.Int32),
+			Parent:   &v.SubCategoryName,
+		}
+	case *database.FindChildCategoryByIdRow:
+		return CategoryDataResponse{
+			ID:       v.ID.String(),
+			Name:     v.Name,
+			NameCode: v.NameCode,
+			Url:      v.Url.String,
+			Status:   int(v.Status.Int32),
+			Parent:   &v.SubCategoryName,
 		}
 
 	default:

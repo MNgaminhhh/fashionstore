@@ -140,3 +140,99 @@ func (cc *CategoryController) GetAllSubCates(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, results)
 }
+
+func (cc *CategoryController) GetSubCateById(c echo.Context) error {
+	id := c.Param("id")
+	code, data := cc.cateService.GetSubCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get sub cate by id fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) DeleteSubCateById(c echo.Context) error {
+	id := c.Param("id")
+	code := cc.cateService.DeleteSubCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Delete sub cate by id fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!!")
+}
+
+func (cc *CategoryController) UpdateSubCateById(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Update cate by id fail")
+	}
+	id := c.Param("id")
+	if id == "" {
+		return response.ErrorResponse(c, response.ErrCodeCateNotFound, "Update cate by id fail")
+	}
+	var reqParam validator.UpdateCategoryRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update cate by id fail")
+
+	}
+	code := cc.cateService.UpdateSubCateById(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update cate by id fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!!")
+}
+
+func (cc *CategoryController) GetAllChildCates(c echo.Context) error {
+	var reqParam validator.FilterCategoryRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Get all cates fail")
+	}
+	code, data := cc.cateService.GetAllChildCates(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get all cates fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) GetChildCateById(c echo.Context) error {
+	id := c.Param("id")
+	code, data := cc.cateService.GetChildCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get child cate by id fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) DeleteChildCateById(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Delete cate by id fail")
+	}
+	id := c.Param("id")
+	code := cc.cateService.DeleteChildCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Delete child cate by id fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
+}
+
+func (cc *CategoryController) UpdateChildCateById(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Update cate by id fail")
+	}
+	id := c.Param("id")
+	if id == "" {
+		return response.ErrorResponse(c, response.ErrCodeCateNotFound, "Update cate by id fail")
+	}
+	var reqParam validator.UpdateCategoryRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update cate by id fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := cc.cateService.UpdateChildCateById(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update cate by id fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}

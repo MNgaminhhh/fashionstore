@@ -95,7 +95,7 @@ DELETE FROM child_categories
 WHERE id = $1
 `
 
-func (q *Queries) DeleteChildCategoryById(ctx context.Context, id int32) error {
+func (q *Queries) DeleteChildCategoryById(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteChildCategoryById, id)
 	return err
 }
@@ -238,19 +238,52 @@ func (q *Queries) FindAllCategories(ctx context.Context, arg FindAllCategoriesPa
 }
 
 const findAllChildCategories = `-- name: FindAllChildCategories :many
-SELECT id, sub_category_id, name, name_code, url, status, created_at, updated_at FROM child_categories
-ORDER BY updated_at DESC
+SELECT cc.id, cc.sub_category_id, cc.name, cc.name_code, cc.url, cc.status, cc.created_at, cc.updated_at, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (cc.name ILIKE '%' || $2 || '%' OR $2 IS NULL)
+  AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (cc.status = $4 OR $4 = -1)
+  AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+ORDER BY cc.updated_at DESC
 `
 
-func (q *Queries) FindAllChildCategories(ctx context.Context) ([]ChildCategory, error) {
-	rows, err := q.db.QueryContext(ctx, findAllChildCategories)
+type FindAllChildCategoriesParams struct {
+	Column1 sql.NullString
+	Column2 sql.NullString
+	Column3 sql.NullString
+	Status  sql.NullInt32
+	Column5 sql.NullString
+}
+
+type FindAllChildCategoriesRow struct {
+	ID              uuid.UUID
+	SubCategoryID   uuid.NullUUID
+	Name            string
+	NameCode        string
+	Url             sql.NullString
+	Status          sql.NullInt32
+	CreatedAt       sql.NullTime
+	UpdatedAt       sql.NullTime
+	SubCategoryName string
+}
+
+func (q *Queries) FindAllChildCategories(ctx context.Context, arg FindAllChildCategoriesParams) ([]FindAllChildCategoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, findAllChildCategories,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Status,
+		arg.Column5,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ChildCategory
+	var items []FindAllChildCategoriesRow
 	for rows.Next() {
-		var i ChildCategory
+		var i FindAllChildCategoriesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.SubCategoryID,
@@ -260,6 +293,7 @@ func (q *Queries) FindAllChildCategories(ctx context.Context) ([]ChildCategory, 
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SubCategoryName,
 		); err != nil {
 			return nil, err
 		}
@@ -298,14 +332,27 @@ func (q *Queries) FindCategoryById(ctx context.Context, id uuid.UUID) (Category,
 }
 
 const findChildCategoryById = `-- name: FindChildCategoryById :one
-SELECT id, sub_category_id, name, name_code, url, status, created_at, updated_at
-FROM child_categories
-WHERE id = $1
+SELECT cc.id, cc.sub_category_id, cc.name, cc.name_code, cc.url, cc.status, cc.created_at, cc.updated_at, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE cc.id = $1
 `
 
-func (q *Queries) FindChildCategoryById(ctx context.Context, id int32) (ChildCategory, error) {
+type FindChildCategoryByIdRow struct {
+	ID              uuid.UUID
+	SubCategoryID   uuid.NullUUID
+	Name            string
+	NameCode        string
+	Url             sql.NullString
+	Status          sql.NullInt32
+	CreatedAt       sql.NullTime
+	UpdatedAt       sql.NullTime
+	SubCategoryName string
+}
+
+func (q *Queries) FindChildCategoryById(ctx context.Context, id uuid.UUID) (FindChildCategoryByIdRow, error) {
 	row := q.db.QueryRowContext(ctx, findChildCategoryById, id)
-	var i ChildCategory
+	var i FindChildCategoryByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.SubCategoryID,
@@ -315,6 +362,7 @@ func (q *Queries) FindChildCategoryById(ctx context.Context, id int32) (ChildCat
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SubCategoryName,
 	)
 	return i, err
 }
@@ -456,15 +504,17 @@ const updateChildCategoryById = `-- name: UpdateChildCategoryById :exec
 UPDATE child_categories
 SET name = $1,
     name_code = $2,
-    sub_category_id = $3
-WHERE id = $4
+    sub_category_id = $3,
+    status = $4
+WHERE id = $5
 `
 
 type UpdateChildCategoryByIdParams struct {
 	Name          string
 	NameCode      string
 	SubCategoryID uuid.NullUUID
-	ID            int32
+	Status        sql.NullInt32
+	ID            uuid.UUID
 }
 
 func (q *Queries) UpdateChildCategoryById(ctx context.Context, arg UpdateChildCategoryByIdParams) error {
@@ -472,6 +522,7 @@ func (q *Queries) UpdateChildCategoryById(ctx context.Context, arg UpdateChildCa
 		arg.Name,
 		arg.NameCode,
 		arg.SubCategoryID,
+		arg.Status,
 		arg.ID,
 	)
 	return err
@@ -482,8 +533,9 @@ UPDATE sub_categories
 SET name = $1,
     name_code = $2,
     component = $3,
-    category_id = $4
-WHERE id = $5
+    category_id = $4,
+    status = $5
+WHERE id = $6
 `
 
 type UpdateSubCategoryByIdParams struct {
@@ -491,6 +543,7 @@ type UpdateSubCategoryByIdParams struct {
 	NameCode   string
 	Component  NullComponentsType
 	CategoryID uuid.UUID
+	Status     sql.NullInt32
 	ID         uuid.UUID
 }
 
@@ -500,6 +553,7 @@ func (q *Queries) UpdateSubCategoryById(ctx context.Context, arg UpdateSubCatego
 		arg.NameCode,
 		arg.Component,
 		arg.CategoryID,
+		arg.Status,
 		arg.ID,
 	)
 	return err

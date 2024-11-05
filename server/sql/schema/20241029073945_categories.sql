@@ -29,7 +29,7 @@ CREATE TABLE sub_categories (
 );
 
 CREATE TABLE child_categories (
-      id SERIAL PRIMARY KEY,
+      id UUID PRIMARY KEY default gen_random_uuid(),
       sub_category_id UUID REFERENCES sub_categories(id) ON DELETE SET NULL,
       name VARCHAR(255) NOT NULL,
       name_code VARCHAR(255) NOT NULL,

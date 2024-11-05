@@ -222,7 +222,7 @@ type Category struct {
 }
 
 type ChildCategory struct {
-	ID            int32
+	ID            uuid.UUID
 	SubCategoryID uuid.NullUUID
 	Name          string
 	NameCode      string

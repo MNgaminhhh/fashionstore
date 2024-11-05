@@ -22,6 +22,10 @@ type ICategoryRepository interface {
 	GetSubCategoryById(id uuid.UUID) (*database.FindSubCategoryByIdRow, error)
 	DeleteSubCategoryById(id uuid.UUID) error
 	UpdateSubCategoryById(newSubCate *database.FindSubCategoryByIdRow) error
+	GetAllChildCategories(customParam validator.FilterCategoryRequest) ([]database.FindAllChildCategoriesRow, error)
+	GetChildCateById(id uuid.UUID) (*database.FindChildCategoryByIdRow, error)
+	DeleteChildCateById(id uuid.UUID) error
+	UpdateChildCateById(newChildCate *database.FindChildCategoryByIdRow) error
 }
 
 type CategoryRepository struct {
@@ -214,7 +218,67 @@ func (cr *CategoryRepository) UpdateSubCategoryById(newSubCate *database.FindSub
 		Component:  newSubCate.Component,
 		CategoryID: newSubCate.CategoryID,
 		ID:         newSubCate.ID,
+		Status:     newSubCate.Status,
 	}
 	err := cr.sqlc.UpdateSubCategoryById(ctx, param)
+	return err
+}
+
+func (cr *CategoryRepository) GetAllChildCategories(customParam validator.FilterCategoryRequest) ([]database.FindAllChildCategoriesRow, error) {
+	param := database.FindAllChildCategoriesParams{
+		Column1: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
+		Column2: sql.NullString{
+			String: customParam.Name,
+			Valid:  customParam.Name != "",
+		},
+		Column3: sql.NullString{
+			String: customParam.NameCode,
+			Valid:  customParam.NameCode != "",
+		},
+		Status: sql.NullInt32{
+			Int32: -1,
+			Valid: true,
+		},
+		Column5: sql.NullString{
+			String: customParam.ParentName,
+			Valid:  customParam.ParentName != "",
+		},
+	}
+	if customParam.Status != nil {
+		param.Status.Int32 = int32(*customParam.Status)
+	}
+	childCates, err := cr.sqlc.FindAllChildCategories(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return childCates, err
+}
+
+func (cr *CategoryRepository) GetChildCateById(id uuid.UUID) (*database.FindChildCategoryByIdRow, error) {
+	childCate, err := cr.sqlc.FindChildCategoryById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &childCate, err
+}
+
+func (cr *CategoryRepository) UpdateChildCateById(newChildCate *database.FindChildCategoryByIdRow) error {
+	param := database.UpdateChildCategoryByIdParams{
+		Name:          newChildCate.Name,
+		NameCode:      newChildCate.NameCode,
+		SubCategoryID: newChildCate.SubCategoryID,
+		Status:        newChildCate.Status,
+		ID:            newChildCate.ID,
+	}
+	log.Println(param)
+	err := cr.sqlc.UpdateChildCategoryById(ctx, param)
+	return err
+}
+
+func (cr *CategoryRepository) DeleteChildCateById(id uuid.UUID) error {
+	err := cr.sqlc.DeleteChildCategoryById(ctx, id)
 	return err
 }

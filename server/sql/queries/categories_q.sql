@@ -89,29 +89,39 @@ UPDATE sub_categories
 SET name = $1,
     name_code = $2,
     component = $3,
-    category_id = $4
-WHERE id = $5;
+    category_id = $4,
+    status = $5
+WHERE id = $6;
 
 -- name: DeleteSubCategoryById :exec
 DELETE FROM sub_categories
 WHERE id = $1;
 
 -- name: FindAllChildCategories :many
-SELECT * FROM child_categories
-ORDER BY updated_at DESC ;
+SELECT cc.*, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (cc.name ILIKE '%' || $2 || '%' OR $2 IS NULL)
+  AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (cc.status = $4 OR $4 = -1)
+  AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+ORDER BY cc.updated_at DESC;
 
 -- name: FindChildCategoryById :one
-SELECT *
-FROM child_categories
-WHERE id = $1;
+SELECT cc.*, sc.name AS sub_category_name
+FROM child_categories cc
+         JOIN sub_categories sc ON cc.sub_category_id = sc.id
+WHERE cc.id = $1;
 
 
 -- name: UpdateChildCategoryById :exec
 UPDATE child_categories
 SET name = $1,
     name_code = $2,
-    sub_category_id = $3
-WHERE id = $4;
+    sub_category_id = $3,
+    status = $4
+WHERE id = $5;
 
 -- name: DeleteChildCategoryById :exec
 DELETE FROM child_categories
