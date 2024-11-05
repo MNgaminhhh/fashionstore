@@ -36,3 +36,83 @@ $1,
         $2,
         $3
 );
+
+-- name: FindAllCategories :many
+SELECT * FROM categories
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (name_code ILIKE '%' || $2 || '%' OR $2 IS NULL)
+  AND (url ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (status = $4 OR $4 = -1)
+ORDER BY updated_at DESC;
+
+
+-- name: FindCategoryById :one
+SELECT *
+FROM categories
+WHERE id = $1;
+
+
+-- name: UpdateCategoryById :exec
+UPDATE categories
+SET name = $1,
+    name_code = $2,
+    icon = $3,
+    component = $4,
+    status = $5
+WHERE id = $6;
+
+-- name: DeleteCategoryById :exec
+DELETE FROM categories
+WHERE id = $1;
+
+
+-- name: FindALlSubCategories :many
+SELECT sc.*, c.name AS category_name
+FROM sub_categories sc
+         JOIN categories c ON sc.category_id = c.id
+WHERE (sc.url LIKE '%' || $1 || '%' OR $1 = '')
+  AND (sc.name LIKE '%' || $2 || '%' OR $2 = '')
+  AND (sc.name_code LIKE '%' || $3 || '%' OR $3 = '')
+  AND (sc.status = $4 OR $4 = -1)
+  AND (c.name LIKE '%' || $5 || '%' OR $5 = '')
+ORDER BY sc.updated_at DESC;
+
+-- name: FindSubCategoryById :one
+SELECT sc.*, c.name AS category_name
+FROM sub_categories sc
+JOIN categories c ON sc.category_id = c.id
+WHERE sc.id = $1;
+
+
+-- name: UpdateSubCategoryById :exec
+UPDATE sub_categories
+SET name = $1,
+    name_code = $2,
+    component = $3,
+    category_id = $4
+WHERE id = $5;
+
+-- name: DeleteSubCategoryById :exec
+DELETE FROM sub_categories
+WHERE id = $1;
+
+-- name: FindAllChildCategories :many
+SELECT * FROM child_categories
+ORDER BY updated_at DESC ;
+
+-- name: FindChildCategoryById :one
+SELECT *
+FROM child_categories
+WHERE id = $1;
+
+
+-- name: UpdateChildCategoryById :exec
+UPDATE child_categories
+SET name = $1,
+    name_code = $2,
+    sub_category_id = $3
+WHERE id = $4;
+
+-- name: DeleteChildCategoryById :exec
+DELETE FROM child_categories
+WHERE id = $1;

@@ -24,33 +24,36 @@ CREATE TABLE sub_categories (
     status INTEGER DEFAULT 1 CHECK (status IN (0, 1)),
     component components_type DEFAULT 'MegaMenu1.name',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
 CREATE TABLE child_categories (
       id SERIAL PRIMARY KEY,
-      sub_category_id UUID REFERENCES sub_categories(id) ON DELETE CASCADE,
+      sub_category_id UUID REFERENCES sub_categories(id) ON DELETE SET NULL,
       name VARCHAR(255) NOT NULL,
       name_code VARCHAR(255) NOT NULL,
       url VARCHAR(255),
       status INTEGER DEFAULT 1 CHECK (status IN (0, 1)),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE OR REPLACE FUNCTION set_default_url_for_categories()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.url IS NULL THEN
-        NEW.url := '/categories/' || NEW.name_code;
-END IF;
+    NEW.url := '/categories/' || NEW.name_code;
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_default_url_before_insert
     BEFORE INSERT ON categories
+    FOR EACH ROW
+    EXECUTE FUNCTION set_default_url_for_categories();
+
+CREATE TRIGGER set_url_before_update
+    BEFORE UPDATE ON categories
     FOR EACH ROW
     EXECUTE FUNCTION set_default_url_for_categories();
 

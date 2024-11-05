@@ -14,6 +14,10 @@ type ICategoryRepository interface {
 	AddNewSubCategory(customParam validator.AddSubCateRequest) error
 	AddChildCate(customParam validator.AddChildCateRequest) error
 	GetFullCate() ([]database.GetFullCategoriesRow, error)
+	GetAllCategories(customParam *validator.FilterCategoryRequest) ([]database.Category, error)
+	GetCategoryById(id uuid.UUID) (*database.Category, error)
+	DeleteCategoryById(id uuid.UUID) error
+	UpdateCategoryById(newCate *database.Category) error
 }
 
 type CategoryRepository struct {
@@ -89,4 +93,63 @@ func (cr *CategoryRepository) GetFullCate() ([]database.GetFullCategoriesRow, er
 		return nil, err
 	}
 	return rows, nil
+}
+
+func (cr *CategoryRepository) GetAllCategories(customParam *validator.FilterCategoryRequest) ([]database.Category, error) {
+	param := database.FindAllCategoriesParams{
+		Column1: sql.NullString{
+			String: customParam.Name,
+			Valid:  customParam.Name != "",
+		},
+		Column2: sql.NullString{
+			String: customParam.NameCode,
+			Valid:  customParam.NameCode != "",
+		},
+		Column3: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
+		Status: sql.NullInt32{
+			Int32: -1,
+			Valid: true,
+		},
+	}
+	if customParam.Status != nil {
+		param.Status = sql.NullInt32{
+			Int32: int32(*customParam.Status),
+			Valid: true,
+		}
+	}
+	log.Println(param)
+	cates, err := cr.sqlc.FindAllCategories(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return cates, nil
+}
+
+func (cr *CategoryRepository) GetCategoryById(id uuid.UUID) (*database.Category, error) {
+	cate, err := cr.sqlc.FindCategoryById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &cate, nil
+}
+
+func (cr *CategoryRepository) DeleteCategoryById(id uuid.UUID) error {
+	err := cr.sqlc.DeleteCategoryById(ctx, id)
+	return err
+}
+
+func (cr *CategoryRepository) UpdateCategoryById(newCate *database.Category) error {
+	param := database.UpdateCategoryByIdParams{
+		Name:      newCate.Name,
+		NameCode:  newCate.NameCode,
+		Icon:      newCate.Icon,
+		Component: newCate.Component,
+		Status:    newCate.Status,
+		ID:        newCate.ID,
+	}
+	err := cr.sqlc.UpdateCategoryById(ctx, param)
+	return err
 }

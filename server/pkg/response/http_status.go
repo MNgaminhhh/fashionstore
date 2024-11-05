@@ -25,6 +25,7 @@ const (
 	ErrCodeNameAlreadyUsed            = 50017
 	ErrCodeCateNotFound               = 50018
 	ErrCodeSubCateNotFound            = 50019
+	ErrCodeVendorNotFound             = 50020
 )
 
 var msg = map[int]string{
@@ -51,4 +52,5 @@ var msg = map[int]string{
 	ErrCodeNameCodeAlreadyUsed:        "Name code này đã được sử dụng rồi!!",
 	ErrCodeNameAlreadyUsed:            "Loại này đã tồn tại!!",
 	ErrCodeCateNotFound:               "Category không tồn tại!!",
-	ErrCodeSubCateNotFound:            "Sub cate này không tồn tại!!"}
+	ErrCodeSubCateNotFound:            "Sub cate này không tồn tại!!",
+	ErrCodeVendorNotFound:             "Không tìm thấy người bán!!"}

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal/database"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -66,4 +67,41 @@ func (cc *CategoryController) GetFullCate(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Không thể lấy full categories!!")
 	}
 	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) GetAllCates(c echo.Context) error {
+	var reqParam validator.FilterCategoryRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Get all cates fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code, data := cc.cateService.GetAllCate(&reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get all cates fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) GetCategoryById(c echo.Context) error {
+	id := c.Param("id")
+	code, data := cc.cateService.GetCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get cate by id fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
+func (cc *CategoryController) DeleteCateById(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Delete cate by id fail")
+	}
+	id := c.Param("id")
+	code := cc.cateService.DeleteCateById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Delete cate by id fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công")
 }

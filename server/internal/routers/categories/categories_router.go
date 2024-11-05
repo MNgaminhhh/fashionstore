@@ -1,6 +1,7 @@
 package categories
 
 import (
+	"backend/internal/middleware"
 	"backend/internal/wire"
 	"github.com/labstack/echo"
 )
@@ -17,6 +18,11 @@ func (cr *CategoryRouter) InitCategoryRouter(router *echo.Group) {
 		categoriesGroup.POST("/sub", categoryController.AddSubCate)
 		categoriesGroup.POST("/child", categoryController.AddChildCate)
 
-		categoriesGroup.GET("/", categoryController.GetFullCate)
+		categoriesGroup.GET("/full-tree", categoryController.GetFullCate)
+
+		categoriesGroup.GET("/all", categoryController.GetAllCates)
+		categoriesGroup.GET("/:id", categoryController.GetCategoryById)
+
+		categoriesGroup.DELETE("/:id", categoryController.DeleteCateById, middleware.JWTMiddleware)
 	}
 }

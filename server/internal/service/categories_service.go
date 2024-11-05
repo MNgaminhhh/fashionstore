@@ -1,11 +1,14 @@
 package service
 
 import (
+	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"database/sql"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
 )
@@ -24,11 +27,25 @@ type ChildItem struct {
 	Children []ChildItem `json:"children,omitempty"`
 }
 
+type CategoryDataResponse struct {
+	ID        string                  `json:"id"`
+	Name      string                  `json:"name"`
+	NameCode  string                  `json:"nameCode"`
+	Url       string                  `json:"url,omitempty"`
+	Icon      string                  `json:"icon,omitempty"`
+	Status    int                     `json:"status"`
+	Component database.ComponentsType `json:"component,omitempty"`
+}
+
 type ICategoriesService interface {
 	AddNewCategory(customParam validator.AddCategoryRequest) int
 	AddSubCate(customParam validator.AddSubCateRequest) int
 	AddChildCate(customParam validator.AddChildCateRequest) int
 	GetFullCate() (int, []CateResponse)
+	GetAllCate(param *validator.FilterCategoryRequest) (int, map[string]interface{})
+	GetCateById(id string) (int, *CategoryDataResponse)
+	DeleteCateById(id string) int
+	UpdateCateById(id string, customParam validator.UpdateCategoryRequest) int
 }
 
 type CategoriesService struct {
@@ -111,6 +128,87 @@ func (cs *CategoriesService) GetFullCate() (int, []CateResponse) {
 	return response.SuccessCode, data
 }
 
+func (cs *CategoriesService) GetAllCate(param *validator.FilterCategoryRequest) (int, map[string]interface{}) {
+	cates, err := cs.cateRepo.GetAllCategories(param)
+	limit := len(cates)
+	page := 1
+	if param.Limit != nil {
+		limit = *param.Limit
+	}
+	if param.Offset != nil {
+		page = *param.Offset
+	}
+	totalPages := internal.CalculateTotalPages(len(cates), limit)
+	cates = internal.Paginate(cates, page, limit)
+	var responseData []CategoryDataResponse
+	for _, data := range cates {
+		responseData = append(responseData, mapCategoryToResponse(&data))
+	}
+	results := map[string]interface{}{
+		"categories":    responseData,
+		"page":          page,
+		"limit":         limit,
+		"total-results": len(responseData),
+		"total-pages":   totalPages,
+	}
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	return response.SuccessCode, results
+}
+
+func (cs *CategoriesService) GetCateById(id string) (int, *CategoryDataResponse) {
+	cateId, _ := uuid.Parse(id)
+	cate, err := cs.cateRepo.GetCategoryById(cateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound, nil
+	}
+	result := mapCategoryToResponse(cate)
+	return response.SuccessCode, &result
+}
+
+func (cs *CategoriesService) DeleteCateById(id string) int {
+	cateId, _ := uuid.Parse(id)
+	log.Println(cateId)
+	err := cs.cateRepo.DeleteCategoryById(cateId)
+	if err != nil {
+		log.Println(err.Error())
+		return response.ErrCodeCateNotFound
+	}
+	return response.SuccessCode
+}
+
+func (cs *CategoriesService) UpdateCateById(id string, customParam validator.UpdateCategoryRequest) int {
+	cateId, _ := uuid.Parse(id)
+	newCate, err := cs.cateRepo.GetCategoryById(cateId)
+	if err != nil {
+		return response.ErrCodeCateNotFound
+	}
+	if customParam.Name != nil {
+		newCate.Name = *customParam.Name
+	}
+	if customParam.NameCode != nil {
+		newCate.NameCode = *customParam.NameCode
+	}
+	if customParam.Icon != nil {
+		newCate.Icon = sql.NullString{String: *customParam.Icon, Valid: true}
+	}
+	if customParam.Status != nil {
+		newCate.Status = sql.NullInt32{Int32: int32(*customParam.Status), Valid: true}
+	}
+	if customParam.Component != nil {
+		newCate.Component = database.NullComponentsType{
+			ComponentsType: database.ComponentsType(*customParam.Component),
+			Valid:          true,
+		}
+	}
+	err = cs.cateRepo.UpdateCategoryById(newCate)
+	if err != nil {
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
 func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
 	var results []CateResponse
 	if rows != nil {
@@ -175,4 +273,16 @@ func mapResponseTreeData(rows []database.GetFullCategoriesRow) []CateResponse {
 		}
 	}
 	return results
+}
+
+func mapCategoryToResponse(category *database.Category) CategoryDataResponse {
+	return CategoryDataResponse{
+		ID:        category.ID.String(),
+		Name:      category.Name,
+		NameCode:  category.NameCode,
+		Url:       category.Url.String,
+		Icon:      category.Icon.String,
+		Status:    int(category.Status.Int32),
+		Component: category.Component.ComponentsType,
+	}
 }

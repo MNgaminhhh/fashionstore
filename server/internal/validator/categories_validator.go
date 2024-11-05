@@ -19,3 +19,20 @@ type AddChildCateRequest struct {
 	Name      string `json:"name" validate:"required"`
 	NameCode  string `json:"name_code" validate:"required"`
 }
+
+type FilterCategoryRequest struct {
+	Name     string `json:"name"`
+	NameCode string `json:"name_code"`
+	Url      string `json:"url"`
+	Status   *int   `json:"status"`
+	Limit    *int   `json:"limit"`
+	Offset   *int   `json:"offset"`
+}
+
+type UpdateCategoryRequest struct {
+	Name      *string `json:"name"`
+	NameCode  *string `json:"name_code"`
+	Icon      *string `json:"icon"`
+	Component *string `json:"component" validate:"oneof=MegaMenu1.name MegaMenu2.name"`
+	Status    *int    `json:"status" validate:"oneof=0 1"`
+}
