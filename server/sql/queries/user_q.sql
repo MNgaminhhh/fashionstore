@@ -1,6 +1,13 @@
 -- name: GetAllUser :many
 SELECT *
-FROM users;
+FROM users
+WHERE
+    (full_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (dob = $2 OR $2 IS NULL)
+  AND (email ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (status = $4 OR $4 IS NULL)
+  AND (phone_number ILIKE '%' || $5 || '%' OR $5 IS NULL)
+ORDER BY updated_at DESC;
 
 -- name: GetUserByEmail :one
 SELECT *

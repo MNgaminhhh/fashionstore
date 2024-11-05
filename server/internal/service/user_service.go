@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/repository"
 	"backend/internal/validator"
@@ -25,6 +26,7 @@ type IUserService interface {
 	SendEmailVerify(email string) int
 	GetUserInformation(uuid uuid.UUID) (int, *database.User)
 	UpdateUserInformation(customParam validator.UpdateUserRequest, email string) int
+	GetAllUsers(customParam validator.FilterUserRequest) (int, map[string]interface{})
 }
 
 type userService struct {
@@ -49,6 +51,15 @@ func NewUserService(
 	}
 }
 
+type UserResponse struct {
+	ID          uuid.UUID `json:"id"`
+	Email       string    `json:"email"`
+	Name        string    `json:"name"`
+	Dob         string    `json:"dob"`
+	Status      string    `json:"status"`
+	PhoneNumber string    `json:"phone_number"`
+}
+
 func (us *userService) Login(email string, password string) (int, map[string]interface{}) {
 	user, err := us.userRepo.GetUserByEmail(email)
 	if err != nil {
@@ -57,10 +68,10 @@ func (us *userService) Login(email string, password string) (int, map[string]int
 	if !CheckPasswordHash(password, user.Password) {
 		return response.ErrCodeIncorrectPassword, nil
 	}
-	if user.Status == database.UserStatusInactive {
+	if user.Status.UserStatus == database.UserStatusInactive {
 		return response.ErrCodeUserInactive, nil
 	}
-	if user.Status == database.UserStatusLock {
+	if user.Status.UserStatus == database.UserStatusLock {
 		return response.ErrCodeUserLocked, nil
 	}
 
@@ -81,7 +92,14 @@ func (us *userService) Login(email string, password string) (int, map[string]int
 }
 
 func (us *userService) UpdateUserStatus(email string, status string) int {
-	err := us.userRepo.UpdateStatus(email, status)
+	user, err := us.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return response.ErrCodeUserNotFound
+	}
+	if user.Status.UserStatus == database.UserStatusLock {
+		return response.ErrCodeUserLocked
+	}
+	err = us.userRepo.UpdateStatus(email, status)
 	if err != nil {
 		return response.ErrCodeEmailNotFound
 	}
@@ -245,4 +263,44 @@ func (us *userService) UpdateUserInformation(customParam validator.UpdateUserReq
 		}
 	}
 	return response.SuccessCode
+}
+
+func (us *userService) GetAllUsers(customParam validator.FilterUserRequest) (int, map[string]interface{}) {
+	users, err := us.userRepo.GetAllUser(customParam)
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	limit := len(users)
+	page := 1
+	totalResults := len(users)
+	if customParam.Limit != nil {
+		limit = *customParam.Limit
+	}
+	if customParam.Page != nil {
+		page = *customParam.Page
+	}
+
+	totalPages := internal.CalculateTotalPages(len(users), limit)
+	users = internal.Paginate(users, page, limit)
+	var data []UserResponse
+	for _, user := range users {
+		data = append(data, *mapUserToResponse(user))
+	}
+	return response.SuccessCode, map[string]interface{}{
+		"total_pages":   totalPages,
+		"total_results": totalResults,
+		"page":          page,
+		"users":         data,
+	}
+}
+
+func mapUserToResponse(user database.User) *UserResponse {
+	return &UserResponse{
+		ID:          user.ID,
+		Email:       user.Email,
+		Name:        user.FullName.String,
+		Dob:         user.Dob.Time.String(),
+		Status:      string(user.Status.UserStatus),
+		PhoneNumber: user.PhoneNumber.String,
+	}
 }

@@ -3,7 +3,7 @@
 CREATE TYPE user_status AS ENUM ('active', 'inactive', 'lock');
 
 ALTER TABLE users
-    ADD COLUMN status user_status default 'inactive' not null,
+    ADD COLUMN status user_status default 'inactive',
     ADD COLUMN full_name VARCHAR(255),
     ADD COLUMN phone_number VARCHAR(10),
     ADD COLUMN dob DATE,

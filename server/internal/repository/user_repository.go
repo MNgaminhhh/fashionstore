@@ -3,8 +3,11 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
+	"backend/internal/validator"
+	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"strings"
 )
 
@@ -15,6 +18,7 @@ type IUserRepository interface {
 	UpdatePassword(email, newPassword string) error
 	FindByID(uuid uuid.UUID) (*database.User, error)
 	UpdateUser(newUser *database.User) error
+	GetAllUser(customParam validator.FilterUserRequest) ([]database.User, error)
 }
 
 type userRepository struct {
@@ -33,8 +37,11 @@ func (ur *userRepository) GetUserByEmail(email string) (*database.User, error) {
 func (ur *userRepository) UpdateStatus(email string, userStatus string) error {
 	status := database.UserStatus(strings.ToLower(userStatus))
 	params := database.UpdateUserStatusParams{
-		Status: status,
-		Email:  email,
+		Status: database.NullUserStatus{
+			UserStatus: status,
+			Valid:      true,
+		},
+		Email: email,
 	}
 	err := ur.sqlc.UpdateUserStatus(ctx, params)
 	return err
@@ -79,6 +86,62 @@ func (ur *userRepository) UpdateUser(newUser *database.User) error {
 	}
 	err := ur.sqlc.UpdateUser(ctx, params)
 	return err
+}
+
+func (ur *userRepository) GetAllUser(customParam validator.FilterUserRequest) ([]database.User, error) {
+	param := database.GetAllUserParams{
+		Column1: sql.NullString{
+			Valid: customParam.FullName != nil,
+		},
+		Dob: sql.NullTime{
+			Valid: customParam.Dob != nil,
+		},
+		Column3: sql.NullString{
+			Valid: customParam.Email != nil,
+		},
+		Status: database.NullUserStatus{
+			UserStatus: "",
+			Valid:      false,
+		},
+		Column5: sql.NullString{
+			Valid: customParam.PhoneNumber != nil,
+		},
+	}
+	if customParam.FullName != nil {
+		param.Column1 = sql.NullString{
+			Valid:  true,
+			String: *customParam.FullName,
+		}
+	}
+	if customParam.Dob != nil {
+		param.Dob = sql.NullTime{
+			Valid: true,
+			Time:  *customParam.Dob,
+		}
+	}
+	if customParam.Email != nil {
+		param.Column3 = sql.NullString{
+			Valid:  true,
+			String: *customParam.Email,
+		}
+	}
+	if customParam.Status != nil {
+		status := database.UserStatus(*customParam.Status)
+		param.Status.UserStatus = status
+		param.Status.Valid = true
+	}
+	if customParam.PhoneNumber != nil {
+		param.Column5 = sql.NullString{
+			Valid:  true,
+			String: *customParam.PhoneNumber,
+		}
+	}
+	log.Println(param)
+	users, err := ur.sqlc.GetAllUser(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func NewUserRepository() IUserRepository {

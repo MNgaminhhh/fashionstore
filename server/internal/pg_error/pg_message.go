@@ -19,7 +19,6 @@ func GetMessageError(pqError *pq.Error) int {
 			return response.ErrCodeNameAlreadyUsed
 		}
 		if name == "unique_child_name_code_per_sub_cate" || name == "unique_sub_name_code_per_category" || name == "categories_name_code_key" {
-			log.Println("hiiiiiiiii")
 			return response.ErrCodeNameCodeAlreadyUsed
 		}
 		return response.ErrCodeInternal

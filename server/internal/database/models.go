@@ -248,7 +248,7 @@ type User struct {
 	ID          uuid.UUID
 	Email       string
 	Password    string
-	Status      UserStatus
+	Status      NullUserStatus
 	FullName    sql.NullString
 	PhoneNumber sql.NullString
 	Dob         sql.NullTime
