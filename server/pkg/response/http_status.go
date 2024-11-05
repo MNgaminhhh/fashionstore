@@ -27,6 +27,7 @@ const (
 	ErrCodeSubCateNotFound            = 50019
 	ErrCodeVendorNotFound             = 50020
 	ErrCodeCateParentNotFound         = 50021
+	ErrCodeBannerNotFound             = 50022
 )
 
 var msg = map[int]string{
@@ -55,4 +56,5 @@ var msg = map[int]string{
 	ErrCodeCateNotFound:               "Category không tồn tại!!",
 	ErrCodeSubCateNotFound:            "Sub cate này không tồn tại!!",
 	ErrCodeVendorNotFound:             "Không tìm thấy người bán!!",
-	ErrCodeCateParentNotFound:         "Không tìm thấy parent category!"}
+	ErrCodeCateParentNotFound:         "Không tìm thấy parent category!",
+	ErrCodeBannerNotFound:             "Không tìm tấy banner!!"}

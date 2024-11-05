@@ -3,8 +3,6 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
-	"backend/internal/validator"
-	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
@@ -18,7 +16,7 @@ type IUserRepository interface {
 	UpdatePassword(email, newPassword string) error
 	FindByID(uuid uuid.UUID) (*database.User, error)
 	UpdateUser(newUser *database.User) error
-	GetAllUser(customParam validator.FilterUserRequest) ([]database.User, error)
+	GetAllUser(param database.GetAllUserParams) ([]database.User, error)
 }
 
 type userRepository struct {
@@ -88,54 +86,8 @@ func (ur *userRepository) UpdateUser(newUser *database.User) error {
 	return err
 }
 
-func (ur *userRepository) GetAllUser(customParam validator.FilterUserRequest) ([]database.User, error) {
-	param := database.GetAllUserParams{
-		Column1: sql.NullString{
-			Valid: customParam.FullName != nil,
-		},
-		Dob: sql.NullTime{
-			Valid: customParam.Dob != nil,
-		},
-		Column3: sql.NullString{
-			Valid: customParam.Email != nil,
-		},
-		Status: database.NullUserStatus{
-			UserStatus: "",
-			Valid:      false,
-		},
-		Column5: sql.NullString{
-			Valid: customParam.PhoneNumber != nil,
-		},
-	}
-	if customParam.FullName != nil {
-		param.Column1 = sql.NullString{
-			Valid:  true,
-			String: *customParam.FullName,
-		}
-	}
-	if customParam.Dob != nil {
-		param.Dob = sql.NullTime{
-			Valid: true,
-			Time:  *customParam.Dob,
-		}
-	}
-	if customParam.Email != nil {
-		param.Column3 = sql.NullString{
-			Valid:  true,
-			String: *customParam.Email,
-		}
-	}
-	if customParam.Status != nil {
-		status := database.UserStatus(*customParam.Status)
-		param.Status.UserStatus = status
-		param.Status.Valid = true
-	}
-	if customParam.PhoneNumber != nil {
-		param.Column5 = sql.NullString{
-			Valid:  true,
-			String: *customParam.PhoneNumber,
-		}
-	}
+func (ur *userRepository) GetAllUser(param database.GetAllUserParams) ([]database.User, error) {
+
 	log.Println(param)
 	users, err := ur.sqlc.GetAllUser(ctx, param)
 	if err != nil {

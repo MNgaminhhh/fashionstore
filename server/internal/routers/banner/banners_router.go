@@ -17,7 +17,10 @@ func (br *BannerRouter) InitBannerRouter(router *echo.Group) {
 
 		bannerRouter.GET("/active", bannersController.GetActiveBanners)
 		bannerRouter.GET("", bannersController.GetAllBanners)
+		bannerRouter.GET("/:id", bannersController.GetBannerById)
 
 		bannerRouter.PUT("/:id", bannersController.UpdateBanner, middleware.JWTMiddleware)
+
+		bannerRouter.DELETE("/:id", bannersController.DeleteBanner, middleware.JWTMiddleware)
 	}
 }

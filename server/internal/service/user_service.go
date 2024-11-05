@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -107,16 +108,16 @@ func (us *userService) UpdateUserStatus(email string, status string) int {
 }
 
 func (us *userService) CreateNewUser(email string, password string, confirmed string) int {
-	user, _ := us.userRepo.GetUserByEmail(email)
-	if user != nil {
-		return response.ErrCodeEmailAlreadyUsed
-	}
 	if password != confirmed {
 		return response.ErrCodeIncorrectConfirmedPassword
 	}
 	passwordHash, _ := HashPassword(password)
 	err := us.userRepo.CreateNewUser(email, passwordHash)
 	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			return pg_error.GetMessageError(pqError)
+		}
 		return response.ErrCodeInternal
 	}
 	result := make(chan int)
@@ -266,7 +267,58 @@ func (us *userService) UpdateUserInformation(customParam validator.UpdateUserReq
 }
 
 func (us *userService) GetAllUsers(customParam validator.FilterUserRequest) (int, map[string]interface{}) {
-	users, err := us.userRepo.GetAllUser(customParam)
+	param := database.GetAllUserParams{
+		Column1: sql.NullString{
+			Valid: customParam.FullName != nil,
+		},
+		Dob: sql.NullTime{
+			Valid: customParam.Dob != nil,
+		},
+		Column3: sql.NullString{
+			Valid: customParam.Email != nil,
+		},
+		Status: database.NullUserStatus{
+			UserStatus: "",
+			Valid:      false,
+		},
+		Column5: sql.NullString{
+			Valid: customParam.PhoneNumber != nil,
+		},
+	}
+	if customParam.FullName != nil {
+		param.Column1 = sql.NullString{
+			Valid:  true,
+			String: *customParam.FullName,
+		}
+	}
+	if customParam.Dob != nil {
+		dob, err := time.Parse("02-01-2006", *customParam.Dob)
+		if err != nil {
+			return response.ErrCodeIncorrectDateFormat, nil
+		}
+		param.Dob = sql.NullTime{
+			Valid: true,
+			Time:  dob,
+		}
+	}
+	if customParam.Email != nil {
+		param.Column3 = sql.NullString{
+			Valid:  true,
+			String: *customParam.Email,
+		}
+	}
+	if customParam.Status != nil {
+		status := database.UserStatus(*customParam.Status)
+		param.Status.UserStatus = status
+		param.Status.Valid = true
+	}
+	if customParam.PhoneNumber != nil {
+		param.Column5 = sql.NullString{
+			Valid:  true,
+			String: *customParam.PhoneNumber,
+		}
+	}
+	users, err := us.userRepo.GetAllUser(param)
 	if err != nil {
 		return response.ErrCodeInternal, nil
 	}

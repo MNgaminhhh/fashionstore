@@ -31,11 +31,11 @@ const getAllUser = `-- name: GetAllUser :many
 SELECT id, email, password, status, full_name, phone_number, dob, created_at, updated_at, role, avt
 FROM users
 WHERE
-    full_name ILIKE '%'|| $1 ||'%' OR $1 IS NULL
-AND dob = $2 or $2 IS NULL
-AND email ILIKE '%' || $3 || '%' OR $3 IS NULL
-AND status = $4 OR $4 IS NULL
-AND phone_number ILIKE '%' || $5 || '%' OR $5 IS NULL
+    (full_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (dob = $2 OR $2 IS NULL)
+  AND (email ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (status = $4 OR $4 IS NULL)
+  AND (phone_number ILIKE '%' || $5 || '%' OR $5 IS NULL)
 ORDER BY updated_at DESC
 `
 
