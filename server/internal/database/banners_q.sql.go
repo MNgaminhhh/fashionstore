@@ -38,13 +38,46 @@ func (q *Queries) AddBanner(ctx context.Context, arg AddBannerParams) error {
 	return err
 }
 
+const deleteBannerById = `-- name: DeleteBannerById :exec
+DELETE FROM banners
+WHERE id = $1
+`
+
+func (q *Queries) DeleteBannerById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteBannerById, id)
+	return err
+}
+
 const getAllBanners = `-- name: GetAllBanners :many
 SELECT id, banner_image, title, description, text, link, serial, status, created_at, updated_at FROM banners
+WHERE
+    (title ILIKE '%' || $1 || '%' OR $1 IS NULL)
+AND (description ILIKE '%' || $2 || '%' OR $2 IS NULL)
+AND (text ILIKE '%' || $3 || '%' OR $3 IS NULL)
+AND (link ILIKE '%' || $4 || '%' OR $4 IS NULL)
+AND (serial = $5 OR $5 IS NULL)
+AND (status = $6 OR $6 = -1)
 ORDER BY updated_at DESC
 `
 
-func (q *Queries) GetAllBanners(ctx context.Context) ([]Banner, error) {
-	rows, err := q.db.QueryContext(ctx, getAllBanners)
+type GetAllBannersParams struct {
+	Column1 sql.NullString
+	Column2 sql.NullString
+	Column3 sql.NullString
+	Column4 sql.NullString
+	Serial  sql.NullInt32
+	Status  int32
+}
+
+func (q *Queries) GetAllBanners(ctx context.Context, arg GetAllBannersParams) ([]Banner, error) {
+	rows, err := q.db.QueryContext(ctx, getAllBanners,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Serial,
+		arg.Status,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +108,29 @@ func (q *Queries) GetAllBanners(ctx context.Context) ([]Banner, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getBannerById = `-- name: GetBannerById :one
+SELECT id, banner_image, title, description, text, link, serial, status, created_at, updated_at FROM banners
+WHERE id = $1
+`
+
+func (q *Queries) GetBannerById(ctx context.Context, id uuid.UUID) (Banner, error) {
+	row := q.db.QueryRowContext(ctx, getBannerById, id)
+	var i Banner
+	err := row.Scan(
+		&i.ID,
+		&i.BannerImage,
+		&i.Title,
+		&i.Description,
+		&i.Text,
+		&i.Link,
+		&i.Serial,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getBannersByStatus = `-- name: GetBannersByStatus :many

@@ -5,13 +5,17 @@ import (
 	"backend/internal/database"
 	"backend/internal/validator"
 	"database/sql"
+	"github.com/google/uuid"
 	"log"
 )
 
 type IBannersRepository interface {
 	AddBanner(customParam validator.AddBannerRequest) error
 	GetBannerByStatus(status int) ([]database.Banner, error)
-	GetAllBanners() ([]database.Banner, error)
+	GetAllBanners(param database.GetAllBannersParams) ([]database.Banner, error)
+	UpdateBanner(newBanner *database.Banner) error
+	DeleteBannerById(id uuid.UUID) error
+	GetBannerById(id uuid.UUID) (*database.Banner, error)
 }
 
 type BannersRepository struct {
@@ -63,11 +67,39 @@ func (br *BannersRepository) GetBannerByStatus(status int) ([]database.Banner, e
 	return banners, nil
 }
 
-func (br *BannersRepository) GetAllBanners() ([]database.Banner, error) {
-	banners, err := br.sqlc.GetAllBanners(ctx)
+func (br *BannersRepository) GetAllBanners(param database.GetAllBannersParams) ([]database.Banner, error) {
+	banners, err := br.sqlc.GetAllBanners(ctx, param)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 	return banners, nil
+}
+
+func (br *BannersRepository) UpdateBanner(newBanner *database.Banner) error {
+	param := database.UpdateBannerParams{
+		ID:          newBanner.ID,
+		Title:       newBanner.Title,
+		BannerImage: newBanner.BannerImage,
+		Description: newBanner.Description,
+		Text:        newBanner.Text,
+		Link:        newBanner.Link,
+		Serial:      newBanner.Serial,
+		Status:      newBanner.Status,
+	}
+	err := br.sqlc.UpdateBanner(ctx, param)
+	return err
+}
+
+func (br *BannersRepository) GetBannerById(id uuid.UUID) (*database.Banner, error) {
+	banner, err := br.sqlc.GetBannerById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &banner, nil
+}
+
+func (br *BannersRepository) DeleteBannerById(id uuid.UUID) error {
+	err := br.sqlc.DeleteBannerById(ctx, id)
+	return err
 }

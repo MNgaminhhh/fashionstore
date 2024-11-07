@@ -9,11 +9,13 @@ type AddBannerRequest struct {
 	Serial      int     `json:"Serial" validate:"required"`
 }
 
-type UpdateBannerRequest struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	ButtonText  string  `json:"button_text"`
-	ButtonLink  *string `json:"button_link"`
-	Serial      int     `json:"Serial"`
-	Status      int     `json:"Status" validate:"oneof=0 1"`
+type BannerRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ButtonText  string `json:"button_text"`
+	ButtonLink  string `json:"button_link"`
+	Serial      *int   `json:"serial"`
+	Status      *int   `json:"status"`
+	Limit       *int   `json:"limit"`
+	Page        *int   `json:"page"`
 }
