@@ -23,9 +23,9 @@ const SliderShow = forwardRef<Slider, Props>((props, ref) => {
     arrowStyles,
     dots = false,
     arrows = true,
-    slidesToShow = 4,
-    spaceBetween = 10,
-    dotStyles = { mt: 4 },
+    slidesToShow = 3,
+    spaceBetween = 8,
+    dotStyles = { mt: 2 },
     ...others
   } = props;
 

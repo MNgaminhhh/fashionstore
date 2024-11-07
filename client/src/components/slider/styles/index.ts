@@ -25,14 +25,15 @@ export const RootStyle = styled("div", {
 }));
 
 export const DotList = styled(Box)(({ theme }) => ({
-  gap: 6,
+  gap: 1,
   zIndex: 1,
   margin: 0,
-  padding: 0,
+  padding: "20px 0 !important",
+  marginTop: "20px !important",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: theme.palette.primary.main,
+  listStyle: "none",
   "& li": {
     width: 15,
     height: 15,
@@ -40,30 +41,31 @@ export const DotList = styled(Box)(({ theme }) => ({
     cursor: "pointer",
     alignItems: "center",
     justifyContent: "center",
-    "&.slick-active span::after": { scale: "1" },
+    "&.slick-active span": {
+      backgroundColor: theme.palette.primary.main,
+    },
   },
 }));
 
 export const Dot = styled("span", {
   shouldForwardProp: (prop) => prop !== "dotColor",
 })<{ dotColor?: string }>(({ dotColor, theme }) => ({
-  width: "100%",
-  height: "100%",
+  width: 12,
+  height: 12,
   cursor: "pointer",
   borderRadius: "50%",
-  position: "relative",
-  border: `1px solid ${dotColor || theme.palette.secondary.main}`,
+  display: "block",
+  backgroundColor: dotColor || theme.palette.grey[400],
+  transition: "background-color 0.3s ease, transform 0.3s ease",
+  "&:hover": {
+    backgroundColor: dotColor || theme.palette.primary.main,
+    transform: "scale(1.1)",
+  },
   "&:after": {
-    scale: 0,
-    inset: 0,
-    width: 9,
-    height: 9,
     content: '""',
-    margin: "auto",
+    display: "block",
     borderRadius: "50%",
     position: "absolute",
-    transition: "scale 500ms ease-in-out",
-    backgroundColor: dotColor || theme.palette.secondary.main,
   },
 }));
 
@@ -72,7 +74,7 @@ export const ArrowButton = styled(Box)(({ theme }) => ({
   width: 35,
   height: 35,
   padding: 0,
-  opacity: 0,
+  opacity: 0.8,
   top: "50%",
   display: "flex",
   cursor: "pointer",
@@ -80,14 +82,18 @@ export const ArrowButton = styled(Box)(({ theme }) => ({
   alignItems: "center",
   justifyContent: "center",
   transform: "translate(0, -50%)",
-  transition: "all 0.2s ease-in-out",
-  color: theme.palette.secondary.contrastText,
-  backgroundColor: theme.palette.secondary.main,
-  boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)",
+  transition: "opacity 0.3s ease-in-out",
+  backgroundColor: theme.palette.primary.main,
+  borderRadius: "50%",
+  color: theme.palette.common.white,
+  boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
 
-  ...(theme.direction === "rtl" && {
-    ".back-icon, .forward-icon": { rotate: "180deg" },
-  }),
+  "&.slick-disabled": {
+    opacity: 0.5,
+    cursor: "not-allowed",
+  },
 
-  "&.slick-disabled": { visibility: "hidden" },
+  ":hover": {
+    opacity: 1,
+  },
 }));

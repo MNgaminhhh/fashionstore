@@ -52,7 +52,7 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
   };
 
   return (
-    <WrapperPage title="Quản Lý Nhãn Hàng">
+    <WrapperPage title="Quản Lý Thương Hiệu">
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
           href="/admin/brands/create"
@@ -84,8 +84,8 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
         >
           {({ values, handleSubmit, setFieldValue }) => (
             <>
-              <Box sx={{ maxHeight: 900, overflow: "hide" }}>
-                <TableContainer component={Scrollbar}>
+              <Box sx={{ maxHeight: 900, overflow: "auto" }}>
+                <TableContainer>
                   <Table stickyHeader>
                     <TableHead>
                       <TableRow

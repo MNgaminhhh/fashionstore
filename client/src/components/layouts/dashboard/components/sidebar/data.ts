@@ -6,17 +6,29 @@ import RefundIcon from "@mui/icons-material/MonetizationOn";
 import SellerIcon from "@mui/icons-material/Storefront";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
-
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 export const navigationAdmin = [
   { type: "label", label: "Admin" },
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/admin/dashboard" },
   { type: "label", label: "Ecommerce" },
   {
+    name: "Quản Lý Danh Mục",
+    icon: MenuOpenIcon,
+    children: [
+      { name: "Danh Sách Danh Mục", path: "/categories/brands" },
+      { name: "Danh Sách Danh Mục Con", path: "/categories/brands/create" },
+      {
+        name: "Danh Sách Danh Mục Con Cấp 2",
+        path: "/categories/products/reviews",
+      },
+    ],
+  },
+  {
     name: "Quản lý Sản phẩm",
     icon: Inventory2Icon,
     children: [
       { name: "Danh Sách Thương Hiệu", path: "/admin/brands" },
-      { name: "Sản phẩm", path: "/admin/products/create" },
+      { name: "Thêm Thương Hiệu", path: "/admin/brands/create" },
       { name: "Đánh Giá Sản Phẩm", path: "/admin/products/reviews" },
     ],
   },

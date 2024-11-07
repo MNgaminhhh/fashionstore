@@ -1,15 +1,17 @@
-"use client";
 import Container from "@mui/material/Container";
-import { carouselData } from "./data"; // Đảm bảo đường dẫn đúng
 import SliderCard from "../../../../components/slidercard";
 import SliderShow from "../../../../components/slider/SliderShow";
+import Banner from "../../../../services/Banner";
+import { get } from "lodash";
 
-export default function SliderSection() {
+export default async function SliderSection() {
+  const bannerData = await Banner.findAllTrue();
+  const banners = get(bannerData, "data.data", []);
   return (
-    <div className="bg-white mb-4">
+    <div>
       <Container className="pt-2 pb-2">
         <SliderShow slidesToShow={1} arrows={false} dots autoplay>
-          {carouselData.map((data, ind) => (
+          {banners.map((data, ind) => (
             <SliderCard {...data} key={ind} />
           ))}
         </SliderShow>

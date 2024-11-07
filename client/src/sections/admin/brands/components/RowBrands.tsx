@@ -36,7 +36,6 @@ export default function RowBrands({
 }: Props) {
   const router = useRouter();
 
-  // State to control visibility based on initial 'visible' value
   const [isVisible, setIsVisible] = useState(brand.visible);
 
   const handleEdit = (id: string) => {
@@ -46,7 +45,7 @@ export default function RowBrands({
   const handleToggleVisibility = () => {
     const newVisibility = !isVisible;
     setIsVisible(newVisibility);
-    onToggleVisibility(brand.id, newVisibility); // Call the handler to update visibility
+    onToggleVisibility(brand.id, newVisibility);
   };
 
   return (
