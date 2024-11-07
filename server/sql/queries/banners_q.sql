@@ -1,6 +1,6 @@
 -- name: AddBanner :exec
-INSERT INTO banners (title, banner_image, description, text, link, serial)
-VALUES ($1,$2,$3,$4, $5, $6);
+INSERT INTO banners (title, banner_image, description, text, link, serial, status)
+VALUES ($1,$2,$3,$4, $5, $6, $7);
 
 -- name: GetBannersByStatus :many
 SELECT * FROM banners

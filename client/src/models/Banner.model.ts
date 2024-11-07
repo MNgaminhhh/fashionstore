@@ -3,8 +3,8 @@ interface BannerModel {
   banner_image: string;
   title: string;
   description: string;
-  text: string;
-  link: string;
+  buttonText: string;
+  buttonLink: string;
   serial: string;
   status: string;
 }

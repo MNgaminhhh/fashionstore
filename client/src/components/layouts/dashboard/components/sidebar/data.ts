@@ -7,6 +7,7 @@ import SellerIcon from "@mui/icons-material/Storefront";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import LanguageIcon from "@mui/icons-material/Language";
 export const navigationAdmin = [
   { type: "label", label: "Admin" },
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/admin/dashboard" },
@@ -30,6 +31,15 @@ export const navigationAdmin = [
       { name: "Danh Sách Thương Hiệu", path: "/admin/brands" },
       { name: "Thêm Thương Hiệu", path: "/admin/brands/create" },
       { name: "Đánh Giá Sản Phẩm", path: "/admin/products/reviews" },
+    ],
+  },
+  {
+    name: "Quản Lý Website",
+    icon: LanguageIcon,
+    children: [
+      { name: "Danh Sách Banner", path: "/admin/banners" },
+      { name: "Thêm Banner", path: "/admin/banners/create" },
+      { name: "Đánh Giá Sản Phẩm", path: "/admin/banner/reviews" },
     ],
   },
   {

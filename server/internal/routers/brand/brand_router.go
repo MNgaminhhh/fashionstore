@@ -17,7 +17,6 @@ func (br *BrandRouter) InitRouter(router *echo.Group) {
 		brandRouterGroup.GET("/:id", brandController.GetBrandById)
 		brandRouterGroup.PUT("/:id", brandController.UpdateBrand, middleware.JWTMiddleware)
 		brandRouterGroup.DELETE("/:id", brandController.DeleteBrand, middleware.JWTMiddleware)
-
 		brandRouterGroup.POST("/", brandController.AddBrand, middleware.JWTMiddleware)
 	}
 }

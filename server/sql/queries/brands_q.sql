@@ -2,7 +2,8 @@
 SELECT * FROM brands
 WHERE
     visible = $1 OR $1 IS NULL
-AND (name LIKE '%' || $2::text || '%' OR $2 = '');
+AND (name LIKE '%' || $2::text || '%' OR $2 = '')
+ORDER BY updated_at DESC;
 
 -- name: AddBrand :exec
 INSERT INTO brands (name, visible, sequence, store_id, image) VALUES ($1, $2,$3,$4,$5);

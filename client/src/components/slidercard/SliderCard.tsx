@@ -37,8 +37,7 @@ export default function SliderCard({
     >
       {banner_image && (
         <MTImage
-          // src={banner_image}
-          src="https://anonyviet.com/wp-content/uploads/2024/11/ghi-am-cuoc-goi-tren-iphone-1.jpg"
+          src={banner_image}
           alt={title || "slider image"}
           fill
           style={{
@@ -65,9 +64,10 @@ export default function SliderCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          alignItems: "center",
-          textAlign: "center",
+          alignItems: "flex-start",
+          textAlign: "left",
           padding: 4,
+          pl: 6,
         }}
       >
         {title && (
@@ -80,12 +80,12 @@ export default function SliderCard({
             sx={{
               fontSize: "1.25rem",
               maxWidth: "80%",
-              margin: "16px auto",
+              margin: "16px 0",
               color: "white",
             }}
           >
-            {description.length > 200
-              ? `${description.substring(0, 200)}...`
+            {description.length > 300
+              ? `${description.substring(0, 300)}...`
               : description}
           </Paragraph>
         )}

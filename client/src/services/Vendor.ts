@@ -50,6 +50,36 @@ class Vendor extends Base {
     return rs;
   }
 
+  async getList(
+    token: string | undefined = undefined,
+    withCredentials: boolean = true,
+    filters: Filters = {}
+  ) {
+    let url = `vendors/?`;
+    const filterParams: string[] = [];
+    if (filters.status) {
+      filterParams.push(`status=${encodeURIComponent(filters.status)}`);
+    }
+    if (filters.store_name) {
+      filterParams.push(`store_name=${encodeURIComponent(filters.store_name)}`);
+    }
+    if (filterParams.length > 0) {
+      url += filterParams.join("&");
+    }
+
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
+    return rs;
+  }
+
   async findOne(id: string) {
     const rs = await this.execute({
       url: `vendors/${id}`,

@@ -72,6 +72,7 @@ SELECT id, sequence, store_id, name, image, visible, created_at, updated_at FROM
 WHERE
     visible = $1 OR $1 IS NULL
 AND (name LIKE '%' || $2::text || '%' OR $2 = '')
+ORDER BY updated_at DESC
 `
 
 type GetBrandsParams struct {

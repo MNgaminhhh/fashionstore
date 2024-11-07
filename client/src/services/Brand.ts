@@ -3,7 +3,6 @@ import Base from "./Base";
 interface Filters {
   visible?: string;
   name?: string;
-  sequence?: string;
 }
 interface BrandUpdateData {
   name: string;
@@ -31,9 +30,6 @@ class Brands extends Base {
     }
     if (filters.name) {
       url += `&name=${encodeURIComponent(filters.name)}`;
-    }
-    if (filters.sequence) {
-      url += `&sequence=${encodeURIComponent(filters.sequence)}`;
     }
 
     const rs = await this.execute({
@@ -67,7 +63,7 @@ class Brands extends Base {
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `brands/${id}`,
+      url: `/brands/${id}`,
       method: "put",
       headers: {
         "Content-Type": "application/json",
@@ -80,13 +76,12 @@ class Brands extends Base {
   }
 
   async create(
-    id: string,
     data: BrandUpdateData,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `brands/${id}`,
+      url: `/brands/`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
@@ -95,6 +90,24 @@ class Brands extends Base {
       data: data,
       withCredentials: withCredentials,
     });
+    return rs;
+  }
+
+  async delete(
+    token: string | undefined = undefined,
+    withCredentials: boolean = true,
+    id: string
+  ) {
+    const rs = await this.execute({
+      url: `/brands/${id}`,
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
     return rs;
   }
 }

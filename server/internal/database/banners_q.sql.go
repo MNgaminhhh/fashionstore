@@ -13,8 +13,8 @@ import (
 )
 
 const addBanner = `-- name: AddBanner :exec
-INSERT INTO banners (title, banner_image, description, text, link, serial)
-VALUES ($1,$2,$3,$4, $5, $6)
+INSERT INTO banners (title, banner_image, description, text, link, serial, status)
+VALUES ($1,$2,$3,$4, $5, $6, $7)
 `
 
 type AddBannerParams struct {
@@ -24,6 +24,7 @@ type AddBannerParams struct {
 	Text        string
 	Link        sql.NullString
 	Serial      sql.NullInt32
+	Status      int32
 }
 
 func (q *Queries) AddBanner(ctx context.Context, arg AddBannerParams) error {
@@ -34,6 +35,7 @@ func (q *Queries) AddBanner(ctx context.Context, arg AddBannerParams) error {
 		arg.Text,
 		arg.Link,
 		arg.Serial,
+		arg.Status,
 	)
 	return err
 }

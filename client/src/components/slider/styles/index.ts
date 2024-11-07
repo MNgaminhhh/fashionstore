@@ -25,18 +25,17 @@ export const RootStyle = styled("div", {
 }));
 
 export const DotList = styled(Box)(({ theme }) => ({
-  gap: 1,
+  gap: 4,
   zIndex: 1,
   margin: 0,
-  padding: "20px 0 !important",
-  marginTop: "20px !important",
+  padding: "25px 0 !important",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   listStyle: "none",
   "& li": {
-    width: 15,
-    height: 15,
+    width: 20,
+    height: 10,
     display: "flex",
     cursor: "pointer",
     alignItems: "center",
@@ -50,10 +49,10 @@ export const DotList = styled(Box)(({ theme }) => ({
 export const Dot = styled("span", {
   shouldForwardProp: (prop) => prop !== "dotColor",
 })<{ dotColor?: string }>(({ dotColor, theme }) => ({
-  width: 12,
-  height: 12,
+  width: 20,
+  height: 10,
   cursor: "pointer",
-  borderRadius: "50%",
+  borderRadius: "5px",
   display: "block",
   backgroundColor: dotColor || theme.palette.grey[400],
   transition: "background-color 0.3s ease, transform 0.3s ease",
@@ -64,7 +63,7 @@ export const Dot = styled("span", {
   "&:after": {
     content: '""',
     display: "block",
-    borderRadius: "50%",
+    borderRadius: "5px",
     position: "absolute",
   },
 }));

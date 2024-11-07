@@ -8,7 +8,12 @@ const nextConfig = {
     tenant: process.env.NEXT_PUBLIC_TENANT,
   },
   images: {
-    domains: ["anonyviet.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
 };
 export default nextConfig;

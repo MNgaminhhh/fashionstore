@@ -20,17 +20,29 @@ import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
+import Autocomplete from "@mui/material/Autocomplete";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemText from "@mui/material/ListItemText";
+import { Avatar } from "@mui/material";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   sequence: yup.number().required("Thứ tự là bắt buộc"),
-  name: yup.string().required("Tên thương hiệu là bắt buộc"),
+  name: yup
+    .string()
+    .required("Tên thương hiệu là bắt buộc")
+    .max(50, "Tên thương hiệu không được vượt quá 50 ký tự"),
   store_id: yup.string().required("Mã cửa hàng là bắt buộc"),
   visible: yup.boolean().required("Trạng thái là bắt buộc"),
+  image: yup.string().required("Hình ảnh là bắt buộc"),
 });
 
-type Props = { brand?: BrandsModel };
+type Props = {
+  vendor: any;
+  brand?: BrandsModel;
+};
 
-export default function BrandForm({ brand }: Props) {
+export default function BrandForm({ brand, vendor }: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(
     brand?.image || null
@@ -79,7 +91,7 @@ export default function BrandForm({ brand }: Props) {
         if (res.data.success) {
           notifySuccess("Tạo thương hiệu mới thành công!");
         } else {
-          notifyError("Tạo thất bại: " + res.data.message);
+          notifyError("Tạo thất bại. Vui lòng thử lại sau!");
         }
       }
       setIsFormChanged(false);
@@ -88,13 +100,18 @@ export default function BrandForm({ brand }: Props) {
     }
   };
 
-  const handleChangeDropZone = (files: File[]) => {
-    files.forEach((file) =>
-      Object.assign(file, { preview: URL.createObjectURL(file) })
-    );
-    setFiles(files);
-    setPreviewImage(files[0]?.preview || null);
-    setIsFormChanged(true);
+  const handleChangeDropZone = (files: File[], setFieldValue: any) => {
+    if (files.length > 0) {
+      files.forEach((file) =>
+        Object.assign(file, { preview: URL.createObjectURL(file) })
+      );
+      setFiles(files);
+      setPreviewImage(files[0]?.preview || null);
+      setFieldValue("image", files[0] ? files[0].name : "");
+      setIsFormChanged(true);
+    } else {
+      setFieldValue("image", "");
+    }
   };
 
   const handleFieldChange =
@@ -137,9 +154,14 @@ export default function BrandForm({ brand }: Props) {
             <Grid item xs={12} mb={4}>
               <MTDropZone
                 title="Kéo và thả hình ảnh thương hiệu"
-                onChange={(files) => handleChangeDropZone(files)}
+                onChange={(files) => handleChangeDropZone(files, setFieldValue)}
                 initialImage={previewImage}
               />
+              {touched.image && errors.image && (
+                <Typography color="error" variant="caption">
+                  {errors.image}
+                </Typography>
+              )}
             </Grid>
             <Grid container spacing={3}>
               <Grid item sm={6} xs={12}>
@@ -172,19 +194,58 @@ export default function BrandForm({ brand }: Props) {
                 />
               </Grid>
               <Grid item sm={6} xs={12}>
-                <TextField
+                <Autocomplete
                   fullWidth
-                  name="store_id"
-                  label="Mã cửa hàng"
-                  color="info"
-                  size="medium"
-                  value={values.store_id}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.store_id && errors.store_id}
-                  error={Boolean(touched.store_id && errors.store_id)}
+                  options={vendor}
+                  getOptionLabel={(option) => option.store_name || ""}
+                  value={vendor.find((v) => v.id === values.store_id) || null}
+                  onChange={(event, value) => {
+                    setFieldValue("store_id", value ? value.id : "");
+                    setIsFormChanged(true);
+                  }}
+                  renderOption={(props, option) => (
+                    <ListItem {...props} key={option.id}>
+                      <ListItemAvatar>
+                        <Avatar
+                          src={option.image || ""}
+                          alt={option.store_name}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={`${option.store_name} - ${option.full_name}`}
+                      />
+                    </ListItem>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Mã cửa hàng"
+                      color="info"
+                      size="medium"
+                      onBlur={handleBlur}
+                      helperText={touched.store_id && errors.store_id}
+                      error={Boolean(touched.store_id && errors.store_id)}
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: values.store_id && (
+                          <Avatar
+                            src={
+                              vendor.find((v) => v.id === values.store_id)
+                                ?.image || ""
+                            }
+                            alt={
+                              vendor.find((v) => v.id === values.store_id)
+                                ?.store_name || ""
+                            }
+                            sx={{ marginRight: 1 }}
+                          />
+                        ),
+                      }}
+                    />
+                  )}
                 />
               </Grid>
+
               <Grid item sm={6} xs={12}>
                 <TextField
                   select
@@ -198,16 +259,19 @@ export default function BrandForm({ brand }: Props) {
                     setIsFormChanged(true);
                   }}
                   label="Trạng thái"
+                  error={Boolean(touched.visible && errors.visible)}
+                  helperText={touched.visible && errors.visible}
                 >
                   <MenuItem value="true">Hiển thị</MenuItem>
                   <MenuItem value="false">Ẩn</MenuItem>
                 </TextField>
               </Grid>
+
               <Grid item xs={12} mt={3} textAlign="center">
                 <Button
                   variant="outlined"
                   color="secondary"
-                  onClick={() => router.back()}
+                  onClick={() => router.push("/admin/brands")}
                   sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
                 >
                   Trở về

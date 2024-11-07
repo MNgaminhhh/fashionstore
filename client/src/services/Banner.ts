@@ -4,11 +4,19 @@ interface Filters {
   status?: string;
   title?: string;
   description?: string;
-  limit?: string;
-  page?: string;
   serial?: string;
   buttonText?: string;
   buttonLink?: string;
+}
+
+interface BannerUpdateData {
+  serial: number;
+  banner_image: string;
+  title: string;
+  description: string;
+  button_text: string;
+  button_link: string;
+  status: boolean;
 }
 
 class Banner extends Base {
@@ -30,19 +38,37 @@ class Banner extends Base {
     return rs;
   }
 
+  async create(
+    data: BannerUpdateData,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `brands`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: data,
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
+
   async getTableFilter(
     token: string | undefined = undefined,
     withCredentials: boolean = true,
+    limit: number = 10,
+    page: number = 1,
     filters: Filters = {}
   ) {
+    let url = `banners?limit=${encodeURIComponent(
+      limit
+    )}&page=${encodeURIComponent(page)}`;
+
     const queryParams: string[] = [];
 
-    if (filters.limit) {
-      queryParams.push(`limit=${encodeURIComponent(filters.limit)}`);
-    }
-    if (filters.page) {
-      queryParams.push(`page=${encodeURIComponent(filters.page)}`);
-    }
     if (filters.status) {
       queryParams.push(`status=${encodeURIComponent(filters.status)}`);
     }
@@ -63,10 +89,10 @@ class Banner extends Base {
     if (filters.buttonLink) {
       queryParams.push(`buttonLink=${encodeURIComponent(filters.buttonLink)}`);
     }
-    const queryString =
-      queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-    const url = `brands/${queryString}`;
 
+    if (queryParams.length > 0) {
+      url += `&${queryParams.join("&")}`;
+    }
     const rs = await this.execute({
       url,
       method: "get",
@@ -77,6 +103,54 @@ class Banner extends Base {
       withCredentials: withCredentials,
     });
 
+    return rs;
+  }
+
+  async delete(
+    token: string | undefined = undefined,
+    withCredentials: boolean = true,
+    id: string
+  ) {
+    const rs = await this.execute({
+      url: `/banners/${id}`,
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
+    return rs;
+  }
+
+  async findOne(id: string) {
+    const rs = await this.execute({
+      url: `/banners/${id}`,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return rs;
+  }
+
+  async update(
+    id: string,
+    data: BannerUpdateData,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `/banners/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: data,
+      withCredentials: withCredentials,
+    });
     return rs;
   }
 }

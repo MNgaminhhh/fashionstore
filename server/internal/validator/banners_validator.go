@@ -7,10 +7,12 @@ type AddBannerRequest struct {
 	ButtonText  string  `json:"button_text" validate:"required"`
 	ButtonLink  *string `json:"button_link"`
 	Serial      int     `json:"Serial" validate:"required"`
+	Status      *int    `json:"status"`
 }
 
 type BannerRequest struct {
 	Title       string `json:"title"`
+	BannerImage string `json:"banner_image"`
 	Description string `json:"description"`
 	ButtonText  string `json:"button_text"`
 	ButtonLink  string `json:"button_link"`
