@@ -1,4 +1,4 @@
-GOOSE_DBSTRING = postgres://postgres:admin@localhost:5433/mtshop?sslmode=disable
+GOOSE_DBSTRING = postgres://postgres:123456@localhost:5432/mtshop?sslmode=disable
 GOOSE_MIGRATION_DIR ?= sql/schema
 
 APP_NAME := server
@@ -15,4 +15,4 @@ downse:
 resetse:
 	@set GOOSE_DRIVER=postgres&& set GOOSE_DBSTRING=$(GOOSE_DBSTRING)&& goose -dir=$(GOOSE_MIGRATION_DIR) reset
 
-.PHONY: run downse upse resetse
+.PHONY: run downse upse resetse migrate

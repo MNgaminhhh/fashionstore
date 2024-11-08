@@ -1,5 +1,12 @@
-import ProfilePageView from "../../../../sections/customer/profile/view/Profile";
+import { cookies } from "next/headers";
+import { get } from "lodash";
+import ProfileView from "../../../../sections/customer/profile/view/ProfileView";
+import User from "../../../../services/User";
 
 export default async function Profile() {
-    return <ProfilePageView />;
+  const cookieStore = cookies();
+  const token = cookieStore.get("access_cookie")?.value;
+  const user = await User.profile(token);
+  const infoUser = get(user, "data.data", {});
+  return <ProfileView user={infoUser} />;
 }

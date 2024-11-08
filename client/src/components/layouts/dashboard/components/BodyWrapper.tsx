@@ -1,9 +1,9 @@
 import { PropsWithChildren } from "react";
 import RootStyle from "../styles";
-import {useLayout} from "../context/LayoutContext";
+import { useLayout } from "../context/LayoutContext";
 
 export default function BodyWrapper({ children }: PropsWithChildren) {
-    const { sidebarCompact } = useLayout();
+  const { isSidebarCompact } = useLayout();
 
-    return <RootStyle compact={sidebarCompact}>{children}</RootStyle>;
+  return <RootStyle compact={isSidebarCompact}>{children}</RootStyle>;
 }

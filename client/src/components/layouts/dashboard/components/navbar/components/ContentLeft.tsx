@@ -6,18 +6,18 @@ import { CustomButton, ToggleWrapper } from "../styles";
 import { useLayout } from "../../../context/LayoutContext";
 
 export default function ContentLeft() {
-    return (
-        <>
-            <ToggleWrapper>
-                <MenuIcon />
-            </ToggleWrapper>
-            <CustomButton
-                component={Link}
-                href="/"
-                startIcon={<PublicIcon sx={{ color: "grey.900" }} />}
-            >
-                Trang Chủ
-            </CustomButton>
-        </>
-    );
+  return (
+    <>
+      <ToggleWrapper>
+        <MenuIcon />
+      </ToggleWrapper>
+      <CustomButton
+        component={Link}
+        href="/"
+        startIcon={<PublicIcon sx={{ color: "white" }} />}
+      >
+        Trang Chủ
+      </CustomButton>
+    </>
+  );
 }

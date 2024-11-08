@@ -16,7 +16,7 @@ type UpdateBrandRequest struct {
 
 type AddBrandRequest struct {
 	StoreId  string `json:"store_id" validate:"required"`
-	Visible  bool   `json:"visible" validate:"required"`
+	Visible  bool   `json:"visible"`
 	Name     string `json:"name" validate:"required"`
 	Sequence int    `json:"sequence" validate:"required"`
 	Image    string `json:"image" validate:"required"`

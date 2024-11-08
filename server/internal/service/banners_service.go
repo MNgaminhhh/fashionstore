@@ -9,9 +9,10 @@ import (
 	"backend/pkg/response"
 	"database/sql"
 	"errors"
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"log"
 )
 
 type BannerResponse struct {
@@ -140,6 +141,9 @@ func (bs *BannerService) UpdateBanner(id string, customParam validator.BannerReq
 			String: customParam.Description,
 			Valid:  true,
 		}
+	}
+	if customParam.BannerImage != "" {
+		newBanner.BannerImage = customParam.BannerImage
 	}
 	if customParam.ButtonText != "" {
 		newBanner.Text = customParam.ButtonText

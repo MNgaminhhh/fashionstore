@@ -13,7 +13,8 @@ export default function useEleOverflow() {
 
     if (element) {
       const elementRect = element.getBoundingClientRect();
-      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const viewportWidth =
+        window.innerWidth || document.documentElement.clientWidth;
 
       const overflowRightAmount = elementRect.right - viewportWidth;
 
