@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import { StyledRoot } from "./styles";
 import { CategoryItem, CategoryItemOffer } from "../../utils/types";
 import { NavLink } from "../../../navlink";
@@ -12,7 +12,7 @@ interface Props extends PropsWithChildren {
   banner?: CategoryItemOffer;
 }
 
-export default function ColumnList({
+export default function ColumnList2({
   list = [],
   children,
   banner,
@@ -20,21 +20,22 @@ export default function ColumnList({
 }: Props) {
   return (
     <StyledRoot elevation={2} sx={{ minWidth }}>
-      <FlexBox px={2.5}>
+      <FlexBox px={2.5} flexDirection="column">
         <Box flex="1 1 0">
-          <Grid container spacing={4}>
-            {list.map((item, ind) => (
-              <Grid item md={3} key={ind}>
-                <div className="title-link">{item.title}</div>
-
-                {item.children?.map((sub, ind) => (
-                  <NavLink className="child-link" href={sub.href} key={ind}>
-                    {sub.title}
-                  </NavLink>
-                ))}
-              </Grid>
-            ))}
-          </Grid>
+          {list.map((item, ind) => (
+            <NavLink
+              className="child-link"
+              href={item.href}
+              key={ind}
+              sx={{
+                display: "flex",
+                alignItems: "left",
+                padding: "0.5rem 1rem",
+              }}
+            >
+              <span style={{ flexGrow: 1 }}>{item.title}</span>
+            </NavLink>
+          ))}
         </Box>
       </FlexBox>
 
