@@ -41,16 +41,6 @@ RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER set_default_url_before_insert_child
-    BEFORE INSERT ON child_categories
-    FOR EACH ROW
-    EXECUTE FUNCTION generate_child_category_url();
-
-CREATE TRIGGER set_default_url_before_update_child
-    BEFORE UPDATE ON child_categories
-    FOR EACH ROW
-    EXECUTE FUNCTION generate_child_category_url();
-
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -79,13 +69,6 @@ ALTER TABLE child_categories
 
 -- +goose Down
 -- +goose StatementBegin
-
-DROP TRIGGER IF EXISTS set_default_url_before_insert ON sub_categories;
-DROP TRIGGER IF EXISTS set_default_url_before_update ON sub_categories;
-DROP FUNCTION IF EXISTS generate_sub_category_url();
-
-DROP TRIGGER IF EXISTS set_default_url_before_insert_child ON child_categories;
-DROP TRIGGER IF EXISTS set_default_url_before_update_child ON child_categories;
 DROP FUNCTION IF EXISTS generate_child_category_url();
 
 DROP FUNCTION IF EXISTS set_updated_at();

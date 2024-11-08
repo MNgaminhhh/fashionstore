@@ -17,24 +17,26 @@ FROM
     child_categories cc ON sc.id = cc.sub_category_id;
 
 -- name: AddCategory :exec
-INSERT INTO categories (name, name_code, icon, component) Values ($1, $2, $3, $4);
+INSERT INTO categories (name, name_code, icon, component, url) Values ($1, $2, $3, $4, $5);
 
 
 -- name: AddSubcategory :exec
-INSERT INTO sub_categories (category_id, name, name_code, component)
+INSERT INTO sub_categories (category_id, name, name_code, component, url)
 VALUES (
 (SELECT categories.id FROM categories WHERE categories.name = $1),
 $2,
         $3,
-$4
+$4,
+         $5
 );
 
 -- name: AddChildCategory :exec
-INSERT INTO child_categories (sub_category_id, name, name_code)
+INSERT INTO child_categories (sub_category_id, name, name_code, url)
 VALUES (
 $1,
         $2,
-        $3
+        $3,
+        $4
 );
 
 -- name: FindAllCategories :many

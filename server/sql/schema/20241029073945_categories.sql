@@ -39,24 +39,6 @@ CREATE TABLE child_categories (
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE OR REPLACE FUNCTION set_default_url_for_categories()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.url := '/categories/' || NEW.name_code;
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER set_default_url_before_insert
-    BEFORE INSERT ON categories
-    FOR EACH ROW
-    EXECUTE FUNCTION set_default_url_for_categories();
-
-CREATE TRIGGER set_url_before_update
-    BEFORE UPDATE ON categories
-    FOR EACH ROW
-    EXECUTE FUNCTION set_default_url_for_categories();
-
 CREATE TRIGGER set_categories_updated_at
     BEFORE UPDATE ON categories
     FOR EACH ROW
@@ -80,6 +62,5 @@ CREATE TRIGGER set_child_categories_updated_at
 DROP TABLE IF EXISTS child_categories;
 DROP TABLE IF EXISTS sub_categories;
 DROP TABLE IF EXISTS categories;
-DROP FUNCTION IF EXISTS set_default_url_for_categories();
 DROP TYPE IF EXISTS components_type;
 -- +goose StatementEnd

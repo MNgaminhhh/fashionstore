@@ -51,6 +51,10 @@ func (cr *CategoryRepository) AddNewCategory(customParam validator.AddCategoryRe
 			ComponentsType: component,
 			Valid:          true,
 		},
+		Url: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
 	}
 	err := cr.sqlc.AddCategory(ctx, param)
 	if err != nil {
@@ -69,6 +73,10 @@ func (cr *CategoryRepository) AddNewSubCategory(customParam validator.AddSubCate
 			ComponentsType: component,
 			Valid:          true,
 		},
+		Url: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
 	}
 	err := cr.sqlc.AddSubcategory(ctx, param)
 	if err != nil {
@@ -86,6 +94,10 @@ func (cr *CategoryRepository) AddChildCate(customParam validator.AddChildCateReq
 		},
 		Name:     customParam.Name,
 		NameCode: customParam.NameCode,
+		Url: sql.NullString{
+			String: customParam.Url,
+			Valid:  customParam.Url != "",
+		},
 	}
 	err := cr.sqlc.AddChildCategory(ctx, param)
 	if err != nil {
