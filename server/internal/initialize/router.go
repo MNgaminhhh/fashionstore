@@ -4,6 +4,7 @@ import (
 	"backend/global"
 	"backend/internal/controller"
 	"backend/internal/routers"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -29,7 +30,6 @@ func InitRouter() *echo.Echo {
 	vendorRouter := routers.AllRouterGroup.Vendor
 	uploadFileRouter := routers.AllRouterGroup.UploadFile
 	brandRouter := routers.AllRouterGroup.Brand
-	cateRouter := routers.AllRouterGroup.Categories
 	bannersRouter := routers.AllRouterGroup.Banners
 	MainGroup := e.Group("/api/v1")
 	{
@@ -37,7 +37,6 @@ func InitRouter() *echo.Echo {
 		vendorRouter.InitVendorRouter(MainGroup)
 		uploadFileRouter.InitUserRouter(MainGroup)
 		brandRouter.InitRouter(MainGroup)
-		cateRouter.InitCategoryRouter(MainGroup)
 		bannersRouter.InitBannerRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
