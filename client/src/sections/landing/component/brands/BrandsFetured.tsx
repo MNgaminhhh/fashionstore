@@ -5,16 +5,19 @@ import MTImage from "../../../../components/MTImage";
 import { FlexCenterRow } from "../../../../components/flexbox";
 import BrandsModel from "../../../../models/Brands.model";
 import { H3 } from "../../../../components/Typography";
+import { data } from "./data";
 
-type Props = { brands: BrandsModel[] };
+type Props = { brands?: BrandsModel[] };
 
-export default function BrandsFeatured({ brands }: Props) {
+export default function BrandsFeatured({ brands = [] }: Props) {
   const responsive = [
     { breakpoint: 1024, settings: { slidesToShow: 5 } },
     { breakpoint: 800, settings: { slidesToShow: 4 } },
     { breakpoint: 650, settings: { slidesToShow: 3 } },
   ];
-  const loopedBrands = [...brands, ...brands];
+  const loopedBrands = Array.isArray(brands)
+    ? [...brands, ...brands]
+    : [...data, ...data];
 
   return (
     <Container className="mt-4 mb-4">

@@ -13,18 +13,6 @@ export const navigationAdmin = [
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/admin/dashboard" },
   { type: "label", label: "Ecommerce" },
   {
-    name: "Quản Lý Danh Mục",
-    icon: MenuOpenIcon,
-    children: [
-      { name: "Danh Sách Danh Mục", path: "/categories/brands" },
-      { name: "Danh Sách Danh Mục Con", path: "/categories/brands/create" },
-      {
-        name: "Danh Sách Danh Mục Con Cấp 2",
-        path: "/categories/products/reviews",
-      },
-    ],
-  },
-  {
     name: "Quản lý Sản phẩm",
     icon: Inventory2Icon,
     children: [

@@ -43,6 +43,30 @@ export default function NavigationList() {
             </StyledNavLink>
           );
         }
+        if (!nav.megaMenu && !nav.megaMenuWithSub && !nav.child) {
+          return (
+            <FlexBox
+              key={nav.title}
+              alignItems="center"
+              position="relative"
+              flexDirection="column"
+              sx={{
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: "pointer",
+                "&:hover": {
+                  color: "primary.main",
+                },
+              }}
+            >
+              {nav.url ? (
+                <StyledNavLink href={nav.url}>{nav.title}</StyledNavLink>
+              ) : (
+                nav.title
+              )}
+            </FlexBox>
+          );
+        }
 
         if (nav.child) {
           return (

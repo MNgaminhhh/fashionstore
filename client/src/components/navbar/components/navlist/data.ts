@@ -174,47 +174,17 @@ const navbarNavigation = [
   {
     megaMenu: false,
     megaMenuWithSub: false,
-    title: "Explore",
-    child: [
-      {
-        title: "Deals",
-        child: [
-          { title: "Today's Deals", url: "/deals/today" },
-          { title: "Seasonal Offers", url: "/deals/seasonal" },
-        ],
-      },
-      {
-        title: "Shop",
-        child: [
-          { title: "Search Products", url: "/products/search" },
-          { title: "Trending Now", url: "/products/trending" },
-          { title: "Best Sellers", url: "/products/best-sellers" },
-        ],
-      },
-      {
-        title: "Vendor",
-        child: [
-          { title: "Become a Vendor", url: "/vendor/apply" },
-          { title: "Vendor Login", url: "/vendor/login" },
-        ],
-      },
-      {
-        title: "Auth",
-        child: [
-          { title: "Login", url: "/login" },
-          { title: "Register", url: "/register" },
-        ],
-      },
-    ],
-  },
-  {
-    megaMenu: false,
-    megaMenuWithSub: false,
     title: "User Account",
     child: [
       { title: "Hồ Sơ Thông Tin", url: "/profile" },
       { title: "Cài Đặt", url: "/settings" },
     ],
+  },
+  {
+    megaMenu: false,
+    megaMenuWithSub: false,
+    title: "Nhà Bán Hàng",
+    url: "public/vendor",
   },
   {
     megaMenu: false,
