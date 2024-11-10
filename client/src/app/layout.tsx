@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import AppProvider from "../context/AppContext";
 import { cookies } from "next/headers";
 import ThemeProvider from "../theme/ThemeProvider";
+import CartProvider from "../context/CartContext";
 
 export const inter = Open_Sans({ subsets: ["latin"] });
 
@@ -23,12 +24,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AppProvider initialToken={sessionToken?.value}>
-            <Toaster />
-            {children}
-          </AppProvider>
-        </ThemeProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <AppProvider initialToken={sessionToken?.value}>
+              <Toaster />
+              {children}
+            </AppProvider>
+          </ThemeProvider>
+        </CartProvider>
       </body>
     </html>
   );

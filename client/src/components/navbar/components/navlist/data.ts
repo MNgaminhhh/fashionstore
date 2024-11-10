@@ -82,6 +82,12 @@ const megaMenus = [
 
 const navbarNavigation = [
   {
+    megaMenu: false,
+    megaMenuWithSub: false,
+    title: "Trang Chủ",
+    url: "/",
+  },
+  {
     megaMenu: true,
     megaMenuWithSub: false,
     title: "Mega Menu",
