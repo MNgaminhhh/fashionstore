@@ -1,7 +1,5 @@
 import { StyledRoot } from "./styles";
-import ColumnList from "./ColumnList";
 import CategoryItem from "../categoryitem";
-import Banner from "./Banner";
 import ColumnList2 from "./ColumnList2";
 interface Props {
   data: CategoryItem[];

@@ -53,8 +53,8 @@ var msg = map[int]string{
 	ErrCodeBrandNotFound:              "Brand này không tồn tại. Vui lòng kiểm tra lại!!",
 	ErrCodeNameCodeAlreadyUsed:        "Name code này đã được sử dụng rồi!!",
 	ErrCodeNameAlreadyUsed:            "Loại này đã tồn tại!!",
-	ErrCodeCateNotFound:               "Category không tồn tại!!",
-	ErrCodeSubCateNotFound:            "Sub cate này không tồn tại!!",
+	ErrCodeCateNotFound:               "Không thể xóa danh mục vì danh mục không tồn tại hoặc đang được liên kết với dữ liệu khác. Vui lòng kiểm tra và thử lại!",
+	ErrCodeSubCateNotFound:            "Không thể xóa danh mục con vì danh mục con không tồn tại hoặc đang được liên kết với dữ liệu khác. Vui lòng kiểm tra và thử lại!",
 	ErrCodeVendorNotFound:             "Không tìm thấy người bán!!",
 	ErrCodeCateParentNotFound:         "Không tìm thấy parent category!",
 	ErrCodeBannerNotFound:             "Không tìm tấy banner!!"}

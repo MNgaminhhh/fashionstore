@@ -1,5 +1,4 @@
 "use client";
-import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -8,196 +7,208 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { FlexBox } from "../../../../components/flexbox";
-import { StyledClear, UploadImageBox } from "../../../styles";
-import MTDropZone from "../../../../components/MTDropZone";
-import VendorModel from "../../../../models/Vendor.model";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import MTImage from "../../../../components/MTImage";
+import { notifyError, notifySuccess } from "../../../../utils/ToastNotification";
+import { get } from "../../../../hooks/useLocalStorage";
+import { useRouter } from "next/navigation";
+import Vendor from "../../../../services/Vendor";
 
 const VALIDATION_SCHEMA = yup.object().shape({
-  store_name: yup.string().required("Tên cửa hàng là bắt buộc"),
-  full_name: yup.string().required("Họ và tên là bắt buộc"),
-  phone_number: yup.string().required("Số điện thoại là bắt buộc"),
-  description: yup.string().required("Mô tả là bắt buộc"),
   status: yup.string().required("Trạng thái là bắt buộc"),
 });
 
-type Props = { vendor: VendorModel };
+type Props = {
+  vendor: {
+    store_name: string;
+    user_id: string;
+    full_name: string;
+    phone_number: string;
+    description: string;
+    status: string;
+    banner: string;
+  };
+};
 
 export default function VendorForm({ vendor }: Props) {
-  const [files, setFiles] = useState<File[]>([]);
-
+  const router = useRouter();
   const INITIAL_VALUES = {
     store_name: vendor.store_name || "",
+    user_id: vendor.user_id || "",
     full_name: vendor.full_name || "",
     phone_number: vendor.phone_number || "",
     description: vendor.description || "",
     status: vendor.status || "active",
+    banner: vendor.banner || "",
   };
 
-  const handleFormSubmit = () => {};
-
-  const handleChangeDropZone = (files: File[]) => {
-    files.forEach((file) =>
-      Object.assign(file, { preview: URL.createObjectURL(file) })
-    );
-    setFiles(files);
+  const handleFormSubmit = async (values: any) => {
+    const token = get("token");
+    try {
+      const response = await Vendor.updateStatus(
+          {
+            user_id: values.user_id,
+            status: values.status,
+          },
+          token
+      );
+      if (response && response.success) {
+        notifySuccess("Cập nhật trạng thái thành công!");
+        router.push("/admin/vendors");
+      } else {
+        notifyError("Cập nhật thất bại:", response?.message || "Vui lòng thử lại sau!");
+      }
+    } catch (error: any) {
+      notifyError(`Lỗi: ${error?.message || "Không thể kết nối với server"}`);
+    }
   };
 
-  const handleFileDelete = (file: File) => () => {
-    setFiles((files) => files.filter((item) => item.name !== file.name));
+  const disabledTextFieldStyles = {
+    "& .MuiInputBase-input.Mui-disabled": {
+      WebkitTextFillColor: "#000000",
+      opacity: 1,
+    },
   };
 
   return (
-    <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
-      <Formik
-        onSubmit={handleFormSubmit}
-        initialValues={INITIAL_VALUES}
-        validationSchema={VALIDATION_SCHEMA}
-        enableReinitialize
-      >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-        }) => (
-          <form onSubmit={handleSubmit}>
-            <Typography variant="h5" mb={2} textAlign="center">
-              Thông tin cửa hàng
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
-            <Grid item xs={12} mb={4}>
-              <MTDropZone
-                title="Kéo và thả hình ảnh cửa hàng"
-                onChange={(files) => handleChangeDropZone(files)}
-              />
-              <FlexBox flexDirection="row" mt={2} flexWrap="wrap" gap={1}>
-                {files.map((file, index) => (
-                  <UploadImageBox
-                    key={index}
-                    sx={{
-                      width: 300,
-                      height: 300,
-                      position: "relative",
-                      borderRadius: 2,
-                      overflow: "hidden",
-                      boxShadow: 1,
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      alt="Hình ảnh cửa hàng"
-                      src={file.preview}
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+      <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
+        <Formik
+            onSubmit={handleFormSubmit}
+            initialValues={INITIAL_VALUES}
+            validationSchema={VALIDATION_SCHEMA}
+            enableReinitialize
+        >
+          {({ values, handleChange, handleSubmit }) => {
+            const isStatusChanged = values.status !== INITIAL_VALUES.status;
+
+            return (
+                <form onSubmit={handleSubmit}>
+                  <Typography variant="h4" mb={2} textAlign="center">
+                    Thông tin cửa hàng
+                  </Typography>
+                  <Divider sx={{ mb: 4 }} />
+                  <Box textAlign="center" mb={4}>
+                    <Typography variant="h6" mb={1}>
+                      Banner Cửa Hàng
+                    </Typography>
+                    <Card
+                        sx={{
+                          p: 2,
+                          display: "inline-block",
+                          borderRadius: 2,
+                          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+                        }}
+                    >
+                      <MTImage
+                          src={values.banner}
+                          alt={values.store_name || "Banner cửa hàng"}
+                          width={600}
+                          height={200}
+                          sx={{ borderRadius: 2 }}
+                      />
+                    </Card>
+                  </Box>
+                  <Box mb={4}>
+                    <Typography variant="h6" mb={2} color="primary">
+                      Cập nhật trạng thái
+                    </Typography>
+                    <TextField
+                        select
+                        fullWidth
+                        name="status"
+                        label="Trạng thái"
+                        value={values.status}
+                        onChange={handleChange}
+                        sx={{
+                          "& .MuiSelect-select": {
+                            backgroundColor: "#e3f2fd",
+                            fontWeight: "bold",
+                            color: "#1976d2",
+                          },
+                        }}
+                    >
+                      <MenuItem value="accepted">Hoạt động</MenuItem>
+                      <MenuItem value="rejected">Từ chối</MenuItem>
+                      <MenuItem value="pending">Đang chờ duyệt</MenuItem>
+                    </TextField>
+                  </Box>
+                  <Box mb={4}>
+                    <Typography variant="h6" mb={2}>
+                      Thông tin cơ bản
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                            fullWidth
+                            name="store_name"
+                            label="Tên cửa hàng"
+                            value={values.store_name}
+                            disabled
+                            sx={disabledTextFieldStyles}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                            fullWidth
+                            name="full_name"
+                            label="Họ và tên"
+                            value={values.full_name}
+                            disabled
+                            sx={disabledTextFieldStyles}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                            fullWidth
+                            name="phone_number"
+                            label="Số điện thoại"
+                            value={values.phone_number}
+                            disabled
+                            sx={disabledTextFieldStyles}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                  <Box mb={4}>
+                    <Typography variant="h6" mb={2}>
+                      Mô tả cửa hàng
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={20}
+                        name="description"
+                        value={values.description}
+                        disabled
+                        sx={disabledTextFieldStyles}
                     />
-                    <StyledClear onClick={handleFileDelete(file)} />
-                  </UploadImageBox>
-                ))}
-              </FlexBox>
-            </Grid>
-            <Grid container spacing={3}>
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  fullWidth
-                  name="store_name"
-                  label="Tên cửa hàng"
-                  color="info"
-                  size="medium"
-                  value={values.store_name}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  helperText={touched.store_name && errors.store_name}
-                  error={Boolean(touched.store_name && errors.store_name)}
-                />
-              </Grid>
+                  </Box>
 
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  fullWidth
-                  name="full_name"
-                  label="Họ và tên"
-                  color="info"
-                  size="medium"
-                  value={values.full_name}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  helperText={touched.full_name && errors.full_name}
-                  error={Boolean(touched.full_name && errors.full_name)}
-                />
-              </Grid>
+                  <Box textAlign="center">
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ px: 4, py: 1, mr: 2 }}
+                        onClick={() => router.push("/admin/vendors")}
+                    >
+                      Trở về
+                    </Button>
 
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  fullWidth
-                  name="phone_number"
-                  label="Số điện thoại"
-                  color="info"
-                  size="medium"
-                  value={values.phone_number}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  helperText={touched.phone_number && errors.phone_number}
-                  error={Boolean(touched.phone_number && errors.phone_number)}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={10}
-                  name="description"
-                  label="Mô tả"
-                  color="info"
-                  size="medium"
-                  value={values.description}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  helperText={touched.description && errors.description}
-                  error={Boolean(touched.description && errors.description)}
-                />
-              </Grid>
-
-              <Grid item sm={6} xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  color="info"
-                  size="medium"
-                  name="status"
-                  value={values.status}
-                  onChange={handleChange}
-                  label="Trạng thái"
-                >
-                  <MenuItem value="active">Hoạt động</MenuItem>
-                  <MenuItem value="rejected">Bị từ chối</MenuItem>
-                  <MenuItem value="pending">Đang chờ duyệt</MenuItem>
-                  <MenuItem value="">Không xác định</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} mt={3} textAlign="center">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  sx={{ px: 4, py: 1 }}
-                >
-                  Lưu thông tin
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-        )}
-      </Formik>
-    </Card>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                        sx={{ px: 4, py: 1 }}
+                        disabled={!isStatusChanged}
+                    >
+                      Lưu trạng thái
+                    </Button>
+                  </Box>
+                </form>
+            );
+          }}
+        </Formik>
+      </Card>
   );
 }

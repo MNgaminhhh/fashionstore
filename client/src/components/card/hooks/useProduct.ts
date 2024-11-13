@@ -10,7 +10,6 @@ export default function useProduct(slug: string) {
     const toggleFavorite = useCallback(() => setIsFavorite((fav) => !fav), []);
     const toggleDialog = useCallback(() => setOpenModal((open) => !open), []);
 
-    // Tìm sản phẩm trong giỏ hàng
     const cartItem = cart.find((item) => item.slug === slug);
 
     const handleCartAmountChange = (product: any, type?: "remove") => {
@@ -20,10 +19,9 @@ export default function useProduct(slug: string) {
                 return prevCart.filter((item) => item.slug !== product.slug);
             } else {
                 notifySuccess("Đã thêm vào giỏ hàng");
-                // Thêm sản phẩm vào giỏ hàng nếu chưa có
                 const existingItem = prevCart.find((item) => item.slug === product.slug);
                 if (existingItem) {
-                    return prevCart; // Sản phẩm đã có trong giỏ hàng
+                    return prevCart;
                 }
                 return [...prevCart, product];
             }

@@ -15,7 +15,6 @@ interface Props extends PropsWithChildren {
 export default function ColumnList({
   list = [],
   children,
-  banner,
   minWidth = 760,
 }: Props) {
   return (

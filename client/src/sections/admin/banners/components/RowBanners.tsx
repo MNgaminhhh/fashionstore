@@ -13,19 +13,12 @@ import BannerModel from "../../../../models/Banner.model";
 
 type Props = {
   banner: BannerModel;
-  tableHeading: {
-    id: string;
-    label: string;
-    align: "left" | "center" | "right";
-    width?: string;
-  }[];
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, status: boolean) => void;
 };
 
 export default function RowBanner({
   banner,
-  tableHeading,
   onDelete,
   onToggleStatus,
 }: Props) {

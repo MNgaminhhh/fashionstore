@@ -38,8 +38,6 @@ export default function ColumnList2({
           ))}
         </Box>
       </FlexBox>
-
-      {children}
     </StyledRoot>
   );
 }

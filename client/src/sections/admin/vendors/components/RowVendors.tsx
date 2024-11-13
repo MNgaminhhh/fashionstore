@@ -16,15 +16,10 @@ type Props = {
     status: string;
     id: string;
   };
-  tableHeading: {
-    id: string;
-    label: string;
-    align: "left" | "center" | "right";
-  }[];
-  onDelete: (id: string) => void;
+  onUpdateStatus: (id: string, newStatus: string) => void;
 };
 
-export default function RowVendors({ vendor, tableHeading, onDelete }: Props) {
+export default function RowVendors({ vendor, onDelete }: Props) {
   const router = useRouter();
   const statusLabel =
     {
@@ -36,7 +31,9 @@ export default function RowVendors({ vendor, tableHeading, onDelete }: Props) {
   const handleEdit = (id: string) => {
     router.push(`/admin/vendors/${id}`);
   };
-
+    const handleStatusChange = (newStatus: string) => {
+        onUpdateStatus(vendor.id, newStatus);
+    };
   return (
     <StyledTableRow tabIndex={-1} role="checkbox">
       <StyledTableCell align="left" sx={{ fontWeight: 400 }}>
@@ -59,9 +56,6 @@ export default function RowVendors({ vendor, tableHeading, onDelete }: Props) {
       <StyledTableCell align="center" sx={{ minWidth: 110 }}>
         <StyledIconButton onClick={() => handleEdit(vendor.id)}>
           <Edit />
-        </StyledIconButton>
-        <StyledIconButton onClick={() => onDelete(vendor.id)}>
-          <Delete />
         </StyledIconButton>
       </StyledTableCell>
     </StyledTableRow>

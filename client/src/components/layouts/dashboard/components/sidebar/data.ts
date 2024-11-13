@@ -13,7 +13,16 @@ export const navigationAdmin = [
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/admin/dashboard" },
   { type: "label", label: "Ecommerce" },
   {
-    name: "Quản lý Sản phẩm",
+    name: "Quản lý Danh Mục",
+    icon: MenuOpenIcon,
+    children: [
+      { name: "Danh Sách DM", path: "/admin/categories" },
+      { name: "Danh Sách DM Con", path: "/admin/categories/sub-category" },
+      { name: "Danh Sách DM Con Cấp 2", path: "/admin/categories/sub-category/child" },
+    ],
+  },
+  {
+    name: "Quản Lý Sản Phẩm",
     icon: Inventory2Icon,
     children: [
       { name: "Danh Sách Thương Hiệu", path: "/admin/brands" },
@@ -39,15 +48,6 @@ export const navigationAdmin = [
       { name: "Đánh Giá Sản Phẩm", path: "/admin/products/reviews" },
     ],
   },
-  {
-    name: "Danh Mục",
-    icon: ProductsIcon,
-    children: [
-      { name: "Danh Sách Danh Mục", path: "/admin/categories" },
-      { name: "Tạo Danh Mục", path: "/admin/categories/create" },
-    ],
-  },
-
   {
     name: "Đơn Hàng",
     icon: OrdersIcon,

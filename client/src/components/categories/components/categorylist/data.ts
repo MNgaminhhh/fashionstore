@@ -1,6 +1,4 @@
 import { CategoryItem } from "../../utils/types";
-import MegaMenu1 from "../megamenu/MegaMenu1";
-import MegaMenu2 from "../megamenu/MegaMenu2";
 // ----
 export const categoryMenus: CategoryItem[] = [
   {

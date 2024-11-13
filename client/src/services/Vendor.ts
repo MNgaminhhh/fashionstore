@@ -90,6 +90,25 @@ class Vendor extends Base {
     });
     return rs;
   }
+
+  async updateStatus(
+      data: {
+        user_id: string;
+        status: string;
+      },
+      token?: string
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `vendors/status`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data,
+    });
+    return rs.data;
+  }
 }
 
 export default new Vendor();

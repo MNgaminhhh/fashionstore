@@ -180,17 +180,22 @@ const navbarNavigation = [
   {
     megaMenu: false,
     megaMenuWithSub: false,
+    title: "Các Cửa Hàng",
+    url: "public/vendor",
+  },{
+    megaMenu: false,
+    megaMenuWithSub: false,
+    title: "Trờ Thành Nhà Bán Hàng",
+    url: "/become-vendor",
+  },
+  {
+    megaMenu: false,
+    megaMenuWithSub: false,
     title: "User Account",
     child: [
       { title: "Hồ Sơ Thông Tin", url: "/profile" },
       { title: "Cài Đặt", url: "/settings" },
     ],
-  },
-  {
-    megaMenu: false,
-    megaMenuWithSub: false,
-    title: "Nhà Bán Hàng",
-    url: "public/vendor",
   },
   {
     megaMenu: false,

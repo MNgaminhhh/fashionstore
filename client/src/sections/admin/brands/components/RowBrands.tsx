@@ -18,19 +18,12 @@ type Props = {
     visible: string;
     id: string;
   };
-  tableHeading: {
-    id: string;
-    label: string;
-    align: "left" | "center" | "right";
-    width?: string;
-  }[];
   onDelete: (id: string) => void;
   onToggleVisibility: (id: string, visible: boolean) => void;
 };
 
 export default function RowBrands({
   brand,
-  tableHeading,
   onDelete,
   onToggleVisibility,
 }: Props) {
