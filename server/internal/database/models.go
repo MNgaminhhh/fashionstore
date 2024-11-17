@@ -7,6 +7,7 @@ package database
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -53,6 +54,48 @@ func (ns NullComponentsType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ComponentsType), nil
+}
+
+type ProductStatus string
+
+const (
+	ProductStatusInactive ProductStatus = "inactive"
+	ProductStatusActive   ProductStatus = "active"
+)
+
+func (e *ProductStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ProductStatus(s)
+	case string:
+		*e = ProductStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ProductStatus: %T", src)
+	}
+	return nil
+}
+
+type NullProductStatus struct {
+	ProductStatus ProductStatus
+	Valid         bool // Valid is true if ProductStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullProductStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ProductStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ProductStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullProductStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ProductStatus), nil
 }
 
 type UserRole string
@@ -230,6 +273,30 @@ type ChildCategory struct {
 	Status        sql.NullInt32
 	CreatedAt     sql.NullTime
 	UpdatedAt     sql.NullTime
+}
+
+type Product struct {
+	ID               uuid.UUID
+	Name             string
+	Slug             string
+	Images           json.RawMessage
+	VendorID         uuid.UUID
+	CategoryID       uuid.UUID
+	SubCategoryID    uuid.NullUUID
+	ChildCategoryID  uuid.NullUUID
+	Qty              sql.NullInt16
+	ShortDescription sql.NullString
+	LongDescription  sql.NullString
+	Sku              sql.NullString
+	Price            int64
+	OfferPrice       sql.NullInt64
+	OfferStartDate   sql.NullTime
+	OfferEndDate     sql.NullTime
+	ProductType      sql.NullString
+	Status           NullProductStatus
+	IsApproved       sql.NullBool
+	CreatedAt        sql.NullTime
+	UpdatedAt        sql.NullTime
 }
 
 type SubCategory struct {

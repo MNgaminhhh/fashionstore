@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"net/http"
+	"strings"
 )
 
 type ResponseData struct {
@@ -37,6 +38,7 @@ func ErrorResponse(c echo.Context, code int, message string) error {
 		Data:    nil,
 	})
 }
+
 func ValidationResponse(c echo.Context, code int, err error) error {
 	errorMessages := parseValidation(err)
 
@@ -52,7 +54,7 @@ func Msg(code int) string {
 	if message, ok := msg[code]; ok {
 		return message
 	}
-	return "Lỗi !!!"
+	return "Có lỗi xảy ra!"
 }
 
 func parseValidation(err error) map[string]string {
@@ -61,19 +63,36 @@ func parseValidation(err error) map[string]string {
 	var errs validator.ValidationErrors
 	if errors.As(err, &errs) {
 		for _, e := range errs {
-			switch e.Tag() {
+			fieldName := e.Field()
+			tag := e.Tag()
+			param := e.Param()
+
+			switch tag {
 			case "required":
-				errorMessages[e.Field()] = e.Field() + " không được bỏ trống"
+				errorMessages[fieldName] = fieldName + " là bắt buộc."
 			case "email":
-				errorMessages[e.Field()] = "Email không hợp lệ"
+				errorMessages[fieldName] = "Định dạng email không hợp lệ."
 			case "min":
-				errorMessages[e.Field()] = e.Field() + " phải có ít nhất " + e.Param() + " ký tự"
+				errorMessages[fieldName] = fieldName + " phải có ít nhất " + param + " ký tự."
 			case "max":
-				errorMessages[e.Field()] = e.Field() + " không được vượt quá " + e.Param() + " ký tự"
+				errorMessages[fieldName] = fieldName + " phải có tối đa " + param + " ký tự."
+			case "uuid":
+				errorMessages[fieldName] = fieldName + " phải là UUID hợp lệ."
+			case "oneof":
+				errorMessages[fieldName] = fieldName + " phải là một trong các giá trị: " + param + "."
+			case "gte":
+				errorMessages[fieldName] = fieldName + " phải lớn hơn hoặc bằng " + param + "."
+			case "url":
+				errorMessages[fieldName] = fieldName + " phải là URL hợp lệ."
+			case "datetime":
+				errorMessages[fieldName] = fieldName + " phải là ngày giờ hợp lệ."
 			default:
-				errorMessages[e.Field()] = "Giá trị không hợp lệ"
+				field := strings.Title(strings.ReplaceAll(fieldName, "_", " "))
+				errorMessages[fieldName] = field + " không hợp lệ."
 			}
 		}
+	} else {
+		errorMessages["error"] = err.Error()
 	}
 
 	return errorMessages

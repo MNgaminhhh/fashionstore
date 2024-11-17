@@ -4,8 +4,10 @@ import (
 	"backend/global"
 	"backend/internal/controller"
 	"backend/internal/routers"
+	"fmt"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"strings"
 )
 
 func InitRouter() *echo.Echo {
@@ -31,17 +33,45 @@ func InitRouter() *echo.Echo {
 	brandRouter := routers.AllRouterGroup.Brand
 	cateRouter := routers.AllRouterGroup.Categories
 	bannersRouter := routers.AllRouterGroup.Banners
+	productRouter := routers.AllRouterGroup.Products
 	MainGroup := e.Group("/api/v1")
 	{
 		userRouter.InitUserRouter(MainGroup)
 		vendorRouter.InitVendorRouter(MainGroup)
-		uploadFileRouter.InitUserRouter(MainGroup)
+		uploadFileRouter.InitUploadFileRouter(MainGroup)
 		brandRouter.InitRouter(MainGroup)
 		cateRouter.InitCategoryRouter(MainGroup)
 		bannersRouter.InitBannerRouter(MainGroup)
+		productRouter.InitProductRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
 		return c.JSON(200, map[string]string{"status": "OK"})
 	})
+	logAllRoutes(e)
 	return e
+}
+
+func logAllRoutes(e *echo.Echo) {
+	fmt.Println("=== Registered Routes ===")
+	for _, route := range e.Routes() {
+		if strings.Contains(route.Path, "*") {
+			continue
+		}
+		standardMethods := map[string]bool{
+			echo.GET:     true,
+			echo.POST:    true,
+			echo.PUT:     true,
+			echo.DELETE:  true,
+			echo.PATCH:   true,
+			echo.HEAD:    true,
+			echo.OPTIONS: true,
+		}
+
+		if _, ok := standardMethods[route.Method]; !ok {
+			continue
+		}
+
+		fmt.Printf("Method: %-6s Path: %s\n", route.Method, route.Path)
+	}
+	fmt.Println("=========================")
 }

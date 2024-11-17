@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitBannerRouterHandlerr() (*controller.BannersController, error) {
+func InitBannerRouterHandler() (*controller.BannersController, error) {
 	wire.Build(
 		repository.NewBannersRepository,
 		service.NewBannerService,

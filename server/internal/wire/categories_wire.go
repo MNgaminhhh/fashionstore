@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
+func InitCategoriesRouterHandler() (*controller.CategoryController, error) {
 	wire.Build(
 		repository.NewCategoryRepository,
 		service.NewCategoriesService,

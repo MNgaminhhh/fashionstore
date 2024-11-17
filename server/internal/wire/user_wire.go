@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitUserRouterHandlerr() (*controller.UserController, error) {
+func InitUserRouterHandler() (*controller.UserController, error) {
 	wire.Build(
 		repository.NewUserRepository,
 		service.NewUserService,
