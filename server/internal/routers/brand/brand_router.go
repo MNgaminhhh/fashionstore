@@ -9,7 +9,7 @@ import (
 type BrandRouter struct{}
 
 func (br *BrandRouter) InitRouter(router *echo.Group) {
-	brandController, _ := wire.InitBrandRouterHandler()
+	brandController, _ := wire.InitBrandRouterHandlerr()
 
 	brandRouterGroup := router.Group("/brands")
 	{

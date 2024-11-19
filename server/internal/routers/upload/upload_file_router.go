@@ -9,7 +9,7 @@ import (
 type UploadFileRouter struct{}
 
 func (ur *UploadFileRouter) InitUploadFileRouter(router *echo.Group) {
-	uploadFileController, _ := wire.InitUploadFileRouterHandler()
+	uploadFileController, _ := wire.InitUploadFileRouterHandlerr()
 
 	uploadFileGroup := router.Group("/file")
 	{

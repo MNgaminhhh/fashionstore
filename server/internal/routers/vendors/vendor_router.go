@@ -9,7 +9,7 @@ import (
 type VendorRouter struct{}
 
 func (VendorRouter *VendorRouter) InitVendorRouter(router *echo.Group) {
-	vendorController, _ := wire.InitVendorRouterHandler()
+	vendorController, _ := wire.InitVendorRouterHandlerr()
 
 	vendorRouterGroup := router.Group("/vendors")
 	{

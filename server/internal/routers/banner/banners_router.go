@@ -10,7 +10,7 @@ type BannerRouter struct {
 }
 
 func (br *BannerRouter) InitBannerRouter(router *echo.Group) {
-	bannersController, _ := wire.InitBannerRouterHandler()
+	bannersController, _ := wire.InitBannerRouterHandlerr()
 	bannerRouter := router.Group("/banners")
 	{
 		bannerRouter.POST("", bannersController.AddBanner, middleware.JWTMiddleware)
