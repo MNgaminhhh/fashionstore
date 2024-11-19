@@ -153,7 +153,6 @@ func (cs *CategoriesService) GetCateById(id string) (int, *CategoryDataResponse)
 
 func (cs *CategoriesService) DeleteCateById(id string) int {
 	cateId, _ := uuid.Parse(id)
-	log.Println(cateId)
 	err := cs.cateRepo.DeleteCategoryById(cateId)
 	if err != nil {
 		log.Println(err.Error())

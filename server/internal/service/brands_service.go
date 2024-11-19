@@ -25,7 +25,7 @@ type BrandsResponseData struct {
 }
 
 type IBrandsService interface {
-	GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{})
+	GetBrands(customParam *validator.FilterBrandsRequest) (int, map[string]interface{})
 	UpdateBrand(customParam validator.UpdateBrandRequest, id uuid.UUID) int
 	GetBrandById(id string) (int, *BrandsResponseData)
 	DeleteBrandById(id string) int
@@ -42,33 +42,66 @@ func NewBrandsService(brandsRepository repository.IBrandsRepository) IBrandsServ
 	}
 }
 
-func (bs *BrandsService) GetBrands(customParam validator.FilterBrandsRequest) (int, map[string]interface{}) {
-	brands, err := bs.brandsRepository.GetBrands(customParam)
-	if err != nil {
-		log.Println(err)
-		return http.StatusInternalServerError, nil
+func (bs *BrandsService) GetBrands(customParam *validator.FilterBrandsRequest) (int, map[string]interface{}) {
+	var visible sql.NullBool
+	if customParam.Visible != nil {
+		visible = sql.NullBool{
+			Bool:  *customParam.Visible,
+			Valid: true,
+		}
+	} else {
+		visible = sql.NullBool{
+			Valid: false,
+		}
 	}
+
+	params := database.GetBrandsParams{
+		Visible: visible,
+		Column2: customParam.Name,
+	}
+
+	brands, err := bs.brandsRepository.GetBrands(params)
+	if err != nil {
+		log.Println("Error fetching brands:", err)
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				return response.ErrCodeConflict, nil
+			case "foreign_key_violation":
+				return response.ErrCodeForeignKey, nil
+			case "check_violation":
+				return response.ErrCodeValidate, nil
+			default:
+				return response.ErrCodeDatabase, nil
+			}
+		}
+		return response.ErrCodeInternal, nil
+	}
+	limit := len(brands)
+	page := 1
+	if customParam.Limit != nil {
+		limit = *customParam.Limit
+	}
+	if customParam.Page != nil {
+		page = *customParam.Page
+	}
+	totalResults := len(brands)
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	brands = internal.Paginate(brands, page, limit)
 	var responseData []BrandsResponseData
 	for _, brand := range brands {
 		data := MapBrandToResponseData(&brand)
 		responseData = append(responseData, *data)
 	}
-	limit := len(responseData)
-	page := 1
-	if customParam.Limit != 0 {
-		limit = customParam.Limit
-	}
-	if customParam.Page != 0 {
-		page = customParam.Page
-	}
-	responseData = internal.Paginate(responseData, page, limit)
-	totalPage := internal.CalculateTotalPages(len(brands), limit)
+
 	data := map[string]interface{}{
-		"total_page":    totalPage,
+		"total_pages":   totalPages,
 		"page":          page,
-		"total_results": len(responseData),
+		"total_results": totalResults,
 		"brands":        responseData,
 	}
+
 	return http.StatusOK, data
 }
 

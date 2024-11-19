@@ -45,12 +45,12 @@ func (br *BannersRepository) AddBanner(customParam validator.AddBannerRequest) e
 		Status: int32(0),
 	}
 	if customParam.Status != nil {
-        if *customParam.Status == 1 {
-            param.Status = 1
-        } else {
-            param.Status = 0
-        }
-    }
+		if *customParam.Status == 1 {
+			param.Status = 1
+		} else {
+			param.Status = 0
+		}
+	}
 	if customParam.ButtonLink != nil {
 		param.Link = sql.NullString{
 			Valid:  true,

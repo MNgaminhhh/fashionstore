@@ -3,8 +3,8 @@ package validator
 type FilterBrandsRequest struct {
 	Visible *bool  `query:"visible"`
 	Name    string `query:"name"`
-	Limit   int    `query:"limit"`
-	Page    int    `query:"page"`
+	Limit   *int   `query:"limit"`
+	Page    *int   `query:"page"`
 }
 
 type UpdateBrandRequest struct {
@@ -16,7 +16,7 @@ type UpdateBrandRequest struct {
 
 type AddBrandRequest struct {
 	StoreId  string `json:"store_id" validate:"required"`
-	Visible  bool   `json:"visible"`
+	Visible  bool   `json:"visible" validate:"required"`
 	Name     string `json:"name" validate:"required"`
 	Sequence int    `json:"sequence" validate:"required"`
 	Image    string `json:"image" validate:"required"`

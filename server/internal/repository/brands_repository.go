@@ -3,14 +3,12 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
-	"backend/internal/validator"
-	"database/sql"
 	"github.com/google/uuid"
 	"log"
 )
 
 type IBrandsRepository interface {
-	GetBrands(customParam validator.FilterBrandsRequest) ([]database.Brand, error)
+	GetBrands(customParam database.GetBrandsParams) ([]database.Brand, error)
 	SaveBrands(newBrand *database.Brand) error
 	GetBrandByID(id uuid.UUID) (*database.Brand, error)
 	DeleteBrandById(id uuid.UUID) error
@@ -25,21 +23,8 @@ func NewBrandsRepository() IBrandsRepository {
 	return &BrandsRepository{sqlc: database.New(global.Mdb)}
 }
 
-func (br *BrandsRepository) GetBrands(customParam validator.FilterBrandsRequest) ([]database.Brand, error) {
-	param := database.GetBrandsParams{
-		Visible: sql.NullBool{
-			Bool:  false,
-			Valid: false,
-		},
-		Column2: customParam.Name,
-	}
-	if customParam.Visible != nil {
-		param.Visible = sql.NullBool{
-			Bool:  *customParam.Visible,
-			Valid: true,
-		}
-	}
-	brands, err := br.sqlc.GetBrands(ctx, param)
+func (br *BrandsRepository) GetBrands(customParam database.GetBrandsParams) ([]database.Brand, error) {
+	brands, err := br.sqlc.GetBrands(ctx, customParam)
 	if err != nil {
 		return nil, err
 	}

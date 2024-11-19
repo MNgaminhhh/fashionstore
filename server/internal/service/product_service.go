@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"strconv"
 	"time"
 
@@ -284,7 +283,6 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		Status:  status,
 		Column6: priceValue,
 	}
-	log.Println(params)
 	products, err := ps.productRepo.ListProducts(params)
 	if err != nil {
 		var pqErr *pq.Error
@@ -313,7 +311,6 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	totalResults := len(products)
 	totalPages := internal.CalculateTotalPages(totalResults, limit)
 	products = internal.Paginate(products, page, limit)
-	log.Println(products)
 	var responseData []ProductResponse
 	for _, product := range products {
 		resData, _ := mapListProductsRowToResponse(&product)
