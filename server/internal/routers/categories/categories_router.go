@@ -10,7 +10,7 @@ type CategoryRouter struct {
 }
 
 func (cr *CategoryRouter) InitCategoryRouter(router *echo.Group) {
-	categoryController, _ := wire.InitCategoriesRouterHandler()
+	categoryController, _ := wire.InitCategoriesRouterHandlerr()
 
 	categoriesGroup := router.Group("/categories")
 	{

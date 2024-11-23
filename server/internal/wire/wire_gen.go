@@ -14,7 +14,7 @@ import (
 
 // Injectors from banner_wire.go:
 
-func InitBannerRouterHandler() (*controller.BannersController, error) {
+func InitBannerRouterHandlerr() (*controller.BannersController, error) {
 	iBannersRepository := repository.NewBannersRepository()
 	iBannersService := service.NewBannerService(iBannersRepository)
 	bannersController := controller.NewBannersController(iBannersService)
@@ -23,7 +23,7 @@ func InitBannerRouterHandler() (*controller.BannersController, error) {
 
 // Injectors from brand_wire.go:
 
-func InitBrandRouterHandler() (*controller.BrandsController, error) {
+func InitBrandRouterHandlerr() (*controller.BrandsController, error) {
 	iBrandsRepository := repository.NewBrandsRepository()
 	iBrandsService := service.NewBrandsService(iBrandsRepository)
 	brandsController := controller.NewBrandsController(iBrandsService)
@@ -32,16 +32,25 @@ func InitBrandRouterHandler() (*controller.BrandsController, error) {
 
 // Injectors from categories_wire.go:
 
-func InitCategoriesRouterHandler() (*controller.CategoryController, error) {
+func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
 	iCategoryRepository := repository.NewCategoryRepository()
 	iCategoriesService := service.NewCategoriesService(iCategoryRepository)
 	categoryController := controller.NewCategoryController(iCategoriesService)
 	return categoryController, nil
 }
 
+// Injectors from products_wire.go:
+
+func InitProductRouterHandlerr() (*controller.ProductController, error) {
+	iProductRepository := repository.NewProductRepository()
+	iProductService := service.NewProductService(iProductRepository)
+	productController := controller.NewProductController(iProductService)
+	return productController, nil
+}
+
 // Injectors from upload_wire.go:
 
-func InitUploadFileRouterHandler() (*controller.UploadFileController, error) {
+func InitUploadFileRouterHandlerr() (*controller.UploadFileController, error) {
 	iUploadFileRepository := repository.NewUploadFileRepository()
 	iUploadFileService := service.NewUploadFileService(iUploadFileRepository)
 	uploadFileController := controller.NewUploadFileController(iUploadFileService)
@@ -50,7 +59,7 @@ func InitUploadFileRouterHandler() (*controller.UploadFileController, error) {
 
 // Injectors from user_wire.go:
 
-func InitUserRouterHandler() (*controller.UserController, error) {
+func InitUserRouterHandlerr() (*controller.UserController, error) {
 	iUserRepository := repository.NewUserRepository()
 	iUserService := service.NewUserService(iUserRepository)
 	iAuthService := service.NewAuthService()
@@ -60,7 +69,7 @@ func InitUserRouterHandler() (*controller.UserController, error) {
 
 // Injectors from vendor_wire.go:
 
-func InitVendorRouterHandler() (*controller.VendorController, error) {
+func InitVendorRouterHandlerr() (*controller.VendorController, error) {
 	iVendorRepository := repository.NewVendorRepository()
 	iVendorService := service.NewVendorService(iVendorRepository)
 	vendorController := controller.NewVendorController(iVendorService)

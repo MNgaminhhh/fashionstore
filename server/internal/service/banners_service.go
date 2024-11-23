@@ -9,8 +9,6 @@ import (
 	"backend/pkg/response"
 	"database/sql"
 	"errors"
-	"log"
-
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -65,7 +63,6 @@ func (bs *BannerService) GetActiveBanners() (int, []BannerResponse) {
 }
 
 func (bs *BannerService) GetAllBanners(customParam *validator.BannerRequest) (int, map[string]interface{}) {
-	log.Println(customParam)
 	param := database.GetAllBannersParams{
 		Column1: sql.NullString{
 			String: customParam.Title,
@@ -130,7 +127,7 @@ func (bs *BannerService) GetAllBanners(customParam *validator.BannerRequest) (in
 func (bs *BannerService) UpdateBanner(id string, customParam validator.BannerRequest) int {
 	bannerId, _ := uuid.Parse(id)
 	newBanner, err := bs.bannerRepo.GetBannerById(bannerId)
-	if err != nil {
+	if err != nil || newBanner == nil {
 		return response.ErrCodeBannerNotFound
 	}
 	if customParam.Title != "" {

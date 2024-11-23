@@ -6,6 +6,11 @@ const (
 	ErrCodeNotFound     = 404
 	ErrCodeInternal     = 500
 	ErrCodeUnauthorized = 401
+	ErrCodeValidate     = 422
+	ErrCodeConflict     = 409
+	ErrCodeForeignKey   = 40301
+	ErrCodeDatabase     = 55001
+	ErrCodeUnknown      = 520
 	//========
 	ErrCodeEmailNotFound              = 50001
 	ErrCodeIncorrectPassword          = 50002
@@ -28,13 +33,15 @@ const (
 	ErrCodeVendorNotFound             = 50020
 	ErrCodeCateParentNotFound         = 50021
 	ErrCodeBannerNotFound             = 50022
+	ErrCodeProductNotFound            = 50023
+	ErrCodeForbidden                  = 403
 )
 
 var msg = map[int]string{
 	SuccessCode:         "Thành công",
 	ErrCodeParamInvalid: "Thông tin nhập vào không hợp lệ",
 	ErrCodeNotFound:     "Không tìm thấy",
-	ErrCodeInternal:     "Lỗi hệ thống",
+	ErrCodeInternal:     "Lỗi hệ thống. Vui lòng thử lại sau",
 	//========
 	ErrCodeEmailNotFound:              "Email này chưa được đăng ký. Vui lòng thử lại sau!!",
 	ErrCodeIncorrectPassword:          "Tài khoản hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!!",
@@ -53,8 +60,16 @@ var msg = map[int]string{
 	ErrCodeBrandNotFound:              "Brand này không tồn tại. Vui lòng kiểm tra lại!!",
 	ErrCodeNameCodeAlreadyUsed:        "Name code này đã được sử dụng rồi!!",
 	ErrCodeNameAlreadyUsed:            "Loại này đã tồn tại!!",
-	ErrCodeCateNotFound:               "Category không tồn tại!!",
-	ErrCodeSubCateNotFound:            "Sub cate này không tồn tại!!",
+	ErrCodeCateNotFound:               "Không thể xóa danh mục vì danh mục không tồn tại hoặc đang được liên kết với dữ liệu khác. Vui lòng kiểm tra và thử lại!",
+	ErrCodeSubCateNotFound:            "Không thể xóa danh mục con vì danh mục con không tồn tại hoặc đang được liên kết với dữ liệu khác. Vui lòng kiểm tra và thử lại!",
 	ErrCodeVendorNotFound:             "Không tìm thấy người bán!!",
 	ErrCodeCateParentNotFound:         "Không tìm thấy parent category!",
-	ErrCodeBannerNotFound:             "Không tìm tấy banner!!"}
+	ErrCodeBannerNotFound:             "Không tìm tấy banner!!",
+	ErrCodeForbidden:                  "Bạn không có quyền thực hiện hành động này. Vui lòng thử lại sau!",
+	ErrCodeProductNotFound:            "Không tìm thấy sản phẩm nào. Vui lòng thử lại sau!",
+	ErrCodeValidate:                   "Một vài dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!",
+	ErrCodeConflict:                   "Một vài dữ liệu đã tồn tại. Vui lòng kiểm tra lại!",
+	ErrCodeForeignKey:                 "Một vài dữ liệu tham chiếu không hợp lệ. Vui lòng kiểm tra lại!",
+	ErrCodeDatabase:                   "Đã xảy ra lỗi trong cơ sở dữ liệu. Vui lòng thử lại sau!",
+	ErrCodeUnknown:                    "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau!",
+}

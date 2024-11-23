@@ -4,7 +4,7 @@ import VendorForm from "../components/VendorForm";
 type Props = { vendor: VendorModel };
 export default function EditVendorView({ vendor }: Props) {
   return (
-    <WrapperPage title="Chỉnh Sửa Nhà Bán Hàng">
+    <WrapperPage title="Xét Duyệt Nhà Bán Hàng">
       <VendorForm vendor={vendor} />
     </WrapperPage>
   );

@@ -154,10 +154,6 @@ export default function BannerForm({ banner }: Props) {
           setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
-            <Typography variant="h5" mb={2} textAlign="center">
-              {banner ? "Chỉnh sửa banner" : "Tạo banner mới"}
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
             <Grid item xs={12} mb={4}>
               <MTDropZone
                 title="Kéo và thả hình ảnh banner"

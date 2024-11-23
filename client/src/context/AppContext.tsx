@@ -1,30 +1,45 @@
 'use client'
 
-import React, {createContext, useContext, useState} from "react";
+import React, { createContext, useContext, useState } from "react";
 
-const AppContext = createContext({
-    token: '',
-    setSectionToken: (token: string) =>{}
-})
+interface AppContextType {
+    sessionToken: string;
+    setSessionToken: (token: string) => void;
+    categories: any[];
+    setCategories: (categories: any[]) => void;
+}
 
-export const useAppContext = () =>{
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const useAppContext = () => {
     const context = useContext(AppContext);
-    if(!context){
-        throw new Error('must be used within an appprovider');
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
     }
     return context;
 }
 
+interface AppProviderProps {
+    children: React.ReactNode;
+    initialToken: string;
+    initialCategories: any[];
+}
+
 export default function AppProvider({
     children,
-    initialToken =''
-}:{
-    children: React.ReactNode,
-    initialToken:string
-}){
+    initialToken,
+    initialCategories
+}: AppProviderProps) {
     const [sessionToken, setSessionToken] = useState(initialToken);
-    return(
-        <AppContext.Provider value={{sessionToken, setSessionToken}}>
+    const [categories, setCategories] = useState(initialCategories);
+
+    return (
+        <AppContext.Provider value={{
+            sessionToken,
+            setSessionToken,
+            categories,
+            setCategories
+        }}>
             {children}
         </AppContext.Provider>
     )

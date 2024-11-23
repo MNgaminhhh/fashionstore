@@ -34,7 +34,7 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			if claims, ok := token.Claims.(*jwtCustomClaims); ok && token.Valid {
 				c.Set("uuid", claims.Subject)
 				c.Set("email", claims.Email)
-				c.Set("role", claims.Role)
+				c.Set("role", string(claims.Role))
 				log.Println("-----", claims.Subject)
 				return next(c)
 			}

@@ -6,10 +6,11 @@ import (
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
-	"github.com/google/uuid"
-	"github.com/labstack/echo"
 	"net/http"
 	"os"
+
+	"github.com/google/uuid"
+	"github.com/labstack/echo"
 )
 
 type UserController struct {

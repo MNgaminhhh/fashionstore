@@ -108,7 +108,6 @@ func (cr *CategoryRepository) AddChildCate(customParam validator.AddChildCateReq
 
 func (cr *CategoryRepository) GetFullCate() ([]database.GetFullCategoriesRow, error) {
 	rows, err := cr.sqlc.GetFullCategories(ctx)
-	log.Println(len(rows))
 	if err != nil {
 		return nil, err
 	}

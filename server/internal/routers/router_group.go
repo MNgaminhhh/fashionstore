@@ -4,6 +4,7 @@ import (
 	"backend/internal/routers/banner"
 	"backend/internal/routers/brand"
 	"backend/internal/routers/categories"
+	"backend/internal/routers/product"
 	"backend/internal/routers/upload"
 	"backend/internal/routers/user"
 	"backend/internal/routers/vendors"
@@ -16,6 +17,7 @@ type RouterGroup struct {
 	Brand      *brand.BrandRouter
 	Categories *categories.CategoryRouter
 	Banners    *banner.BannerRouter
+	Products   *product.ProductRouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -25,4 +27,5 @@ var AllRouterGroup = &RouterGroup{
 	Brand:      &brand.BrandRouter{},
 	Categories: &categories.CategoryRouter{},
 	Banners:    &banner.BannerRouter{},
+	Products:   &product.ProductRouter{},
 }

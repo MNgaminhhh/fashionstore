@@ -1,7 +1,6 @@
 import { StyledRoot } from "./styles";
-import ColumnList from "./ColumnList";
 import CategoryItem from "../categoryitem";
-import Banner from "./Banner";
+import ColumnList2 from "./ColumnList2";
 interface Props {
   data: CategoryItem[];
 }
@@ -18,7 +17,7 @@ const MegaMenu2 = ({ data = [] }: Props) => {
           caret={!!item.children}
           render={
             item.children?.length ? (
-              <ColumnList minWidth={550} list={item.children}></ColumnList>
+              <ColumnList2 minWidth={200} list={item.children}></ColumnList2>
             ) : null
           }
         />

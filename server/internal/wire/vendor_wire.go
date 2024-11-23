@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitVendorRouterHandlerr() (*controller.VendorController, error) {
+func InitVendorRouterHandler() (*controller.VendorController, error) {
 	wire.Build(
 		repository.NewVendorRepository,
 		service.NewVendorService,

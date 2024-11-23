@@ -14,7 +14,12 @@ FROM
         LEFT JOIN
     sub_categories sc ON c.id = sc.category_id
         LEFT JOIN
-    child_categories cc ON sc.id = cc.sub_category_id;
+    child_categories cc ON sc.id = cc.sub_category_id
+ORDER BY
+    c.created_at ASC,
+    sc.created_at ASC,
+    cc.created_at ASC;
+
 
 -- name: AddCategory :exec
 INSERT INTO categories (name, name_code, icon, component, url) Values ($1, $2, $3, $4, $5);
@@ -111,7 +116,7 @@ WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
 ORDER BY cc.updated_at DESC;
 
 -- name: FindChildCategoryById :one
-SELECT cc.*, sc.name AS sub_category_name
+SELECT cc.*, sc.name AS sub_category_name, sc.id AS sub_category_id
 FROM child_categories cc
          JOIN sub_categories sc ON cc.sub_category_id = sc.id
 WHERE cc.id = $1;

@@ -344,7 +344,7 @@ func (q *Queries) FindCategoryById(ctx context.Context, id uuid.UUID) (Category,
 }
 
 const findChildCategoryById = `-- name: FindChildCategoryById :one
-SELECT cc.id, cc.sub_category_id, cc.name, cc.name_code, cc.url, cc.status, cc.created_at, cc.updated_at, sc.name AS sub_category_name
+SELECT cc.id, cc.sub_category_id, cc.name, cc.name_code, cc.url, cc.status, cc.created_at, cc.updated_at, sc.name AS sub_category_name, sc.id AS sub_category_id
 FROM child_categories cc
          JOIN sub_categories sc ON cc.sub_category_id = sc.id
 WHERE cc.id = $1
@@ -360,6 +360,7 @@ type FindChildCategoryByIdRow struct {
 	CreatedAt       sql.NullTime
 	UpdatedAt       sql.NullTime
 	SubCategoryName string
+	SubCategoryID_2 uuid.UUID
 }
 
 func (q *Queries) FindChildCategoryById(ctx context.Context, id uuid.UUID) (FindChildCategoryByIdRow, error) {
@@ -375,6 +376,7 @@ func (q *Queries) FindChildCategoryById(ctx context.Context, id uuid.UUID) (Find
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SubCategoryName,
+		&i.SubCategoryID_2,
 	)
 	return i, err
 }
@@ -434,6 +436,10 @@ FROM
     sub_categories sc ON c.id = sc.category_id
         LEFT JOIN
     child_categories cc ON sc.id = cc.sub_category_id
+ORDER BY
+    c.created_at ASC,
+    sc.created_at ASC,
+    cc.created_at ASC
 `
 
 type GetFullCategoriesRow struct {

@@ -3,13 +3,14 @@ package user
 import (
 	"backend/internal/middleware"
 	"backend/internal/wire"
+
 	"github.com/labstack/echo"
 )
 
 type UserRouter struct{}
 
 func (ur *UserRouter) InitUserRouter(router *echo.Group) {
-	userController, _ := wire.InitUserRouterHandler()
+	userController, _ := wire.InitUserRouterHandlerr()
 
 	authRouterGroup := router.Group("/auth")
 	{

@@ -37,6 +37,7 @@ type CategoryDataResponse struct {
 	Status    int                     `json:"status"`
 	Component database.ComponentsType `json:"component,omitempty"`
 	Parent    *string                 `json:"parent,omitempty"`
+	ParentId  *uuid.UUID              `json:"parentid,omitempty"`
 }
 
 type ICategoriesService interface {
@@ -132,7 +133,7 @@ func (cs *CategoriesService) GetAllCate(param *validator.FilterCategoryRequest) 
 		"page":          page,
 		"limit":         limit,
 		"total-results": len(responseData),
-		"total-pages":   totalPages,
+		"total_pages":   totalPages,
 	}
 	if err != nil {
 		return response.ErrCodeInternal, nil
@@ -152,7 +153,6 @@ func (cs *CategoriesService) GetCateById(id string) (int, *CategoryDataResponse)
 
 func (cs *CategoriesService) DeleteCateById(id string) int {
 	cateId, _ := uuid.Parse(id)
-	log.Println(cateId)
 	err := cs.cateRepo.DeleteCategoryById(cateId)
 	if err != nil {
 		log.Println(err.Error())
@@ -221,7 +221,7 @@ func (cs *CategoriesService) GetAllSubCates(param *validator.FilterCategoryReque
 		"page":           page,
 		"limit":          limit,
 		"total-results":  len(subCates),
-		"total-pages":    totalPages,
+		"total_pages":    totalPages,
 	}
 	return response.SuccessCode, results
 }
@@ -369,7 +369,7 @@ func (cs *CategoriesService) GetAllChildCates(customParam validator.FilterCatego
 		childResponse = append(childResponse, data)
 	}
 	result := map[string]interface{}{
-		"total-pages":      totalPages,
+		"total_pages":      totalPages,
 		"page":             page,
 		"total-results":    totalResults,
 		"child_categories": childResponse,
@@ -478,6 +478,7 @@ func mapCategoryToResponse[T any](category T) CategoryDataResponse {
 			Url:      v.Url.String,
 			Status:   int(v.Status.Int32),
 			Parent:   &v.SubCategoryName,
+			ParentId: &v.SubCategoryID_2,
 		}
 
 	default:

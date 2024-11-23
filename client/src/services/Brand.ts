@@ -45,6 +45,18 @@ class Brands extends Base {
     return rs;
   }
 
+  async getAllBrands() {
+    const rs = await this.execute({
+      url: `brands/?visible=true`,
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return rs;
+  }
+
   async findOne(id: string) {
     const rs = await this.execute({
       url: `brands/${id}`,

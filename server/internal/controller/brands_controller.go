@@ -25,12 +25,14 @@ func (bc *BrandsController) GetBrands(c echo.Context) error {
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
 	}
-	log.Println(reqParam.Limit)
-	code, brands := bc.brandsService.GetBrands(reqParam)
+	if err := c.Validate(&reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code, brands := bc.brandsService.GetBrands(&reqParam)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, response.ErrCodeInternal, "GetBrands fail")
 	}
-	return response.SuccessResponse(c, response.SuccessCode, brands)
+	return response.SuccessResponse(c, code, brands)
 }
 
 func (bc *BrandsController) UpdateBrand(c echo.Context) error {

@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitUploadFileRouterHandlerr() (*controller.UploadFileController, error) {
+func InitUploadFileRouterHandler() (*controller.UploadFileController, error) {
 	wire.Build(
 		repository.NewUploadFileRepository,
 		service.NewUploadFileService,
