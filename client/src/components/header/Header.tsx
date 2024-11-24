@@ -10,6 +10,7 @@ import useHeader from "./hooks/useHeader";
 import CategoriesMenu from "./components/CategoriesMenu";
 import logo from "../../assets/mtshop.png";
 import NotificationButtons from "./components/CartShuffleButton";
+import Logo from "../logo/Logo";
 interface Props {
     isFixed?: boolean;
     className?: string;
@@ -26,9 +27,7 @@ export default function Header({ isFixed, className, midSlot }: Props) {
                 ? (<>
                     <Fragment>
                         <FlexBox minWidth={100} alignItems="center">
-                            <Link href="/">
-                                <BaseImage src={logo} alt="mtshop" width={125}/>
-                            </Link>
+                            <Logo />
                             {isFixed ? <CategoriesMenu /> : null}
                         </FlexBox>
                         {midSlot}
@@ -38,9 +37,7 @@ export default function Header({ isFixed, className, midSlot }: Props) {
                 : (<>
                     <Fragment>
                         <FlexBox minWidth={100} alignItems="center">
-                            <Link href="/">
-                                <BaseImage src={logo} alt="mtshop" width={125}/>
-                            </Link>
+                            <Logo />
                             {isFixed ? <CategoriesMenu /> : null}
                         </FlexBox>
                         {midSlot}
