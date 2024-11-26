@@ -54,6 +54,22 @@ CREATE TRIGGER set_child_categories_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_vendor_timestamp();
 
+ALTER TABLE sub_categories
+    ADD CONSTRAINT  unique_sub_name_per_category
+        UNIQUE (category_id, name);
+
+ALTER TABLE sub_categories
+    ADD CONSTRAINT unique_sub_name_code_per_category
+        UNIQUE (category_id, name_code);
+
+ALTER TABLE child_categories
+    ADD CONSTRAINT unique_child_name_per_sub_cate
+        UNIQUE (sub_category_id, name);
+
+ALTER TABLE child_categories
+    ADD CONSTRAINT unique_child_name_code_per_sub_cate
+        UNIQUE (sub_category_id, name_code);
+
 
 -- +goose StatementEnd
 

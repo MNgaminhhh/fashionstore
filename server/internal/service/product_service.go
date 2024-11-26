@@ -9,7 +9,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"strconv"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,14 +25,8 @@ type ProductResponse struct {
 	CategoryID       uuid.UUID  `json:"category_id"`
 	SubCategoryID    *uuid.UUID `json:"sub_category_id,omitempty"`
 	ChildCategoryID  *uuid.UUID `json:"child_category_id,omitempty"`
-	Qty              int        `json:"qty"`
 	ShortDescription string     `json:"short_description,omitempty"`
 	LongDescription  string     `json:"long_description,omitempty"`
-	SKU              string     `json:"sku"`
-	Price            int64      `json:"price"`
-	OfferPrice       *int64     `json:"offer_price,omitempty"`
-	OfferStartDate   *time.Time `json:"offer_start_date,omitempty"`
-	OfferEndDate     *time.Time `json:"offer_end_date,omitempty"`
 	ProductType      string     `json:"product_type,omitempty"`
 	Status           string     `json:"status"`
 	IsApproved       bool       `json:"is_approved"`
@@ -41,7 +35,7 @@ type ProductResponse struct {
 }
 
 type IProductService interface {
-	AddProduct(customParam validator.AddProductRequest) int
+	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) int
 	GetProductByID(id string) (int, *ProductResponse)
 	UpdateProduct(id string, customParam validator.UpdateProductRequest) int
 	DeleteProductByID(id string) int
@@ -56,8 +50,8 @@ func NewProductService(productRepo repository.IProductRepository) IProductServic
 	return &ProductService{productRepo: productRepo}
 }
 
-func (ps *ProductService) AddProduct(customParam validator.AddProductRequest) int {
-	err := ps.productRepo.AddProduct(customParam)
+func (ps *ProductService) AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) int {
+	err := ps.productRepo.AddProduct(customParam, vendorId)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -151,12 +145,6 @@ func (ps *ProductService) UpdateProduct(id string, customParam validator.UpdateP
 	} else {
 		oldProduct.ChildCategoryID = uuid.NullUUID{Valid: false}
 	}
-
-	if customParam.Qty != nil {
-		oldProduct.Qty = sql.NullInt16{Int16: int16(*customParam.Qty), Valid: true}
-	} else {
-		oldProduct.Qty = sql.NullInt16{Valid: false}
-	}
 	if customParam.ShortDesc != nil {
 		oldProduct.ShortDescription = sql.NullString{String: *customParam.ShortDesc, Valid: true}
 	} else {
@@ -166,30 +154,6 @@ func (ps *ProductService) UpdateProduct(id string, customParam validator.UpdateP
 		oldProduct.LongDescription = sql.NullString{String: *customParam.LongDesc, Valid: true}
 	} else {
 		oldProduct.LongDescription = sql.NullString{Valid: false}
-	}
-	if customParam.SKU != nil {
-		oldProduct.Sku = sql.NullString{String: *customParam.SKU, Valid: true}
-	} else {
-		oldProduct.Sku = sql.NullString{Valid: false}
-	}
-	if customParam.Price != nil {
-		oldProduct.Price = *customParam.Price
-	} else {
-		oldProduct.Price = 0
-	}
-	if customParam.OfferPrice != nil {
-		oldProduct.OfferPrice = sql.NullInt64{Int64: *customParam.OfferPrice, Valid: true}
-	} else {
-		oldProduct.OfferPrice = sql.NullInt64{Valid: false}
-	}
-	if customParam.OfferStartDate != nil {
-		parsedTime, err := time.Parse(time.RFC3339, *customParam.OfferStartDate)
-		if err != nil {
-			return response.ErrCodeParamInvalid
-		}
-		oldProduct.OfferStartDate = sql.NullTime{Time: parsedTime, Valid: true}
-	} else {
-		oldProduct.OfferStartDate = sql.NullTime{Valid: false}
 	}
 	if customParam.ProductType != nil {
 		oldProduct.ProductType = sql.NullString{String: *customParam.ProductType, Valid: true}
@@ -250,10 +214,6 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	if filter.StoreName != nil && *filter.StoreName != "" {
 		storeName = sql.NullString{String: *filter.StoreName, Valid: true}
 	}
-	sku := sql.NullString{}
-	if filter.SKU != nil && *filter.SKU != "" {
-		sku = sql.NullString{String: *filter.SKU, Valid: true}
-	}
 	name := sql.NullString{}
 	if filter.Name != nil && *filter.Name != "" {
 		name = sql.NullString{String: *filter.Name, Valid: true}
@@ -271,22 +231,17 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	} else {
 		status = database.NullProductStatus{Valid: false}
 	}
-	priceValue := sql.NullString{Valid: false}
-	if filter.Price != nil && *filter.Price > 0 {
-		priceValue = sql.NullString{String: strconv.FormatInt(*filter.Price, 10), Valid: true}
-	}
 	params := database.ListProductsParams{
 		Column1: storeName,
-		Column2: sku,
-		Column3: name,
-		Column4: productType,
+		Column2: name,
+		Column3: productType,
 		Status:  status,
-		Column6: priceValue,
 	}
 	products, err := ps.productRepo.ListProducts(params)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
+			log.Println(err)
 			switch pqErr.Code.Name() {
 			case "unique_violation":
 				return response.ErrCodeConflict, nil
@@ -341,14 +296,8 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 		CategoryID:       row.CategoryID,
 		SubCategoryID:    getNullableUUID(row.SubCategoryID),
 		ChildCategoryID:  getNullableUUID(row.ChildCategoryID),
-		Qty:              int(row.Qty.Int16),
 		ShortDescription: row.ShortDescription.String,
 		LongDescription:  row.LongDescription.String,
-		SKU:              row.Sku.String,
-		Price:            row.Price,
-		OfferPrice:       getNullableInt64(row.OfferPrice),
-		OfferStartDate:   getNullableTime(row.OfferStartDate),
-		OfferEndDate:     getNullableTime(row.OfferEndDate),
 		ProductType:      row.ProductType.String,
 		Status:           string(row.Status.ProductStatus),
 		IsApproved:       row.IsApproved.Bool,
@@ -373,14 +322,8 @@ func mapProductToResponseData(product *database.Product) (*ProductResponse, erro
 		CategoryID:       product.CategoryID,
 		SubCategoryID:    getNullableUUID(product.SubCategoryID),
 		ChildCategoryID:  getNullableUUID(product.ChildCategoryID),
-		Qty:              int(product.Qty.Int16),
 		ShortDescription: product.ShortDescription.String,
 		LongDescription:  product.LongDescription.String,
-		SKU:              product.Sku.String,
-		Price:            product.Price,
-		OfferPrice:       getNullableInt64(product.OfferPrice),
-		OfferStartDate:   getNullableTime(product.OfferStartDate),
-		OfferEndDate:     getNullableTime(product.OfferEndDate),
 		ProductType:      product.ProductType.String,
 		Status:           string(product.Status.ProductStatus),
 		IsApproved:       product.IsApproved.Bool,

@@ -14,7 +14,7 @@ import (
 )
 
 type IProductRepository interface {
-	AddProduct(customParam validator.AddProductRequest) error
+	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) error
 	GetProductByID(id uuid.UUID) (*database.Product, error)
 	UpdateProduct(customParam *database.Product) error
 	DeleteProductByID(id uuid.UUID) error
@@ -31,19 +31,15 @@ func NewProductRepository() IProductRepository {
 	}
 }
 
-func (pr *ProductRepository) AddProduct(customParam validator.AddProductRequest) error {
+func (pr *ProductRepository) AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) error {
+	log.Println(customParam)
 	imagesJSON := utils.MarshalImages(customParam.Images)
-	vendorID := utils.OptionalUUID(uuid.MustParse(customParam.VendorID), customParam.VendorID != "")
 	categoryID := utils.OptionalUUID(uuid.MustParse(customParam.CategoryID), customParam.CategoryID != "")
 	subCategoryID := utils.OptionalNullUUID(customParam.SubCategoryID)
 	childCategoryID := utils.OptionalNullUUID(customParam.ChildCategoryID)
 
-	qty := utils.OptionalNullInt16(int16(customParam.Qty), customParam.Qty >= 0)
 	shortDesc := utils.OptionalNullString(customParam.ShortDesc)
 	longDesc := utils.OptionalNullString(customParam.LongDesc)
-	offerPrice := utils.OptionalNullInt64(customParam.OfferPrice)
-	offerStartDate := utils.ParseOptionalISO8601(customParam.OfferStartDate).Time
-	offerEndDate := utils.ParseOptionalISO8601(customParam.OfferEndDate).Time
 	statusPtr := &customParam.Status
 	if customParam.Status == "" {
 		statusPtr = nil
@@ -62,18 +58,12 @@ func (pr *ProductRepository) AddProduct(customParam validator.AddProductRequest)
 		Name:             customParam.Name,
 		Slug:             customParam.Slug,
 		Images:           imagesJSON,
-		VendorID:         vendorID,
+		VendorID:         vendorId,
 		CategoryID:       categoryID,
 		SubCategoryID:    subCategoryID,
 		ChildCategoryID:  childCategoryID,
-		Qty:              qty,
 		ShortDescription: shortDesc,
 		LongDescription:  longDesc,
-		Sku:              utils.OptionalNullString(&customParam.SKU),
-		Price:            customParam.Price,
-		OfferPrice:       offerPrice,
-		OfferStartDate:   sql.NullTime{Time: offerStartDate, Valid: !offerStartDate.IsZero()},
-		OfferEndDate:     sql.NullTime{Time: offerEndDate, Valid: !offerEndDate.IsZero()},
 		ProductType:      utils.OptionalNullString(&customParam.ProductType),
 		Status:           status,
 		IsApproved:       isApproved,
@@ -100,14 +90,8 @@ func (ps *ProductRepository) UpdateProduct(customParam *database.Product) error 
 		CategoryID:       customParam.CategoryID,
 		SubCategoryID:    customParam.SubCategoryID,
 		ChildCategoryID:  customParam.ChildCategoryID,
-		Qty:              customParam.Qty,
 		ShortDescription: customParam.ShortDescription,
 		LongDescription:  customParam.LongDescription,
-		Sku:              customParam.Sku,
-		Price:            customParam.Price,
-		OfferPrice:       customParam.OfferPrice,
-		OfferStartDate:   customParam.OfferStartDate,
-		OfferEndDate:     customParam.OfferEndDate,
 		ProductType:      customParam.ProductType,
 		Status:           customParam.Status,
 		IsApproved:       customParam.IsApproved,

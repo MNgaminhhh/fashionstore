@@ -131,6 +131,7 @@ WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
   AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
   AND (sc.status = $4 OR $4 = -1)
   AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (c.id = $6)
 ORDER BY sc.updated_at DESC
 `
 
@@ -140,6 +141,7 @@ type FindALlSubCategoriesParams struct {
 	Column3 sql.NullString
 	Status  sql.NullInt32
 	Column5 sql.NullString
+	ID      uuid.UUID
 }
 
 type FindALlSubCategoriesRow struct {
@@ -162,6 +164,7 @@ func (q *Queries) FindALlSubCategories(ctx context.Context, arg FindALlSubCatego
 		arg.Column3,
 		arg.Status,
 		arg.Column5,
+		arg.ID,
 	)
 	if err != nil {
 		return nil, err
@@ -258,6 +261,7 @@ WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
   AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
   AND (cc.status = $4 OR $4 = -1)
   AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (sc.id = $6)
 ORDER BY cc.updated_at DESC
 `
 
@@ -267,6 +271,7 @@ type FindAllChildCategoriesParams struct {
 	Column3 sql.NullString
 	Status  sql.NullInt32
 	Column5 sql.NullString
+	ID      uuid.UUID
 }
 
 type FindAllChildCategoriesRow struct {
@@ -288,6 +293,7 @@ func (q *Queries) FindAllChildCategories(ctx context.Context, arg FindAllChildCa
 		arg.Column3,
 		arg.Status,
 		arg.Column5,
+		arg.ID,
 	)
 	if err != nil {
 		return nil, err

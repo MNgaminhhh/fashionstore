@@ -184,6 +184,50 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 	return string(ns.UserStatus), nil
 }
 
+type VariantsStatus string
+
+const (
+	VariantsStatusActive       VariantsStatus = "active"
+	VariantsStatusInactive     VariantsStatus = "inactive"
+	VariantsStatusOutOfStock   VariantsStatus = "out_of_stock"
+	VariantsStatusDiscontinued VariantsStatus = "discontinued"
+)
+
+func (e *VariantsStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VariantsStatus(s)
+	case string:
+		*e = VariantsStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VariantsStatus: %T", src)
+	}
+	return nil
+}
+
+type NullVariantsStatus struct {
+	VariantsStatus VariantsStatus
+	Valid          bool // Valid is true if VariantsStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVariantsStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.VariantsStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VariantsStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVariantsStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VariantsStatus), nil
+}
+
 type VendorsStatus string
 
 const (
@@ -284,19 +328,41 @@ type Product struct {
 	CategoryID       uuid.UUID
 	SubCategoryID    uuid.NullUUID
 	ChildCategoryID  uuid.NullUUID
-	Qty              sql.NullInt16
 	ShortDescription sql.NullString
 	LongDescription  sql.NullString
-	Sku              sql.NullString
-	Price            int64
-	OfferPrice       sql.NullInt64
-	OfferStartDate   sql.NullTime
-	OfferEndDate     sql.NullTime
 	ProductType      sql.NullString
 	Status           NullProductStatus
 	IsApproved       sql.NullBool
 	CreatedAt        sql.NullTime
 	UpdatedAt        sql.NullTime
+}
+
+type ProductVariant struct {
+	ID        uuid.UUID
+	Name      string
+	Status    NullVariantsStatus
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type Sku struct {
+	ID             uuid.UUID
+	ProductID      uuid.UUID
+	InStock        sql.NullInt16
+	Sku            sql.NullString
+	Price          int64
+	Offer          sql.NullInt32
+	OfferStartDate sql.NullTime
+	OfferEndDate   sql.NullTime
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+}
+
+type SkusVariant struct {
+	ID               uuid.UUID
+	ProductVariantID uuid.NullUUID
+	VariantOptionID  uuid.NullUUID
+	SkuID            uuid.UUID
 }
 
 type SubCategory struct {
@@ -323,6 +389,15 @@ type User struct {
 	UpdatedAt   sql.NullTime
 	Role        UserRole
 	Avt         sql.NullString
+}
+
+type VariantOption struct {
+	ID               uuid.UUID
+	ProductVariantID uuid.UUID
+	Name             string
+	Status           NullVariantsStatus
+	CreatedAt        sql.NullTime
+	UpdatedAt        sql.NullTime
 }
 
 type Vendor struct {

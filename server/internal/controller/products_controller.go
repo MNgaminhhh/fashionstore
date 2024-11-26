@@ -4,6 +4,7 @@ import (
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"github.com/google/uuid"
 	"github.com/labstack/echo"
 )
 
@@ -18,6 +19,8 @@ func NewProductController(productService service.IProductService) *ProductContro
 }
 
 func (pc *ProductController) AddProduct(c echo.Context) error {
+	id := c.Get("vendorId").(string)
+	vendorId, _ := uuid.Parse(id)
 	var req validator.AddProductRequest
 	if err := c.Bind(&req); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Yêu cầu không hợp lệ")
@@ -27,7 +30,7 @@ func (pc *ProductController) AddProduct(c echo.Context) error {
 		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
 	}
 
-	code := pc.productService.AddProduct(req)
+	code := pc.productService.AddProduct(req, vendorId)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "Thêm sản phẩm thất bại")
 	}

@@ -34,6 +34,7 @@ const (
 	ErrCodeCateParentNotFound         = 50021
 	ErrCodeBannerNotFound             = 50022
 	ErrCodeProductNotFound            = 50023
+	ErrCodeProductVariantNotFound     = 50024
 	ErrCodeForbidden                  = 403
 )
 
@@ -72,4 +73,5 @@ var msg = map[int]string{
 	ErrCodeForeignKey:                 "Một vài dữ liệu tham chiếu không hợp lệ. Vui lòng kiểm tra lại!",
 	ErrCodeDatabase:                   "Đã xảy ra lỗi trong cơ sở dữ liệu. Vui lòng thử lại sau!",
 	ErrCodeUnknown:                    "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau!",
+	ErrCodeProductVariantNotFound:     "Không tìm thấy dữ liệu!",
 }

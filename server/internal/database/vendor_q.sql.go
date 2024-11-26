@@ -191,6 +191,34 @@ func (q *Queries) GetVendorById(ctx context.Context, id uuid.UUID) (GetVendorByI
 	return i, err
 }
 
+const getVendorByUUID = `-- name: GetVendorByUUID :one
+SELECT id, user_id, full_name, email, phone_number, store_name, status, description, address, banner, created_at, updated_at, created_by, updated_by
+FROM vendors
+WHERE user_id = $1
+`
+
+func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor, error) {
+	row := q.db.QueryRowContext(ctx, getVendorByUUID, userID)
+	var i Vendor
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.FullName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.StoreName,
+		&i.Status,
+		&i.Description,
+		&i.Address,
+		&i.Banner,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CreatedBy,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
 const updateVendorStatus = `-- name: UpdateVendorStatus :exec
 UPDATE vendors
 SET status = $1, updated_by = $2

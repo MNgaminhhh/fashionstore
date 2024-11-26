@@ -81,8 +81,10 @@ func (ur *userRepository) UpdateUser(newUser *database.User) error {
 		Dob:         newUser.Dob,
 		Avt:         newUser.Avt,
 		ID:          newUser.ID,
+		Role:        newUser.Role,
 	}
 	err := ur.sqlc.UpdateUser(ctx, params)
+	log.Println("update")
 	return err
 }
 

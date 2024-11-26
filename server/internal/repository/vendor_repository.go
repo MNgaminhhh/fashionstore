@@ -14,6 +14,7 @@ type IVendorRepository interface {
 	UpdateStatus(userId, updatedBy uuid.UUID, status database.VendorsStatus) error
 	GetVendor(vendorId uuid.UUID) (*database.GetVendorByIdRow, error)
 	GetAllVendors(customParams validator.FilterVendorRequest) ([]database.Vendor, error)
+	GetVendorByUUID(userId uuid.UUID) (*database.Vendor, error)
 }
 
 type VendorRepository struct {
@@ -81,4 +82,12 @@ func (vr *VendorRepository) GetAllVendors(customParams validator.FilterVendorReq
 		return nil, err
 	}
 	return vendors, nil
+}
+
+func (vr *VendorRepository) GetVendorByUUID(userId uuid.UUID) (*database.Vendor, error) {
+	vendor, err := vr.sqlc.GetVendorByUUID(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return &vendor, nil
 }

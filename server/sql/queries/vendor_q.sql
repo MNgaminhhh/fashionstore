@@ -52,3 +52,8 @@ WHERE
   AND (address ILIKE '%' || $4::text || '%' OR $4 = '')
   AND (description ILIKE '%' || $5::text || '%' OR $5 = '')
 ORDER BY created_at DESC;
+
+-- name: GetVendorByUUID :one
+SELECT *
+FROM vendors
+WHERE user_id = $1;

@@ -1,6 +1,7 @@
 package product
 
 import (
+	"backend/internal/middleware"
 	"backend/internal/wire"
 	"github.com/labstack/echo"
 )
@@ -15,8 +16,8 @@ func (cr *ProductRouter) InitProductRouter(router *echo.Group) {
 	{
 		productGroup.GET("", productController.ListProducts)
 		productGroup.GET("/:id", productController.GetProductByID)
-		productGroup.POST("", productController.AddProduct)
-		productGroup.PUT("/:id", productController.UpdateProduct)
-		productGroup.DELETE("/:id", productController.DeleteProductByID)
+		productGroup.POST("", productController.AddProduct, middleware.JWTMiddleware)
+		productGroup.PUT("/:id", productController.UpdateProduct, middleware.JWTMiddleware)
+		productGroup.DELETE("/:id", productController.DeleteProductByID, middleware.JWTMiddleware)
 	}
 }
