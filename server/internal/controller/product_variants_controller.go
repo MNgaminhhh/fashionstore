@@ -64,8 +64,10 @@ func (pc *ProductVariantsController) UpdateProductVariantById(c echo.Context) er
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update Product Variant Fail")
 	}
-	if err := c.Validate(reqParam); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	if c.Param("status") != "" {
+		if err := c.Validate(reqParam); err != nil {
+			return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+		}
 	}
 	code := pc.pvService.UpdateProductVariants(id, reqParam)
 	if code != response.SuccessCode {

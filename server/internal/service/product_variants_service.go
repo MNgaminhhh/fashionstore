@@ -57,7 +57,7 @@ func (ps *ProductVariantsService) UpdateProductVariants(id string, customParam v
 	if err != nil {
 		return response.ErrCodeInternal
 	}
-	if pv != nil {
+	if pv == nil {
 		return response.ErrCodeProductVariantNotFound
 	}
 	if customParam.Name != nil {
