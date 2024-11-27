@@ -13,7 +13,7 @@ import (
 )
 
 const addCategory = `-- name: AddCategory :exec
-INSERT INTO categories (name, name_code, icon, component) Values ($1, $2, $3, $4)
+INSERT INTO categories (name, name_code, icon, component, url) Values ($1, $2, $3, $4, $5)
 `
 
 type AddCategoryParams struct {
@@ -21,6 +21,7 @@ type AddCategoryParams struct {
 	NameCode  string
 	Icon      sql.NullString
 	Component NullComponentsType
+	Url       sql.NullString
 }
 
 func (q *Queries) AddCategory(ctx context.Context, arg AddCategoryParams) error {
@@ -29,16 +30,18 @@ func (q *Queries) AddCategory(ctx context.Context, arg AddCategoryParams) error 
 		arg.NameCode,
 		arg.Icon,
 		arg.Component,
+		arg.Url,
 	)
 	return err
 }
 
 const addChildCategory = `-- name: AddChildCategory :exec
-INSERT INTO child_categories (sub_category_id, name, name_code)
+INSERT INTO child_categories (sub_category_id, name, name_code, url)
 VALUES (
 $1,
         $2,
-        $3
+        $3,
+        $4
 )
 `
 
@@ -46,20 +49,27 @@ type AddChildCategoryParams struct {
 	SubCategoryID uuid.NullUUID
 	Name          string
 	NameCode      string
+	Url           sql.NullString
 }
 
 func (q *Queries) AddChildCategory(ctx context.Context, arg AddChildCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, addChildCategory, arg.SubCategoryID, arg.Name, arg.NameCode)
+	_, err := q.db.ExecContext(ctx, addChildCategory,
+		arg.SubCategoryID,
+		arg.Name,
+		arg.NameCode,
+		arg.Url,
+	)
 	return err
 }
 
 const addSubcategory = `-- name: AddSubcategory :exec
-INSERT INTO sub_categories (category_id, name, name_code, component)
+INSERT INTO sub_categories (category_id, name, name_code, component, url)
 VALUES (
 (SELECT categories.id FROM categories WHERE categories.name = $1),
 $2,
         $3,
-$4
+$4,
+         $5
 )
 `
 
@@ -68,6 +78,7 @@ type AddSubcategoryParams struct {
 	Name_2    string
 	NameCode  string
 	Component NullComponentsType
+	Url       sql.NullString
 }
 
 func (q *Queries) AddSubcategory(ctx context.Context, arg AddSubcategoryParams) error {
@@ -76,6 +87,7 @@ func (q *Queries) AddSubcategory(ctx context.Context, arg AddSubcategoryParams) 
 		arg.Name_2,
 		arg.NameCode,
 		arg.Component,
+		arg.Url,
 	)
 	return err
 }
@@ -119,6 +131,7 @@ WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
   AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
   AND (sc.status = $4 OR $4 = -1)
   AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (c.id = $6)
 ORDER BY sc.updated_at DESC
 `
 
@@ -128,6 +141,7 @@ type FindALlSubCategoriesParams struct {
 	Column3 sql.NullString
 	Status  sql.NullInt32
 	Column5 sql.NullString
+	ID      uuid.UUID
 }
 
 type FindALlSubCategoriesRow struct {
@@ -150,6 +164,7 @@ func (q *Queries) FindALlSubCategories(ctx context.Context, arg FindALlSubCatego
 		arg.Column3,
 		arg.Status,
 		arg.Column5,
+		arg.ID,
 	)
 	if err != nil {
 		return nil, err
@@ -246,6 +261,7 @@ WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
   AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
   AND (cc.status = $4 OR $4 = -1)
   AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (sc.id = $6)
 ORDER BY cc.updated_at DESC
 `
 
@@ -255,6 +271,7 @@ type FindAllChildCategoriesParams struct {
 	Column3 sql.NullString
 	Status  sql.NullInt32
 	Column5 sql.NullString
+	ID      uuid.UUID
 }
 
 type FindAllChildCategoriesRow struct {
@@ -276,6 +293,7 @@ func (q *Queries) FindAllChildCategories(ctx context.Context, arg FindAllChildCa
 		arg.Column3,
 		arg.Status,
 		arg.Column5,
+		arg.ID,
 	)
 	if err != nil {
 		return nil, err

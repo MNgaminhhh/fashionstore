@@ -39,6 +39,15 @@ func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
 	return categoryController, nil
 }
 
+// Injectors from product_variant_wire.go:
+
+func InitProductVariantHandlerRouter() (*controller.ProductVariantsController, error) {
+	iProductVariantsRepository := repository.NewProductVariantsRepository()
+	iProductVariantsService := service.NewProductVariantsService(iProductVariantsRepository)
+	productVariantsController := controller.NewProductVariantsController(iProductVariantsService)
+	return productVariantsController, nil
+}
+
 // Injectors from products_wire.go:
 
 func InitProductRouterHandlerr() (*controller.ProductController, error) {

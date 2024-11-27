@@ -2,7 +2,9 @@ package service
 
 import (
 	"backend/internal/database"
+	"backend/internal/repository"
 	"github.com/golang-jwt/jwt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -29,6 +31,16 @@ func (j *Auth) GenerateToken(user *database.User) (string, error) {
 	claims["email"] = user.Email
 	claims["role"] = user.Role
 	claims["typ"] = "JWT"
+
+	if user.Role == database.UserRoleVendors {
+		vendorRepo := repository.NewVendorRepository()
+		log.Println(user.ID)
+		vendor, err := vendorRepo.GetVendorByUUID(user.ID)
+		if err != nil {
+			return "", err
+		}
+		claims["vendorId"] = vendor.ID
+	}
 
 	signedAccessToken, err := token.SignedString([]byte(j.Secret))
 	if err != nil {

@@ -22,20 +22,14 @@ INSERT INTO products (
     category_id,
     sub_category_id,
     child_category_id,
-    qty,
     short_description,
     long_description,
-    sku,
-    price,
-    offer_price,
-    offer_start_date,
-    offer_end_date,
     product_type,
     status,
     is_approved
 ) VALUES (
-         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
-     )
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+)
 RETURNING id, created_at, updated_at
 `
 
@@ -47,14 +41,8 @@ type AddProductParams struct {
 	CategoryID       uuid.UUID
 	SubCategoryID    uuid.NullUUID
 	ChildCategoryID  uuid.NullUUID
-	Qty              sql.NullInt16
 	ShortDescription sql.NullString
 	LongDescription  sql.NullString
-	Sku              sql.NullString
-	Price            int64
-	OfferPrice       sql.NullInt64
-	OfferStartDate   sql.NullTime
-	OfferEndDate     sql.NullTime
 	ProductType      sql.NullString
 	Status           NullProductStatus
 	IsApproved       sql.NullBool
@@ -75,14 +63,8 @@ func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (AddProd
 		arg.CategoryID,
 		arg.SubCategoryID,
 		arg.ChildCategoryID,
-		arg.Qty,
 		arg.ShortDescription,
 		arg.LongDescription,
-		arg.Sku,
-		arg.Price,
-		arg.OfferPrice,
-		arg.OfferStartDate,
-		arg.OfferEndDate,
 		arg.ProductType,
 		arg.Status,
 		arg.IsApproved,
@@ -111,14 +93,8 @@ SELECT
     category_id,
     sub_category_id,
     child_category_id,
-    qty,
     short_description,
     long_description,
-    sku,
-    price,
-    offer_price,
-    offer_start_date,
-    offer_end_date,
     product_type,
     status,
     is_approved,
@@ -140,14 +116,8 @@ func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, er
 		&i.CategoryID,
 		&i.SubCategoryID,
 		&i.ChildCategoryID,
-		&i.Qty,
 		&i.ShortDescription,
 		&i.LongDescription,
-		&i.Sku,
-		&i.Price,
-		&i.OfferPrice,
-		&i.OfferStartDate,
-		&i.OfferEndDate,
 		&i.ProductType,
 		&i.Status,
 		&i.IsApproved,
@@ -167,14 +137,8 @@ SELECT
     p.category_id,
     p.sub_category_id,
     p.child_category_id,
-    p.qty,
     p.short_description,
     p.long_description,
-    p.sku,
-    p.price,
-    p.offer_price,
-    p.offer_start_date,
-    p.offer_end_date,
     p.product_type,
     p.status,
     p.is_approved,
@@ -187,21 +151,17 @@ FROM products p
          LEFT JOIN categories c ON p.category_id = c.id
 WHERE
     (v.store_name ILIKE '%' || COALESCE($1, '') || '%' OR $1 IS NULL) AND
-    (p.sku ILIKE '%' || COALESCE($2, '') || '%' OR $2 IS NULL) AND
-    (p.name ILIKE '%' || COALESCE($3, '') || '%' OR $3 IS NULL) AND
-    (p.product_type ILIKE '%' || COALESCE($4, '') || '%' OR $4 IS NULL) AND
-    (p.status = COALESCE($5, p.status) OR $5 IS NULL) AND
-    (CAST(p.price AS TEXT) ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL)
-ORDER BY p.created_at DESC
+    (p.name ILIKE '%' || COALESCE($2, '') || '%' OR $2 IS NULL) AND
+    (p.product_type ILIKE '%' || COALESCE($3, '') || '%' OR $3 IS NULL) AND
+    (p.status = COALESCE($4, p.status) OR $4 IS NULL)
+ORDER BY p.updated_at DESC
 `
 
 type ListProductsParams struct {
 	Column1 sql.NullString
 	Column2 sql.NullString
 	Column3 sql.NullString
-	Column4 sql.NullString
 	Status  NullProductStatus
-	Column6 sql.NullString
 }
 
 type ListProductsRow struct {
@@ -213,14 +173,8 @@ type ListProductsRow struct {
 	CategoryID       uuid.UUID
 	SubCategoryID    uuid.NullUUID
 	ChildCategoryID  uuid.NullUUID
-	Qty              sql.NullInt16
 	ShortDescription sql.NullString
 	LongDescription  sql.NullString
-	Sku              sql.NullString
-	Price            int64
-	OfferPrice       sql.NullInt64
-	OfferStartDate   sql.NullTime
-	OfferEndDate     sql.NullTime
 	ProductType      sql.NullString
 	Status           NullProductStatus
 	IsApproved       sql.NullBool
@@ -235,9 +189,7 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
-		arg.Column4,
 		arg.Status,
-		arg.Column6,
 	)
 	if err != nil {
 		return nil, err
@@ -255,14 +207,8 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 			&i.CategoryID,
 			&i.SubCategoryID,
 			&i.ChildCategoryID,
-			&i.Qty,
 			&i.ShortDescription,
 			&i.LongDescription,
-			&i.Sku,
-			&i.Price,
-			&i.OfferPrice,
-			&i.OfferStartDate,
-			&i.OfferEndDate,
 			&i.ProductType,
 			&i.Status,
 			&i.IsApproved,
@@ -294,17 +240,11 @@ SET
     category_id = $6,
     sub_category_id = $7,
     child_category_id = $8,
-    qty = $9,
-    short_description = $10,
-    long_description = $11,
-    sku = $12,
-    price = $13,
-    offer_price = $14,
-    offer_start_date = $15,
-    offer_end_date = $16,
-    product_type = $17,
-    status = $18,
-    is_approved = $19
+    short_description = $9,
+    long_description = $10,
+    product_type = $11,
+    status = $12,
+    is_approved = $13
 WHERE id = $1
 `
 
@@ -317,14 +257,8 @@ type UpdateProductParams struct {
 	CategoryID       uuid.UUID
 	SubCategoryID    uuid.NullUUID
 	ChildCategoryID  uuid.NullUUID
-	Qty              sql.NullInt16
 	ShortDescription sql.NullString
 	LongDescription  sql.NullString
-	Sku              sql.NullString
-	Price            int64
-	OfferPrice       sql.NullInt64
-	OfferStartDate   sql.NullTime
-	OfferEndDate     sql.NullTime
 	ProductType      sql.NullString
 	Status           NullProductStatus
 	IsApproved       sql.NullBool
@@ -340,14 +274,8 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.CategoryID,
 		arg.SubCategoryID,
 		arg.ChildCategoryID,
-		arg.Qty,
 		arg.ShortDescription,
 		arg.LongDescription,
-		arg.Sku,
-		arg.Price,
-		arg.OfferPrice,
-		arg.OfferStartDate,
-		arg.OfferEndDate,
 		arg.ProductType,
 		arg.Status,
 		arg.IsApproved,

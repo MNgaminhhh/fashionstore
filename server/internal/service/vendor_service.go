@@ -60,8 +60,21 @@ func (vs *VendorService) BecomeVendor(nVendor *database.Vendor) int {
 					return response.ErrPhoneNumberAlreadyUsed
 				}
 			}
+			log.Println(err)
 			return response.ErrCodeInternal
 		}
+	}
+	userRepo := repository.NewUserRepository()
+	user, err := userRepo.FindByID(nVendor.UserID)
+	if err != nil {
+		return response.ErrCodeUserNotFound
+	}
+	user.Role = database.UserRoleVendors
+
+	err = userRepo.UpdateUser(user)
+	if err != nil {
+		log.Println(err)
+		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
 }

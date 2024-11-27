@@ -36,8 +36,8 @@ WHERE email = $2;
 
 -- name: UpdateUser :exec
 UPDATE  users
-SET full_name = $1, phone_number = $2, dob = $3, avt = $4
-WHERE id = $5;
+SET full_name = $1, phone_number = $2, dob = $3, avt = $4, role = $5
+WHERE id = $6;
 
 -- name: GetUserById :one
 SELECT * FROM users

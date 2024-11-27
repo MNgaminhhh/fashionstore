@@ -22,24 +22,26 @@ ORDER BY
 
 
 -- name: AddCategory :exec
-INSERT INTO categories (name, name_code, icon, component) Values ($1, $2, $3, $4);
+INSERT INTO categories (name, name_code, icon, component, url) Values ($1, $2, $3, $4, $5);
 
 
 -- name: AddSubcategory :exec
-INSERT INTO sub_categories (category_id, name, name_code, component)
+INSERT INTO sub_categories (category_id, name, name_code, component, url)
 VALUES (
 (SELECT categories.id FROM categories WHERE categories.name = $1),
 $2,
         $3,
-$4
+$4,
+         $5
 );
 
 -- name: AddChildCategory :exec
-INSERT INTO child_categories (sub_category_id, name, name_code)
+INSERT INTO child_categories (sub_category_id, name, name_code, url)
 VALUES (
 $1,
         $2,
-        $3
+        $3,
+        $4
 );
 
 -- name: FindAllCategories :many
@@ -80,6 +82,7 @@ WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
   AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
   AND (sc.status = $4 OR $4 = -1)
   AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (c.id = $6)
 ORDER BY sc.updated_at DESC;
 
 -- name: FindSubCategoryById :one
@@ -111,6 +114,7 @@ WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
   AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
   AND (cc.status = $4 OR $4 = -1)
   AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
+  AND (sc.id = $6)
 ORDER BY cc.updated_at DESC;
 
 -- name: FindChildCategoryById :one
