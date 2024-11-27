@@ -15,6 +15,11 @@ type IProductVariantsRepository interface {
 	GetProductVariantById(id uuid.UUID) (*database.ProductVariant, error)
 	DeleteProductVariantById(id uuid.UUID) error
 	UpdateProductVariant(pVariant *database.ProductVariant) error
+	CreateVariantOption(customParam validator.CreateVariantOptionValidator) error
+	GetListVariantOptionsByPvId(pvId uuid.UUID, customParam validator.FilterVariantOptionValidator) ([]database.GetAllVariantOptionsByPvIdRow, error)
+	UpdateVariantOptionById(variantOption *database.VariantOption) error
+	DeleteVariantOptionById(id uuid.UUID) error
+	GetVariantOptionById(id uuid.UUID) (*database.VariantOption, error)
 }
 
 type ProductVariantsRepository struct {
@@ -79,4 +84,69 @@ func (vr *ProductVariantsRepository) UpdateProductVariant(pVariant *database.Pro
 		ID:     pVariant.ID,
 	}
 	return vr.sqlc.UpdateProductVariant(ctx, updateParam)
+}
+
+func (vr *ProductVariantsRepository) CreateVariantOption(customParam validator.CreateVariantOptionValidator) error {
+	pvId, _ := uuid.Parse(customParam.ProductVariant)
+	param := database.CreateVariantOptionsParams{
+		Name:             customParam.Name,
+		ProductVariantID: pvId,
+		Status: database.NullVariantsStatus{
+			VariantsStatus: database.VariantsStatus(customParam.Status),
+			Valid:          true,
+		},
+	}
+	err := vr.sqlc.CreateVariantOptions(ctx, param)
+	return err
+}
+
+func (vr *ProductVariantsRepository) GetListVariantOptionsByPvId(pvId uuid.UUID, customParam validator.FilterVariantOptionValidator) ([]database.GetAllVariantOptionsByPvIdRow, error) {
+	var param = database.GetAllVariantOptionsByPvIdParams{
+		ID: pvId,
+	}
+	if customParam.Name != nil {
+		param.Column1 = sql.NullString{
+			String: *customParam.Name,
+			Valid:  *customParam.Name != "",
+		}
+	}
+	if customParam.Status != nil {
+		param.Status = database.NullVariantsStatus{
+			VariantsStatus: database.VariantsStatus(*customParam.Status),
+			Valid:          true,
+		}
+	}
+	if customParam.ProductVariantName != nil {
+		param.Column3 = sql.NullString{
+			String: *customParam.ProductVariantName,
+			Valid:  *customParam.ProductVariantName != "",
+		}
+	}
+	results, err := vr.sqlc.GetAllVariantOptionsByPvId(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func (vr *ProductVariantsRepository) UpdateVariantOptionById(variantOption *database.VariantOption) error {
+	param := database.UpdateVariantOptionByIdParams{
+		Name:   variantOption.Name,
+		Status: variantOption.Status,
+		ID:     variantOption.ID,
+	}
+	log.Println(variantOption.ID)
+	return vr.sqlc.UpdateVariantOptionById(ctx, param)
+}
+
+func (vr *ProductVariantsRepository) DeleteVariantOptionById(id uuid.UUID) error {
+	return vr.sqlc.DeleteVariantOptionById(ctx, id)
+}
+
+func (vr *ProductVariantsRepository) GetVariantOptionById(id uuid.UUID) (*database.VariantOption, error) {
+	vo, err := vr.sqlc.GetVariantOptionById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &vo, nil
 }

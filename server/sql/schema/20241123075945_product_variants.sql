@@ -40,6 +40,9 @@ CREATE TABLE variant_options (
     FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
 
+ALTER TABLE variant_options
+    ADD CONSTRAINT unique_pvId_name UNIQUE (product_variant_id, name);
+
 CREATE TABLE skus_variants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_variant_id UUID,

@@ -26,6 +26,22 @@ func (q *Queries) CreateProductVariant(ctx context.Context, arg CreateProductVar
 	return err
 }
 
+const createVariantOptions = `-- name: CreateVariantOptions :exec
+INSERT INTO variant_options (name, product_variant_id, status)
+VALUES ($1, $2, $3)
+`
+
+type CreateVariantOptionsParams struct {
+	Name             string
+	ProductVariantID uuid.UUID
+	Status           NullVariantsStatus
+}
+
+func (q *Queries) CreateVariantOptions(ctx context.Context, arg CreateVariantOptionsParams) error {
+	_, err := q.db.ExecContext(ctx, createVariantOptions, arg.Name, arg.ProductVariantID, arg.Status)
+	return err
+}
+
 const deleteProductVariantById = `-- name: DeleteProductVariantById :exec
 DELETE FROM product_variants
 WHERE id = $1
@@ -33,6 +49,16 @@ WHERE id = $1
 
 func (q *Queries) DeleteProductVariantById(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteProductVariantById, id)
+	return err
+}
+
+const deleteVariantOptionById = `-- name: DeleteVariantOptionById :exec
+DELETE FROM variant_options
+WHERE id = $1
+`
+
+func (q *Queries) DeleteVariantOptionById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteVariantOptionById, id)
 	return err
 }
 
@@ -77,6 +103,68 @@ func (q *Queries) GetAllProductVariants(ctx context.Context, arg GetAllProductVa
 	return items, nil
 }
 
+const getAllVariantOptionsByPvId = `-- name: GetAllVariantOptionsByPvId :many
+SELECT vo.id, vo.name, vo.status, vo.created_at, vo.updated_at, pv.name as product_variant_name
+FROM variant_options vo
+RIGHT JOIN product_variants pv ON vo.product_variant_id = pv.id
+WHERE (vo.name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+    AND (vo.status = $2 OR $2 IS NULL)
+    AND (pv.name ILIKE '%' || $3 || '%' OR $3 IS NULL)
+    AND pv.id = $4
+ORDER BY vo.updated_at DESC
+`
+
+type GetAllVariantOptionsByPvIdParams struct {
+	Column1 sql.NullString
+	Status  NullVariantsStatus
+	Column3 sql.NullString
+	ID      uuid.UUID
+}
+
+type GetAllVariantOptionsByPvIdRow struct {
+	ID                 uuid.NullUUID
+	Name               sql.NullString
+	Status             NullVariantsStatus
+	CreatedAt          sql.NullTime
+	UpdatedAt          sql.NullTime
+	ProductVariantName string
+}
+
+func (q *Queries) GetAllVariantOptionsByPvId(ctx context.Context, arg GetAllVariantOptionsByPvIdParams) ([]GetAllVariantOptionsByPvIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllVariantOptionsByPvId,
+		arg.Column1,
+		arg.Status,
+		arg.Column3,
+		arg.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllVariantOptionsByPvIdRow
+	for rows.Next() {
+		var i GetAllVariantOptionsByPvIdRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ProductVariantName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductVariantById = `-- name: GetProductVariantById :one
 SELECT id, name, status, created_at, updated_at FROM product_variants
 WHERE id = $1
@@ -87,6 +175,25 @@ func (q *Queries) GetProductVariantById(ctx context.Context, id uuid.UUID) (Prod
 	var i ProductVariant
 	err := row.Scan(
 		&i.ID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getVariantOptionById = `-- name: GetVariantOptionById :one
+SELECT id, product_variant_id, name, status, created_at, updated_at FROM variant_options
+WHERE id = $1
+`
+
+func (q *Queries) GetVariantOptionById(ctx context.Context, id uuid.UUID) (VariantOption, error) {
+	row := q.db.QueryRowContext(ctx, getVariantOptionById, id)
+	var i VariantOption
+	err := row.Scan(
+		&i.ID,
+		&i.ProductVariantID,
 		&i.Name,
 		&i.Status,
 		&i.CreatedAt,
@@ -109,5 +216,22 @@ type UpdateProductVariantParams struct {
 
 func (q *Queries) UpdateProductVariant(ctx context.Context, arg UpdateProductVariantParams) error {
 	_, err := q.db.ExecContext(ctx, updateProductVariant, arg.Name, arg.Status, arg.ID)
+	return err
+}
+
+const updateVariantOptionById = `-- name: UpdateVariantOptionById :exec
+UPDATE variant_options
+SET name = $1, status = $2
+WHERE id = $3
+`
+
+type UpdateVariantOptionByIdParams struct {
+	Name   string
+	Status NullVariantsStatus
+	ID     uuid.UUID
+}
+
+func (q *Queries) UpdateVariantOptionById(ctx context.Context, arg UpdateVariantOptionByIdParams) error {
+	_, err := q.db.ExecContext(ctx, updateVariantOptionById, arg.Name, arg.Status, arg.ID)
 	return err
 }

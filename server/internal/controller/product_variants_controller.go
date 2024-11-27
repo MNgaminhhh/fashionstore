@@ -84,3 +84,63 @@ func (pc *ProductVariantsController) DeleteProductVariantById(c echo.Context) er
 	}
 	return response.SuccessResponse(c, code, "Delete Product Variant Success")
 }
+
+func (pc *ProductVariantsController) CreateProductVariantOptions(c echo.Context) error {
+	var reqParam validator.CreateVariantOptionValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Create Product Variant Fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := pc.pvService.CreateVariantOption(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Create Product Variant Fail")
+	}
+	return response.SuccessResponse(c, code, "Tạo mới thành công!")
+}
+
+func (pc *ProductVariantsController) GetListVariantOptionsByPvId(c echo.Context) error {
+	id := c.Param("id")
+	var reqParam validator.FilterVariantOptionValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Filter Product Variant Fail")
+	}
+	if c.Param("status") != "" {
+		if err := c.Validate(reqParam); err != nil {
+			return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+		}
+	}
+	code, results := pc.pvService.GetListVariantOptionsByPvId(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get Product Variant Fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
+
+func (pc *ProductVariantsController) UpdateVariantOptionsById(c echo.Context) error {
+	id := c.Param("id")
+	var reqParam validator.UpdateVariantOptionValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "Update Product Variant Fail")
+	}
+	if c.Get("status") != "" {
+		if err := c.Validate(reqParam); err != nil {
+			return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+		}
+	}
+	code := pc.pvService.UpdateVariantOptionsById(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update Product Variant Fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật mới thành công!")
+}
+
+func (pc *ProductVariantsController) DeleteVariantOptionsByPvId(c echo.Context) error {
+	id := c.Param("id")
+	code := pc.pvService.DeleteVariantOptionById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Delete Product Variant Fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
+}
