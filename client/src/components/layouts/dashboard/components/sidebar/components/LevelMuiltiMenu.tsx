@@ -1,6 +1,7 @@
+
 import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
-import { navigation, navigationAdmin } from "../data";
+import { navigation } from "../data";
 import {
   ListLabel,
   BadgeValue,
@@ -14,10 +15,7 @@ import { useLayout } from "../../../context/LayoutContext";
 import Scrollbar from "../../../../../scrollbar";
 import Accordion from "./Accordion";
 
-type LevelMuiltiMenuProps = {
-  role: string | null;
-};
-export default function LevelMuiltiMenu({ role }: LevelMuiltiMenuProps) {
+export default function LevelMuiltiMenu() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -28,7 +26,7 @@ export default function LevelMuiltiMenu({ role }: LevelMuiltiMenuProps) {
   const handleNavigation = (path: string) => {
     router.push(path);
   };
-  const menuData = role === "admin" ? navigationAdmin : navigation;
+  const menuData = navigation;
   const renderLevels = (data: any) => {
     return data.map((item: any, index: number) => {
       if (item.type === "label") {

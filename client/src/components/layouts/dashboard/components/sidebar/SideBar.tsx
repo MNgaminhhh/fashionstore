@@ -3,10 +3,7 @@ import { useLayout } from "../../context/LayoutContext";
 import Logo from "./components/Logo";
 import LevelMuiltiMenu from "./components/LevelMuiltiMenu";
 
-type SidebarProps = {
-  role: string | null;
-};
-export default function SidebarDashboard({ role }: SidebarProps) {
+export default function SidebarDashboard() {
   const { isSidebarCompact, setSidebarHovered } = useLayout();
   return (
     <SidebarWrapper
@@ -15,7 +12,7 @@ export default function SidebarDashboard({ role }: SidebarProps) {
       onMouseLeave={() => isSidebarCompact && setSidebarHovered(false)}
     >
       <Logo />
-      <LevelMuiltiMenu role={role} />
+      <LevelMuiltiMenu/>
     </SidebarWrapper>
   );
 }

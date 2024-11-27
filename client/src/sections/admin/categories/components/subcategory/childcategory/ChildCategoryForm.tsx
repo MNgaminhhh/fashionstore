@@ -19,6 +19,7 @@ import { notifyError, notifySuccess } from "../../../../../../utils/ToastNotific
 import ChildCategoryModel from "../../../../../../models/ChildCategory.model";
 import ChildCategory from "../../../../../../services/ChildCategory";
 import { get } from "../../../../../../hooks/useLocalStorage";
+import CategoriesModel from "../../../../../../models/Categories.model";
 
 const VALIDATION_SCHEMA = yup.object().shape({
     parent: yup.string().required("Tên danh mục cha là bắt buộc"),
@@ -39,7 +40,7 @@ const VALIDATION_SCHEMA = yup.object().shape({
 
 type Props = {
     childCategory?: ChildCategoryModel;
-    categories: { id: string; name: string }[];
+    categories: CategoriesModel[];
 };
 
 export default function ChildCategoryForm({ childCategory, categories }: Props) {

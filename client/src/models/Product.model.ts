@@ -1,0 +1,22 @@
+interface ProductModel {
+    id: string;
+    name: string;
+    sku: string;
+    qty: number;
+    price: string;
+    category_name: string;
+    store_name: string;
+    product_type: string;
+    is_approved: boolean;
+    vendor_id: string;
+    category_id: string;
+    sub_category_id: string;
+    child_category_id: string;
+    short_description: string;
+    long_description: string;
+    offer: number;
+    offer_start_date: Date;
+    offer_end_date: Date;
+}
+
+export default ProductModel;

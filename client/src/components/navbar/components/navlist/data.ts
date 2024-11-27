@@ -37,7 +37,7 @@ const megaMenus = [
     {
       title: "Vendor Services",
       child: [
-        { title: "Dashboard", url: "/vendor/dashboard" },
+        { title: "Dashboard", url: "/dashboard" },
         { title: "Product Management", url: "/vendor/products" },
         { title: "Order Management", url: "/vendor/orders" },
       ],
