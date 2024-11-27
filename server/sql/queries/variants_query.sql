@@ -1,15 +1,32 @@
 -- name: CreateProductVariant :exec
-INSERT INTO product_variants (name, status) VALUES ($1, $2);
+INSERT INTO product_variants (name, status, product_id) VALUES ($1, $2, $3);
 
 -- name: GetProductVariantById :one
-SELECT * FROM product_variants
-WHERE id = $1;
+SELECT pv.name,
+       pv.id,
+       pv.status,
+       pv.created_at,
+       pv.updated_at,
+       p.name as product_name,
+       p.id as product_id
+FROM product_variants pv
+    LEFT JOIN products p ON pv.product_id = p.id
+WHERE pv.id = $1;
 
 -- name: GetAllProductVariants :many
-SELECT * FROM product_variants
-WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-    AND (status = $2 OR $2 IS NULL)
-ORDER BY updated_at DESC;
+SELECT
+    pv.name,
+    pv.id,
+    pv.status,
+    pv.created_at,
+    pv.updated_at,
+    p.name as product_name,
+    p.id as product_id
+FROM product_variants pv
+LEFT JOIN products p ON pv.product_id = p.id
+WHERE (pv.name ILIKE '%' || $1 || '%' OR $1 IS  NULL)
+AND (pv.status = $2 OR $2 IS NULL)
+ORDER BY pv.updated_at DESC;
 
 -- name: DeleteProductVariantById :exec
 DELETE FROM product_variants

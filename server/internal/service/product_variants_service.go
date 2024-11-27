@@ -15,11 +15,13 @@ import (
 )
 
 type ProductVariantResponse struct {
-	ID        string    `json:"id,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	Status    string    `json:"status,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	ID          string    `json:"id,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	ProductName string    `json:"productName,omitempty"`
+	ProductId   string    `json:"productId,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
 type VariantOptionResponse struct {
@@ -228,13 +230,30 @@ func (ps *ProductVariantsService) DeleteVariantOptionById(id string) int {
 	return response.SuccessCode
 }
 
-func MapProductVariantToResponse(pv *database.ProductVariant) *ProductVariantResponse {
-	return &ProductVariantResponse{
-		ID:        pv.ID.String(),
-		Name:      pv.Name,
-		Status:    string(pv.Status.VariantsStatus),
-		CreatedAt: pv.CreatedAt.Time,
-		UpdatedAt: pv.UpdatedAt.Time,
+func MapProductVariantToResponse[T any](data *T) *ProductVariantResponse {
+	switch pv := any(data).(type) {
+	case *database.GetProductVariantByIdRow:
+		return &ProductVariantResponse{
+			ID:          pv.ID.String(),
+			Name:        pv.Name,
+			Status:      string(pv.Status.VariantsStatus),
+			ProductName: pv.ProductName.String,
+			ProductId:   pv.ProductID.UUID.String(),
+			CreatedAt:   pv.CreatedAt.Time,
+			UpdatedAt:   pv.UpdatedAt.Time,
+		}
+	case *database.GetAllProductVariantsRow:
+		return &ProductVariantResponse{
+			ID:          pv.ID.String(),
+			Name:        pv.Name,
+			Status:      string(pv.Status.VariantsStatus),
+			ProductName: pv.ProductName.String,
+			ProductId:   pv.ProductID.UUID.String(),
+			CreatedAt:   pv.CreatedAt.Time,
+			UpdatedAt:   pv.UpdatedAt.Time,
+		}
+	default:
+		return &ProductVariantResponse{}
 	}
 }
 

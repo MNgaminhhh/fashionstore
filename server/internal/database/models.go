@@ -341,6 +341,7 @@ type ProductVariant struct {
 	ID        uuid.UUID
 	Name      string
 	Status    NullVariantsStatus
+	ProductID uuid.UUID
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }
@@ -356,13 +357,6 @@ type Sku struct {
 	OfferEndDate   sql.NullTime
 	CreatedAt      sql.NullTime
 	UpdatedAt      sql.NullTime
-}
-
-type SkusVariant struct {
-	ID               uuid.UUID
-	ProductVariantID uuid.NullUUID
-	VariantOptionID  uuid.NullUUID
-	SkuID            uuid.UUID
 }
 
 type SubCategory struct {

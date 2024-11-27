@@ -1,8 +1,9 @@
 package validator
 
 type CreateProductVariantValidator struct {
-	Name   string  `json:"name" validate:"required"`
-	Status *string `json:"status" validate:"oneof=active inactive discontinued out_of_stock"`
+	Name      string  `json:"name" validate:"required"`
+	Status    *string `json:"status" validate:"oneof=active inactive discontinued out_of_stock"`
+	ProductId string  `json:"product_id" validate:"required"`
 }
 
 type UpdateProductVariantValidator struct {

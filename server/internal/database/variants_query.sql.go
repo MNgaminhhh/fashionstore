@@ -13,16 +13,17 @@ import (
 )
 
 const createProductVariant = `-- name: CreateProductVariant :exec
-INSERT INTO product_variants (name, status) VALUES ($1, $2)
+INSERT INTO product_variants (name, status, product_id) VALUES ($1, $2, $3)
 `
 
 type CreateProductVariantParams struct {
-	Name   string
-	Status NullVariantsStatus
+	Name      string
+	Status    NullVariantsStatus
+	ProductID uuid.UUID
 }
 
 func (q *Queries) CreateProductVariant(ctx context.Context, arg CreateProductVariantParams) error {
-	_, err := q.db.ExecContext(ctx, createProductVariant, arg.Name, arg.Status)
+	_, err := q.db.ExecContext(ctx, createProductVariant, arg.Name, arg.Status, arg.ProductID)
 	return err
 }
 
@@ -63,10 +64,19 @@ func (q *Queries) DeleteVariantOptionById(ctx context.Context, id uuid.UUID) err
 }
 
 const getAllProductVariants = `-- name: GetAllProductVariants :many
-SELECT id, name, status, created_at, updated_at FROM product_variants
-WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-    AND (status = $2 OR $2 IS NULL)
-ORDER BY updated_at DESC
+SELECT
+    pv.name,
+    pv.id,
+    pv.status,
+    pv.created_at,
+    pv.updated_at,
+    p.name as product_name,
+    p.id as product_id
+FROM product_variants pv
+LEFT JOIN products p ON pv.product_id = p.id
+WHERE (pv.name ILIKE '%' || $1 || '%' OR $1 IS  NULL)
+AND (pv.status = $2 OR $2 IS NULL)
+ORDER BY pv.updated_at DESC
 `
 
 type GetAllProductVariantsParams struct {
@@ -74,21 +84,33 @@ type GetAllProductVariantsParams struct {
 	Status  NullVariantsStatus
 }
 
-func (q *Queries) GetAllProductVariants(ctx context.Context, arg GetAllProductVariantsParams) ([]ProductVariant, error) {
+type GetAllProductVariantsRow struct {
+	Name        string
+	ID          uuid.UUID
+	Status      NullVariantsStatus
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+	ProductName sql.NullString
+	ProductID   uuid.NullUUID
+}
+
+func (q *Queries) GetAllProductVariants(ctx context.Context, arg GetAllProductVariantsParams) ([]GetAllProductVariantsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllProductVariants, arg.Column1, arg.Status)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ProductVariant
+	var items []GetAllProductVariantsRow
 	for rows.Next() {
-		var i ProductVariant
+		var i GetAllProductVariantsRow
 		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
+			&i.ID,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ProductName,
+			&i.ProductID,
 		); err != nil {
 			return nil, err
 		}
@@ -166,19 +188,39 @@ func (q *Queries) GetAllVariantOptionsByPvId(ctx context.Context, arg GetAllVari
 }
 
 const getProductVariantById = `-- name: GetProductVariantById :one
-SELECT id, name, status, created_at, updated_at FROM product_variants
-WHERE id = $1
+SELECT pv.name,
+       pv.id,
+       pv.status,
+       pv.created_at,
+       pv.updated_at,
+       p.name as product_name,
+       p.id as product_id
+FROM product_variants pv
+    LEFT JOIN products p ON pv.product_id = p.id
+WHERE pv.id = $1
 `
 
-func (q *Queries) GetProductVariantById(ctx context.Context, id uuid.UUID) (ProductVariant, error) {
+type GetProductVariantByIdRow struct {
+	Name        string
+	ID          uuid.UUID
+	Status      NullVariantsStatus
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+	ProductName sql.NullString
+	ProductID   uuid.NullUUID
+}
+
+func (q *Queries) GetProductVariantById(ctx context.Context, id uuid.UUID) (GetProductVariantByIdRow, error) {
 	row := q.db.QueryRowContext(ctx, getProductVariantById, id)
-	var i ProductVariant
+	var i GetProductVariantByIdRow
 	err := row.Scan(
-		&i.ID,
 		&i.Name,
+		&i.ID,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProductName,
+		&i.ProductID,
 	)
 	return i, err
 }
