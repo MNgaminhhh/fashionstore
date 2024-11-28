@@ -80,7 +80,7 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 	results := map[string]interface{}{
 		"totalPage": totalPages,
 		"total":     totalResults,
-		"data":      allResponseData,
+		"skus":      allResponseData,
 		"page":      page,
 		"limit":     limit,
 	}
