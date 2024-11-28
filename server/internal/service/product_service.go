@@ -270,29 +270,27 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	totalPages := internal.CalculateTotalPages(totalResults, limit)
 	products = internal.Paginate(products, page, limit)
 	var responseData []ProductResponse
-	var productsWithSkus []map[string]interface{}
 	for _, product := range products {
+		log.Println(product)
 		resData, _ := mapListProductsRowToResponse(&product)
 		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
 		if getSkusErr != nil {
 			return response.ErrCodeInternal, nil
 		}
 		if skus != nil && len(skus) > 0 {
-
 			resData.LowestPrice = int(skus[0].Price)
 			resData.HighestPrice = int(skus[len(skus)-1].Price)
+			if filter.LowPrice != nil && filter.HighPrice != nil {
+				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
+					continue
+				}
+			}
 			responseData = append(responseData, *resData)
 		}
-
-		mapData := map[string]interface{}{
-			"product": resData,
-			"skus":    skus,
-		}
-		productsWithSkus = append(productsWithSkus, mapData)
 	}
 
 	results := map[string]interface{}{
-		"products":      productsWithSkus,
+		"products":      responseData,
 		"total_pages":   totalPages,
 		"total_results": totalResults,
 	}

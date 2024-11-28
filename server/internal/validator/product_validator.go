@@ -36,4 +36,6 @@ type FilterProductRequest struct {
 	ProductType *string `query:"product_type"`
 	Limit       *int    `query:"limit"`
 	Page        *int    `query:"page"`
+	LowPrice    *int    `query:"low_price"`
+	HighPrice   *int    `query:"high_price"`
 }
