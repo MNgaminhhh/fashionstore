@@ -14,19 +14,18 @@ func GetMessageError(pqError *pq.Error) int {
 	switch string(code) {
 	case string(UniqueViolation):
 
-		log.Println("name", name)
 		if name == "unique_child_name_per_sub_cate" || name == "unique_sub_name_per_category" || name == "categories_name_key" {
 			return response.ErrCodeNameAlreadyUsed
 		}
 		if name == "unique_child_name_code_per_sub_cate" || name == "unique_sub_name_code_per_category" || name == "categories_name_code_key" {
 			return response.ErrCodeNameCodeAlreadyUsed
 		}
-		return response.ErrCodeInternal
+		return response.ErrCodeConflict
 	case string(ForeignKeyViolation):
 		if name == "child_categories_sub_category_id_fkey" || name == "sub_categories_category_id_fkey" {
 			return response.ErrCodeCateParentNotFound
 		}
-		return response.ErrCodeInternal
+		return response.ErrCodeForeignKey
 
 	default:
 		return response.ErrCodeInternal

@@ -3,19 +3,34 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"errors"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"log"
 	"time"
 )
 
 type ProductVariantResponse struct {
-	Name      string    `json:"name,omitempty"`
-	Status    string    `json:"status,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	ID          string    `json:"id,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	ProductName string    `json:"productName,omitempty"`
+	ProductId   string    `json:"productId,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+}
+
+type VariantOptionResponse struct {
+	ID                 string    `json:"id,omitempty"`
+	Name               string    `json:"name,omitempty"`
+	Status             string    `json:"status,omitempty"`
+	ProductVariantName string    `json:"product_variant_name,omitempty"`
+	CreatedAt          time.Time `json:"created_at,omitempty"`
+	UpdatedAt          time.Time `json:"updated_at,omitempty"`
 }
 
 type IProductVariantsService interface {
@@ -24,6 +39,10 @@ type IProductVariantsService interface {
 	DeleteProductVariants(id string) int
 	UpdateProductVariants(id string, customParam validator.UpdateProductVariantValidator) int
 	GetProductVariantById(id string) (int, *ProductVariantResponse)
+	CreateVariantOption(customParam validator.CreateVariantOptionValidator) int
+	GetListVariantOptionsByPvId(pvId string, customParam validator.FilterVariantOptionValidator) (int, map[string]interface{})
+	UpdateVariantOptionsById(id string, customParam validator.UpdateVariantOptionValidator) int
+	DeleteVariantOptionById(id string) int
 }
 
 type ProductVariantsService struct {
@@ -37,6 +56,10 @@ func NewProductVariantsService(pVarRepo repository.IProductVariantsRepository) I
 func (ps *ProductVariantsService) CreateProductVariant(customParam validator.CreateProductVariantValidator) int {
 	err := ps.pVarRepo.CreateProductVariant(customParam)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
@@ -82,7 +105,7 @@ func (ps *ProductVariantsService) GetProductVariantById(id string) (int, *Produc
 	if err != nil {
 		return response.ErrCodeProductVariantNotFound, nil
 	}
-	return response.SuccessCode, MapToResponse(pv)
+	return response.SuccessCode, MapProductVariantToResponse(pv)
 }
 
 func (ps *ProductVariantsService) GetAllProductVariants(filterParam validator.FilterProductVariantValidator) (int, map[string]interface{}) {
@@ -108,7 +131,7 @@ func (ps *ProductVariantsService) GetAllProductVariants(filterParam validator.Fi
 	pVariants = internal.Paginate(pVariants, page, limit)
 	var pagination []ProductVariantResponse
 	for _, pv := range pVariants {
-		pagination = append(pagination, *MapToResponse(&pv))
+		pagination = append(pagination, *MapProductVariantToResponse(&pv))
 	}
 	results := map[string]interface{}{
 		"productVariants": pagination,
@@ -120,11 +143,127 @@ func (ps *ProductVariantsService) GetAllProductVariants(filterParam validator.Fi
 	return response.SuccessCode, results
 }
 
-func MapToResponse(pv *database.ProductVariant) *ProductVariantResponse {
-	return &ProductVariantResponse{
-		Name:      pv.Name,
-		Status:    string(pv.Status.VariantsStatus),
-		CreatedAt: pv.CreatedAt.Time,
-		UpdatedAt: pv.UpdatedAt.Time,
+func (ps *ProductVariantsService) CreateVariantOption(customParam validator.CreateVariantOptionValidator) int {
+	err := ps.pVarRepo.CreateVariantOption(customParam)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (ps *ProductVariantsService) GetListVariantOptionsByPvId(pvId string, customParam validator.FilterVariantOptionValidator) (int, map[string]interface{}) {
+	id, _ := uuid.Parse(pvId)
+	variantOptions, err := ps.pVarRepo.GetListVariantOptionsByPvId(id, customParam)
+	totalResults := len(variantOptions)
+	limit := 10
+	page := 1
+	if customParam.Limit != nil {
+		limit = *customParam.Limit
+	}
+	if customParam.Page != nil {
+		page = *customParam.Page
+	}
+	totalPage := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(variantOptions, page, limit)
+	var responseData []VariantOptionResponse
+	for _, vo := range pagination {
+		responseData = append(responseData, *MapVariantOptionToResponse(&vo))
+	}
+	results := map[string]interface{}{
+		"results":   responseData,
+		"page":      page,
+		"limit":     limit,
+		"total":     totalResults,
+		"totalPage": totalPage,
+	}
+	if err != nil {
+		return response.ErrCodeInternal, nil
+	}
+	return response.SuccessCode, results
+}
+
+func (ps *ProductVariantsService) UpdateVariantOptionsById(id string, customParam validator.UpdateVariantOptionValidator) int {
+	voId, _ := uuid.Parse(id)
+	variantOption, err := ps.pVarRepo.GetVariantOptionById(voId)
+	if err != nil {
+		log.Println(err)
+		return response.ErrCodeProductVariantNotFound
+	}
+	if customParam.Name != nil {
+		variantOption.Name = *customParam.Name
+	}
+	if customParam.Status != nil {
+		variantOption.Status = database.NullVariantsStatus{
+			Valid:          true,
+			VariantsStatus: database.VariantsStatus(*customParam.Status),
+		}
+	}
+	if customParam.ProductVariant != nil {
+		pvId, _ := uuid.Parse(*customParam.ProductVariant)
+		variantOption.ProductVariantID = pvId
+	}
+	err = ps.pVarRepo.UpdateVariantOptionById(variantOption)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return response.ErrCodeProductVariantNotFound
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (ps *ProductVariantsService) DeleteVariantOptionById(id string) int {
+	voId, _ := uuid.Parse(id)
+	err := ps.pVarRepo.DeleteVariantOptionById(voId)
+	if err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			return response.ErrCodeProductVariantNotFound
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func MapProductVariantToResponse[T any](data *T) *ProductVariantResponse {
+	switch pv := any(data).(type) {
+	case *database.GetProductVariantByIdRow:
+		return &ProductVariantResponse{
+			ID:          pv.ID.String(),
+			Name:        pv.Name,
+			Status:      string(pv.Status.VariantsStatus),
+			ProductName: pv.ProductName.String,
+			ProductId:   pv.ProductID.UUID.String(),
+			CreatedAt:   pv.CreatedAt.Time,
+			UpdatedAt:   pv.UpdatedAt.Time,
+		}
+	case *database.GetAllProductVariantsRow:
+		return &ProductVariantResponse{
+			ID:          pv.ID.String(),
+			Name:        pv.Name,
+			Status:      string(pv.Status.VariantsStatus),
+			ProductName: pv.ProductName.String,
+			ProductId:   pv.ProductID.UUID.String(),
+			CreatedAt:   pv.CreatedAt.Time,
+			UpdatedAt:   pv.UpdatedAt.Time,
+		}
+	default:
+		return &ProductVariantResponse{}
+	}
+}
+
+func MapVariantOptionToResponse(vo *database.GetAllVariantOptionsByPvIdRow) *VariantOptionResponse {
+	return &VariantOptionResponse{
+		ID:                 vo.ID.UUID.String(),
+		Name:               vo.Name.String,
+		Status:             string(vo.Status.VariantsStatus),
+		ProductVariantName: vo.ProductVariantName,
+		CreatedAt:          vo.CreatedAt.Time,
+		UpdatedAt:          vo.UpdatedAt.Time,
 	}
 }

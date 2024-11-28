@@ -12,12 +12,20 @@ type ProductRouter struct {
 func (cr *ProductRouter) InitProductVariantRouter(router *echo.Group) {
 	productVariantController, _ := wire.InitProductVariantHandlerRouter()
 
-	productGroup := router.Group("/product-variants")
+	productVariantGroup := router.Group("/product-variants")
 	{
-		productGroup.GET("", productVariantController.GetAllProductVariants)
-		productGroup.GET("/:id", productVariantController.GetProductVariantById)
-		productGroup.POST("", productVariantController.CreateProductVariantController, middleware.JWTMiddleware)
-		productGroup.PUT("/:id", productVariantController.UpdateProductVariantById, middleware.JWTMiddleware)
-		productGroup.DELETE("/:id", productVariantController.DeleteProductVariantById, middleware.JWTMiddleware)
+		productVariantGroup.GET("", productVariantController.GetAllProductVariants)
+		productVariantGroup.GET("/:id", productVariantController.GetProductVariantById)
+		productVariantGroup.POST("", productVariantController.CreateProductVariantController, middleware.JWTMiddleware)
+		productVariantGroup.PUT("/:id", productVariantController.UpdateProductVariantById, middleware.JWTMiddleware)
+		productVariantGroup.DELETE("/:id", productVariantController.DeleteProductVariantById, middleware.JWTMiddleware)
+	}
+
+	variantOptionGroup := router.Group("/variant-options")
+	{
+		variantOptionGroup.GET("/:id", productVariantController.GetListVariantOptionsByPvId)
+		variantOptionGroup.POST("", productVariantController.CreateProductVariantOptions, middleware.JWTMiddleware)
+		variantOptionGroup.PUT("/:id", productVariantController.UpdateVariantOptionsById, middleware.JWTMiddleware)
+		variantOptionGroup.DELETE("/:id", productVariantController.DeleteVariantOptionsByPvId, middleware.JWTMiddleware)
 	}
 }
