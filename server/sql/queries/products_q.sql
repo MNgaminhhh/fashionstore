@@ -77,12 +77,11 @@ SELECT
     v.store_name,
     c.name AS category_name
 FROM products p
-         LEFT JOIN vendors v ON p.vendor_id = v.id
-         LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN vendors v ON p.vendor_id = v.id
+    LEFT JOIN categories c ON p.category_id = c.id
 WHERE
     (v.store_name ILIKE '%' || COALESCE($1, '') || '%' OR $1 IS NULL) AND
     (p.name ILIKE '%' || COALESCE($2, '') || '%' OR $2 IS NULL) AND
     (p.product_type ILIKE '%' || COALESCE($3, '') || '%' OR $3 IS NULL) AND
     (p.status = COALESCE($4, p.status) OR $4 IS NULL)
 ORDER BY p.updated_at DESC;
-

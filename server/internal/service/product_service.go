@@ -32,6 +32,8 @@ type ProductResponse struct {
 	IsApproved       bool       `json:"is_approved"`
 	StoreName        string     `json:"store_name,omitempty"`
 	CategoryName     string     `json:"category_name,omitempty"`
+	LowestPrice      int        `json:"lowest_price,omitempty"`
+	HighestPrice     int        `json:"highest_price,omitempty"`
 }
 
 type IProductService interface {
@@ -211,6 +213,7 @@ func (ps *ProductService) DeleteProductByID(id string) int {
 
 func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{}) {
 	storeName := sql.NullString{}
+	skusRepo := repository.NewSkusRepository()
 	if filter.StoreName != nil && *filter.StoreName != "" {
 		storeName = sql.NullString{String: *filter.StoreName, Valid: true}
 	}
@@ -267,13 +270,29 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	totalPages := internal.CalculateTotalPages(totalResults, limit)
 	products = internal.Paginate(products, page, limit)
 	var responseData []ProductResponse
+	var productsWithSkus []map[string]interface{}
 	for _, product := range products {
 		resData, _ := mapListProductsRowToResponse(&product)
-		responseData = append(responseData, *resData)
+		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
+		if getSkusErr != nil {
+			return response.ErrCodeInternal, nil
+		}
+		if skus != nil && len(skus) > 0 {
+
+			resData.LowestPrice = int(skus[0].Price)
+			resData.HighestPrice = int(skus[len(skus)-1].Price)
+			responseData = append(responseData, *resData)
+		}
+
+		mapData := map[string]interface{}{
+			"product": resData,
+			"skus":    skus,
+		}
+		productsWithSkus = append(productsWithSkus, mapData)
 	}
 
 	results := map[string]interface{}{
-		"products":      responseData,
+		"products":      productsWithSkus,
 		"total_pages":   totalPages,
 		"total_results": totalResults,
 	}

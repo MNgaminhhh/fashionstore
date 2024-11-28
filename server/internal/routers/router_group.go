@@ -6,6 +6,7 @@ import (
 	"backend/internal/routers/categories"
 	"backend/internal/routers/product"
 	"backend/internal/routers/product_variant"
+	"backend/internal/routers/skus"
 	"backend/internal/routers/upload"
 	"backend/internal/routers/user"
 	"backend/internal/routers/vendors"
@@ -20,6 +21,7 @@ type RouterGroup struct {
 	Banners         *banner.BannerRouter
 	Products        *product.ProductRouter
 	ProductVariants *product_variant.ProductRouter
+	SKUs            *skus.SKURouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -31,4 +33,5 @@ var AllRouterGroup = &RouterGroup{
 	Banners:         &banner.BannerRouter{},
 	Products:        &product.ProductRouter{},
 	ProductVariants: &product_variant.ProductRouter{},
+	SKUs:            &skus.SKURouter{},
 }

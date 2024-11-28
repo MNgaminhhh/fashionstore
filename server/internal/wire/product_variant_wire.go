@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 )
 
-func InitProductVariantHandlerrRouter() (*controller.ProductVariantsController, error) {
+func InitProductVariantRouterHandler() (*controller.ProductVariantsController, error) {
 	wire.Build(
 		repository.NewProductVariantsRepository,
 		service.NewProductVariantsService,

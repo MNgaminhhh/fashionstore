@@ -347,16 +347,17 @@ type ProductVariant struct {
 }
 
 type Sku struct {
-	ID             uuid.UUID
-	ProductID      uuid.UUID
-	InStock        sql.NullInt16
-	Sku            sql.NullString
-	Price          int64
-	Offer          sql.NullInt32
-	OfferStartDate sql.NullTime
-	OfferEndDate   sql.NullTime
-	CreatedAt      sql.NullTime
-	UpdatedAt      sql.NullTime
+	ID               uuid.UUID
+	ProductID        uuid.UUID
+	InStock          sql.NullInt16
+	Sku              string
+	Price            int64
+	VariantOptionIds []uuid.UUID
+	Offer            sql.NullInt32
+	OfferStartDate   sql.NullTime
+	OfferEndDate     sql.NullTime
+	CreatedAt        sql.NullTime
+	UpdatedAt        sql.NullTime
 }
 
 type SubCategory struct {
