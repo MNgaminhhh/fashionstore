@@ -12,14 +12,15 @@ CREATE TABLE skus (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL,
     in_stock SMALLINT DEFAULT 0 CHECK (in_stock >= 0),
-    sku VARCHAR(50) UNIQUE,
+    sku VARCHAR(50) NOT NULL,
     price BIGINT NOT NULL CHECK (price >= 0),
+    variant_option_ids UUID[],
     offer INT DEFAULT 0 CHECK (offer >= 0 AND offer <= 100),
     offer_start_date TIMESTAMP,
     offer_end_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_variants(
@@ -41,6 +42,9 @@ CREATE TABLE variant_options (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
+
+ALTER TABLE skus
+    ADD CONSTRAINT unique_variantOptions_sku UNIQUE(variant_option_ids, sku);
 
 ALTER TABLE variant_options
     ADD CONSTRAINT unique_pvId_name UNIQUE (product_variant_id, name);

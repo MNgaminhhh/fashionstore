@@ -41,7 +41,7 @@ func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
 
 // Injectors from product_variant_wire.go:
 
-func InitProductVariantHandlerRouter() (*controller.ProductVariantsController, error) {
+func InitProductVariantRouterHandlerr() (*controller.ProductVariantsController, error) {
 	iProductVariantsRepository := repository.NewProductVariantsRepository()
 	iProductVariantsService := service.NewProductVariantsService(iProductVariantsRepository)
 	productVariantsController := controller.NewProductVariantsController(iProductVariantsService)
@@ -55,6 +55,15 @@ func InitProductRouterHandlerr() (*controller.ProductController, error) {
 	iProductService := service.NewProductService(iProductRepository)
 	productController := controller.NewProductController(iProductService)
 	return productController, nil
+}
+
+// Injectors from sku_wire.go:
+
+func InitSkuRouterRouterHandlerr() (*controller.SkusController, error) {
+	iSkusRepository := repository.NewSkusRepository()
+	iSkusService := service.NewSkusService(iSkusRepository)
+	skusController := controller.NewSkusController(iSkusService)
+	return skusController, nil
 }
 
 // Injectors from upload_wire.go:

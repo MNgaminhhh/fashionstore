@@ -10,7 +10,7 @@ type ProductRouter struct {
 }
 
 func (cr *ProductRouter) InitProductVariantRouter(router *echo.Group) {
-	productVariantController, _ := wire.InitProductVariantHandlerRouter()
+	productVariantController, _ := wire.InitProductVariantRouterHandlerr()
 
 	productVariantGroup := router.Group("/product-variants")
 	{
