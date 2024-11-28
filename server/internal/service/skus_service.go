@@ -19,6 +19,8 @@ type SkuResponse struct {
 	ProductId   string          `json:"product_id,omitempty"`
 	Sku         string          `json:"sku,omitempty"`
 	Price       int             `json:"price,omitempty"`
+	OfferPrice  int             `json:"offer_price,omitempty"`
+	Offer       int             `json:"offer"`
 	Variants    json.RawMessage `json:"variants,omitempty"`
 	InStock     int             `json:"in_stock,omitempty"`
 }
@@ -90,6 +92,10 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 func mapResponseData[T any](data *T) (*SkuResponse, error) {
 	switch s := any(data).(type) {
 	case *database.GetAllSkuOfVendorRow:
+		offer := int(s.Offer.Int32)
+		price := int(s.Price.Int64)
+		offerPrice := float64(price) * (1 - float64(offer)/100)
+		log.Println(offer, price, offerPrice)
 		return &SkuResponse{
 			ProductName: s.ProductName,
 			ProductId:   "",
@@ -97,6 +103,8 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 			Price:       int(s.Price.Int64),
 			Variants:    s.VariantOptions,
 			InStock:     int(s.InStock.Int16),
+			Offer:       int(s.Offer.Int32),
+			OfferPrice:  int(offerPrice),
 		}, nil
 	default:
 		log.Println("Unhandled data type:", data)
