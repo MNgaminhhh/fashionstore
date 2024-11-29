@@ -28,7 +28,7 @@ type FilterCategoryRequest struct {
 	NameCode   string `json:"name_code"`
 	Url        string `json:"url"`
 	Status     *int   `json:"status"`
-	ParentId   string `json:"cate_id"`
+	ParentId   string `json:"parent_id"`
 	Limit      *int   `json:"limit"`
 	Page       *int   `json:"page"`
 	ParentName string `json:"parent_name"`

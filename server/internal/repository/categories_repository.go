@@ -203,7 +203,7 @@ func (cr *CategoryRepository) GetAllSubCategories(customParam *validator.FilterC
 		}
 	}
 	if customParam.ParentId != "" {
-		param.ID, _ = uuid.Parse(customParam.ParentId)
+		param.Column6 = customParam.ParentId
 	}
 	subCates, err := cr.sqlc.FindALlSubCategories(ctx, param)
 	if err != nil {
@@ -262,7 +262,7 @@ func (cr *CategoryRepository) GetAllChildCategories(customParam validator.Filter
 		},
 	}
 	if customParam.ParentId != "" {
-		param.ID, _ = uuid.Parse(customParam.ParentId)
+		param.Column6 = customParam.ParentId
 	}
 	if customParam.Status != nil {
 		param.Status.Int32 = int32(*customParam.Status)
