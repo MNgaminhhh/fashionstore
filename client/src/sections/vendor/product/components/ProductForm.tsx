@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -14,49 +13,35 @@ import {
   Typography,
   Slider,
   Divider,
-  InputAdornment,
+  Box,
+  IconButton,
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
-import * as Icons from "react-icons/fa";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import Products from "../../../../services/Products";
-import Vendor from "../../../../services/Vendor";
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
+import Products from "../../../../services/Products";
 import Categories from "../../../../services/Categories";
+import SubCategory from "../../../../services/SubCategory";
 import CategoriesModel from "../../../../models/Categories.model";
+import ProductModel from "../../../../models/Product.model";
+import MTDropZone2 from "../../../../components/MTDropZone2";
 import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-
-interface ProductModel {
-  id: string;
-  name: string;
-  sku: string;
-  qty: number;
-  price: string;
-  product_type: string;
-  is_approved: boolean;
-  vendor_id: string;
-  category_id: string;
-  sub_category_id: string;
-  child_category_id: string;
-  short_description: string;
-  long_description: string;
-  offer: number;
-  offer_start_date: Date | null;
-  offer_end_date: Date | null;
-}
+import { slugify } from "../../../../utils/slugify"; // Import hàm slugify
+import CloseIcon from "@mui/icons-material/Close";
+import File from "../../../../services/File";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   name: yup
     .string()
     .required("Tên sản phẩm là bắt buộc")
     .max(100, "Tên sản phẩm không được vượt quá 100 ký tự"),
+  status: yup.string(),
   product_type: yup.string().required("Loại sản phẩm là bắt buộc"),
-  is_approved: yup.boolean().required("Trạng thái phê duyệt là bắt buộc"),
   category_id: yup.string().required("Danh mục là bắt buộc"),
   sub_category_id: yup.string().nullable(),
   child_category_id: yup.string().nullable(),
@@ -85,14 +70,13 @@ const VALIDATION_SCHEMA = yup.object().shape({
     }),
 });
 
-const availableIcons = Object.keys(Icons).filter((key) => key.startsWith("Fa"));
-
 type Props = {
   cat: CategoriesModel;
+  token: string;
   product?: ProductModel;
 };
 
-export default function ProductForm({ product, cat }: Props) {
+export default function ProductForm({ product, token, cat }: Props) {
   const router = useRouter();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [categories, setCategories] = useState(cat || []);
@@ -102,10 +86,12 @@ export default function ProductForm({ product, cat }: Props) {
   const [childCategories, setChildCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const fetchSubCategories = async (categoryId: string) => {
     try {
-      const res = await Categories.getSubCategories(categoryId);
+      const res = await SubCategory.getSubCategories(categoryId);
       if (res.data.success) {
         setSubCategories(res.data.data);
       }
@@ -126,52 +112,96 @@ export default function ProductForm({ product, cat }: Props) {
   };
 
   const INITIAL_VALUES: ProductModel = {
-    id: product?.id || "",
     name: product?.name || "",
-    sku: product?.sku || "",
-    qty: product?.qty || 0,
-    price: product?.price || "",
-    product_type: product?.product_type || "",
-    is_approved: product?.is_approved || false,
-    vendor_id: product?.vendor_id || "",
+    slug: product ? product.slug : "",
+    images: product?.images || [],
     category_id: product?.category_id || "",
     sub_category_id: product?.sub_category_id || "",
     child_category_id: product?.child_category_id || "",
     short_description: product?.short_description || "",
     long_description: product?.long_description || "",
+    product_type: product?.product_type || "none",
     offer: product?.offer || 0,
     offer_start_date: product?.offer_start_date || null,
     offer_end_date: product?.offer_end_date || null,
+    status: product?.status || "inactive",
   };
 
+  // Hàm xử lý khi gửi form
   const handleFormSubmit = async (values: ProductModel) => {
     try {
-      const token = localStorage.getItem("token");
-      if (product) {
-        const res = await Products.update(product.id, values, token);
-        if (res.data.success) {
-          notifySuccess("Thay đổi thông tin sản phẩm thành công!");
-          router.push("/admin/products");
+      // Nếu slug chưa được tạo, tạo slug từ name
+      if (!values.slug) {
+        values.slug = slugify(values.name);
+      }
+
+      setUploading(true);
+
+      // Chuyển đổi các trường sub_category_id và child_category_id thành null nếu chúng là chuỗi rỗng
+      const processedValues = {
+        ...values,
+        sub_category_id:
+          values.sub_category_id === "" ? null : values.sub_category_id,
+        child_category_id:
+          values.child_category_id === "" ? null : values.child_category_id,
+      };
+
+      console.log("Processed Values:", processedValues);
+
+      let uploadedImageUrls: string[] = [...processedValues.images]; // Các URL hình ảnh hiện có
+
+      if (selectedFiles.length > 0) {
+        // Tạo FormData cho các tệp
+        const formData = new FormData();
+        selectedFiles.forEach((file) => {
+          formData.append("file", file); // Giả sử API chấp nhận nhiều tệp dưới khóa 'files'
+        });
+
+        console.log("FormData Entries:");
+        formData.forEach((value, key) => {
+          console.log(key, value);
+        });
+
+        // Tải lên các tệp
+        const uploadResponse = await File.upload(formData, token);
+        console.log("Upload Response:", uploadResponse);
+
+        if (uploadResponse.data.success) {
+          const newImageUrls: string[] = uploadResponse.data.data.files; // Lấy URL từ response
+          uploadedImageUrls = [...uploadedImageUrls, ...newImageUrls];
         } else {
-          notifyError(
-            "Thay đổi thông tin sản phẩm thất bại: " + res.data.message
+          throw new Error(
+            uploadResponse.data.message || "Tải lên hình ảnh thất bại."
           );
         }
+      }
+
+      // Gán URL hình ảnh đã tải lên vào dữ liệu sản phẩm
+      const productData: ProductModel = {
+        ...processedValues,
+        images: uploadedImageUrls,
+      };
+
+      console.log("Product Data:", productData);
+
+      // Gửi dữ liệu sản phẩm lên API
+      const rs = await Products.create(productData, token);
+      if (rs.data.success) {
+        notifySuccess("Tạo sản phẩm mới thành công!");
+        router.push("/admin/products");
       } else {
-        const res = await Products.create(values, token);
-        if (res.data.success) {
-          notifySuccess("Tạo sản phẩm mới thành công!");
-          router.push("/admin/products");
-        } else {
-          notifyError("Tạo sản phẩm thất bại. Vui lòng thử lại sau!");
-        }
+        notifyError("Tạo sản phẩm thất bại: " + rs.data.message);
       }
       setIsFormChanged(false);
-    } catch (error) {
-      notifyError("Có lỗi xảy ra. Vui lòng thử lại sau!");
+    } catch (error: any) {
+      console.error("Error:", error);
+      notifyError(error.message || "Có lỗi xảy ra. Vui lòng thử lại sau!");
+    } finally {
+      setUploading(false);
     }
   };
 
+  // Hàm xử lý khi thay đổi trường input
   const handleFieldChange =
     (handleChange: any, setFieldValue: any) =>
     (
@@ -199,6 +229,7 @@ export default function ProductForm({ product, cat }: Props) {
       handleChange(event);
     };
 
+  // Cấu hình cho SunEditor
   const editorConfig = {
     buttonList: [
       ["undo", "redo"],
@@ -222,7 +253,7 @@ export default function ProductForm({ product, cat }: Props) {
         onSubmit={handleFormSubmit}
         initialValues={INITIAL_VALUES}
         validationSchema={VALIDATION_SCHEMA}
-        enableReinitialize={false}
+        enableReinitialize={true} // Cho phép reinitialize khi product thay đổi
       >
         {({
           values,
@@ -243,7 +274,8 @@ export default function ProductForm({ product, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    <Grid item sm={6} xs={12}>
+                    {/* Tên Sản Phẩm */}
+                    <Grid item sm={12} xs={12}>
                       <TextField
                         fullWidth
                         name="name"
@@ -260,78 +292,44 @@ export default function ProductForm({ product, cat }: Props) {
                         error={Boolean(touched.name && errors.name)}
                       />
                     </Grid>
-                    <Grid item sm={6} xs={12}>
-                      <TextField
-                        fullWidth
-                        name="sku"
-                        label="SKU"
-                        color="info"
-                        size="medium"
-                        value={values.sku}
-                        onBlur={handleBlur}
-                        onChange={handleFieldChange(
-                          handleChange,
-                          setFieldValue
-                        )}
-                        helperText={touched.sku && errors.sku}
-                        error={Boolean(touched.sku && errors.sku)}
+
+                    {/* Chọn Hình Ảnh Mới */}
+                    <Grid item sm={12} xs={12}>
+                      <MTDropZone2
+                        title="Kéo & thả hình ảnh sản phẩm vào đây"
+                        imageSize="Tải lên ảnh kích thước 1024*1024"
+                        files={selectedFiles}
+                        onChange={(updatedFiles) => {
+                          setSelectedFiles(updatedFiles);
+                          setIsFormChanged(true);
+                        }}
                       />
                     </Grid>
-                    <Grid item sm={6} xs={12}>
-                      <TextField
-                        fullWidth
-                        name="qty"
-                        label="Số lượng"
-                        type="number"
-                        color="info"
-                        size="medium"
-                        value={values.qty}
-                        onBlur={handleBlur}
-                        onChange={handleFieldChange(
-                          handleChange,
-                          setFieldValue
-                        )}
-                        helperText={touched.qty && errors.qty}
-                        error={Boolean(touched.qty && errors.qty)}
-                      />
-                    </Grid>
-                    <Grid item sm={6} xs={12}>
-                      <TextField
-                        fullWidth
-                        name="price"
-                        label="Giá sản phẩm (VND)"
-                        type="text"
-                        color="info"
-                        size="medium"
-                        value={values.price}
-                        onBlur={handleBlur}
-                        onChange={handleFieldChange(
-                          handleChange,
-                          setFieldValue
-                        )}
-                        helperText={touched.price && errors.price}
-                        error={Boolean(touched.price && errors.price)}
-                      />
-                    </Grid>
+
+                    {/* Trạng Thái Hiển Thị */}
                     <Grid item sm={6} xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={values.is_approved}
+                            checked={values.status === "active"}
                             onChange={(e) => {
-                              setFieldValue("is_approved", e.target.checked);
+                              setFieldValue(
+                                "status",
+                                e.target.checked ? "active" : "inactive"
+                              );
                               setIsFormChanged(true);
                             }}
                             color="primary"
                           />
                         }
-                        label="Trạng thái phê duyệt"
+                        label="Hiển thị"
                       />
                     </Grid>
                   </Grid>
                 </Card>
               </Grid>
 
+              {/* Danh Mục */}
               <Grid item xs={12}>
                 <Card sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" gutterBottom>
@@ -339,6 +337,7 @@ export default function ProductForm({ product, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
+                    {/* Danh Mục Chính */}
                     <Grid item sm={4} xs={12}>
                       <TextField
                         select
@@ -364,6 +363,7 @@ export default function ProductForm({ product, cat }: Props) {
                         ))}
                       </TextField>
                     </Grid>
+
                     <Grid item sm={4} xs={12}>
                       <TextField
                         select
@@ -384,6 +384,9 @@ export default function ProductForm({ product, cat }: Props) {
                           touched.sub_category_id && errors.sub_category_id
                         )}
                       >
+                        <MenuItem value="">
+                          <em>Không có</em>
+                        </MenuItem>
                         {subCategories.map((subCategory) => (
                           <MenuItem key={subCategory.id} value={subCategory.id}>
                             {subCategory.name}
@@ -391,6 +394,7 @@ export default function ProductForm({ product, cat }: Props) {
                         ))}
                       </TextField>
                     </Grid>
+
                     <Grid item sm={4} xs={12}>
                       <TextField
                         select
@@ -411,6 +415,9 @@ export default function ProductForm({ product, cat }: Props) {
                           touched.child_category_id && errors.child_category_id
                         )}
                       >
+                        <MenuItem value="">
+                          <em>Không có</em>
+                        </MenuItem>
                         {childCategories.map((childCategory) => (
                           <MenuItem
                             key={childCategory.id}
@@ -425,6 +432,7 @@ export default function ProductForm({ product, cat }: Props) {
                 </Card>
               </Grid>
 
+              {/* Ưu Đãi */}
               <Grid item xs={12}>
                 <Card sx={{ p: 3, mb: 3, boxShadow: 3, borderRadius: 2 }}>
                   <Typography variant="h6" gutterBottom>
@@ -432,6 +440,7 @@ export default function ProductForm({ product, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={3}>
+                    {/* Slider Ưu Đãi */}
                     <Grid item xs={12}>
                       <Typography gutterBottom>
                         Ưu Đãi (%): {values.offer}%
@@ -466,6 +475,7 @@ export default function ProductForm({ product, cat }: Props) {
                       )}
                     </Grid>
 
+                    {/* Ngày Bắt Đầu và Kết Thúc Ưu Đãi */}
                     {values.offer > 0 && (
                       <>
                         <Grid item sm={3} xs={12}>
@@ -558,6 +568,7 @@ export default function ProductForm({ product, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
+                    {/* Mô tả Sơ Lược */}
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
@@ -581,6 +592,8 @@ export default function ProductForm({ product, cat }: Props) {
                         )}
                       />
                     </Grid>
+
+                    {/* Mô tả Đầy đủ */}
                     <Grid item xs={12}>
                       <Typography variant="subtitle1" gutterBottom>
                         Mô tả đầy đủ
@@ -604,7 +617,58 @@ export default function ProductForm({ product, cat }: Props) {
                 </Card>
               </Grid>
 
-              {/* Các Nút Hành Động */}
+              {/* Hiển Thị Hình Ảnh Hiện Có */}
+              {values.images.length > 0 && (
+                <Grid item xs={12}>
+                  <Card sx={{ p: 3, mb: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Hình ảnh hiện có
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                      {values.images.map((image, index) => (
+                        <Box
+                          key={index}
+                          width={100}
+                          height={100}
+                          position="relative"
+                        >
+                          <img
+                            src={image}
+                            alt={`Existing Image ${index}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              const updatedImages = values.images.filter(
+                                (_, i) => i !== index
+                              );
+                              setFieldValue("images", updatedImages);
+                              setIsFormChanged(true);
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: 0,
+                              right: 0,
+                              backgroundColor: "rgba(255, 255, 255, 0.7)",
+                            }}
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Card>
+                </Grid>
+              )}
+
+              {/* Nút Tạo Sản Phẩm */}
               <Grid item xs={12} mt={3} textAlign="center">
                 <Button
                   variant="outlined"
@@ -618,10 +682,14 @@ export default function ProductForm({ product, cat }: Props) {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={!isFormChanged}
+                  disabled={!isFormChanged || uploading}
                   sx={{ px: 4, py: 1, textTransform: "none" }}
                 >
-                  {product ? "Lưu thông tin" : "Tạo sản phẩm"}
+                  {uploading
+                    ? "Đang tải lên..."
+                    : product
+                    ? "Lưu thông tin"
+                    : "Tạo sản phẩm"}
                 </Button>
               </Grid>
             </Grid>
