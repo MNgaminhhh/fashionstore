@@ -117,6 +117,7 @@ func (pr *ProductRepository) DeleteProductByID(id uuid.UUID) error {
 
 func (pr *ProductRepository) ListProducts(filter database.ListProductsParams) ([]database.ListProductsRow, error) {
 	products, err := pr.sqlc.ListProducts(ctx, filter)
+	log.Println(filter)
 	if err != nil {
 		log.Println(err)
 		return nil, err

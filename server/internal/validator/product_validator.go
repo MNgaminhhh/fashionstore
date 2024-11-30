@@ -38,4 +38,6 @@ type FilterProductRequest struct {
 	Page        *int    `query:"page"`
 	LowPrice    *int    `query:"low_price"`
 	HighPrice   *int    `query:"high_price"`
+	CateName    *string `query:"cate_name"`
+	VendorId    *string
 }

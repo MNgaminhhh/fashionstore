@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal/database"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -103,5 +104,23 @@ func (pc *ProductController) ListProducts(c echo.Context) error {
 		return response.ErrorResponse(c, code, "Danh sách sản phẩm thất bại")
 	}
 
+	return response.SuccessResponse(c, code, data)
+}
+
+func (pc *ProductController) ListProductsOfVendor(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "get fail")
+	}
+	vendorId := c.Get("vendorId").(string)
+	var reqParam validator.FilterProductRequest
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
+	}
+	reqParam.VendorId = &vendorId
+	code, data := pc.productService.GetAllProductOfVendor(&reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
 	return response.SuccessResponse(c, code, data)
 }

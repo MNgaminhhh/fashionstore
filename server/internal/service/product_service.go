@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -42,6 +43,7 @@ type IProductService interface {
 	UpdateProduct(id string, customParam validator.UpdateProductRequest) int
 	DeleteProductByID(id string) int
 	ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{})
+	GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{})
 }
 
 type ProductService struct {
@@ -271,7 +273,6 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	products = internal.Paginate(products, page, limit)
 	var responseData []ProductResponse
 	for _, product := range products {
-		log.Println(product)
 		resData, _ := mapListProductsRowToResponse(&product)
 		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
 		if getSkusErr != nil {
@@ -297,6 +298,62 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 
 	return response.SuccessCode, results
 }
+
+func (ps *ProductService) GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{}) {
+	if filter.VendorId == nil {
+		return response.ErrCodeUnauthorized, nil
+	}
+	params := database.ListProductsParams{}
+	params.Column5 = *filter.VendorId
+	if filter.Name != nil && *filter.Name != "" {
+		params.Column2 = sql.NullString{String: *filter.Name, Valid: true}
+	}
+	if filter.Status != nil && *filter.Status != "" {
+		params.Status = database.NullProductStatus{
+			ProductStatus: database.ProductStatus(*filter.Status),
+			Valid:         true,
+		}
+	}
+	if filter.CateName != nil && *filter.CateName != "" {
+		params.Column6 = sql.NullString{String: *filter.CateName, Valid: true}
+	}
+	if filter.ProductType != nil && *filter.ProductType != "" {
+		params.Column3 = sql.NullString{String: *filter.ProductType, Valid: true}
+	}
+	products, err := ps.productRepo.ListProducts(params)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	totalResults := len(products)
+	limit := len(products)
+	page := 1
+	if filter.Limit != nil {
+		limit = *filter.Limit
+	}
+	if filter.Page != nil {
+		page = *filter.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(products, page, limit)
+	var responseData []ProductResponse
+	for _, product := range pagination {
+		resData, _ := mapListProductsRowToResponse(&product)
+		responseData = append(responseData, *resData)
+	}
+	results := map[string]interface{}{
+		"products":      responseData,
+		"total_pages":   totalPages,
+		"total_results": totalResults,
+		"page":          page,
+		"limit":         limit,
+	}
+	return response.SuccessCode, results
+}
+
 func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductResponse, error) {
 	var images []string
 	err := json.Unmarshal(row.Images, &images)

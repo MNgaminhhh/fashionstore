@@ -82,7 +82,7 @@ WHERE (sc.url ILIKE '%' || $1 || '%' OR $1 IS NULL )
   AND (sc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL )
   AND (sc.status = $4 OR $4 = -1)
   AND (c.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
-  AND (c.id = $6)
+  AND (c.id = COALESCE(NULLIF($6::text, '')::UUID, c.id) OR $6 IS NULL)
 ORDER BY sc.updated_at DESC;
 
 -- name: FindSubCategoryById :one
@@ -114,7 +114,7 @@ WHERE (cc.url ILIKE '%' || $1 || '%' OR $1 IS NULL)
   AND (cc.name_code ILIKE '%' || $3 || '%' OR $3 IS NULL)
   AND (cc.status = $4 OR $4 = -1)
   AND (sc.name ILIKE '%' || $5 || '%' OR $5 IS NULL)
-  AND (sc.id = $6)
+  AND (sc.id = COALESCE(NULLIF($6::text, '')::UUID, sc.id) OR $6 IS NULL)
 ORDER BY cc.updated_at DESC;
 
 -- name: FindChildCategoryById :one
