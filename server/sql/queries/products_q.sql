@@ -85,5 +85,6 @@ WHERE
     (p.product_type ILIKE '%' || COALESCE($3, '') || '%' OR $3 IS NULL) AND
     (p.status = COALESCE($4, p.status) OR $4 IS NULL) AND
     (p.vendor_id = COALESCE(NULLIF($5::text, '')::UUID, p.vendor_id) OR $5 IS NULL) AND
-    (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL )
+    (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL ) AND
+    (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL)
 ORDER BY p.updated_at DESC;

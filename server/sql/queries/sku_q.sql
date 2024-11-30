@@ -38,3 +38,8 @@ FROM skus s
 WHERE s.product_id = $1
 GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock
 ORDER BY s.price ASC;
+
+-- name: UpdateSkuById :exec
+UPDATE skus
+SET sku = $1, offer = $2, in_stock = $3, price = $4, variant_option_ids = $5
+WHERE id = $6;

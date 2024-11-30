@@ -75,6 +75,8 @@ func (vr *ProductVariantsRepository) GetProductVariantById(id uuid.UUID) (*datab
 	return &productVariant, nil
 }
 
+//func (vr *ProductVariantsRepository)
+
 func (vr *ProductVariantsRepository) DeleteProductVariantById(id uuid.UUID) error {
 	return vr.sqlc.DeleteProductVariantById(ctx, id)
 }

@@ -320,6 +320,12 @@ func (ps *ProductService) GetAllProductOfVendor(filter *validator.FilterProductR
 	if filter.ProductType != nil && *filter.ProductType != "" {
 		params.Column3 = sql.NullString{String: *filter.ProductType, Valid: true}
 	}
+	if filter.IsApproved != nil {
+		params.IsApproved = sql.NullBool{
+			Bool:  *filter.IsApproved,
+			Valid: true,
+		}
+	}
 	products, err := ps.productRepo.ListProducts(params)
 	if err != nil {
 		var pqErr *pq.Error

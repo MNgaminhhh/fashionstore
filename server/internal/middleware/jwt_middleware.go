@@ -11,9 +11,10 @@ import (
 )
 
 type jwtCustomClaims struct {
-	Email    string            `json:"email"`
-	Role     database.UserRole `json:"role"`
-	VendorId string            `json:"vendorId"`
+	Email        string                 `json:"email"`
+	Role         database.UserRole      `json:"role"`
+	VendorId     string                 `json:"vendorId,omitempty"`
+	VendorStatus database.VendorsStatus `json:"vendorStatus,omitempty"`
 	jwt.StandardClaims
 }
 
@@ -36,12 +37,11 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				c.Set("uuid", claims.Subject)
 				c.Set("email", claims.Email)
 				c.Set("role", claims.Role)
-				log.Println("Roleee", claims.Role)
 				if claims.Role == database.UserRoleVendors {
-					log.Println("hiiiiiiiiiiiiiiii")
+					log.Println(claims.VendorStatus)
 					c.Set("vendorId", claims.VendorId)
+					c.Set("vendorStatus", claims.VendorStatus)
 				}
-				log.Println("-----", claims.Subject)
 				return next(c)
 			}
 		}

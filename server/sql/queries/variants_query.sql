@@ -28,6 +28,11 @@ WHERE (pv.name ILIKE '%' || $1 || '%' OR $1 IS  NULL)
 AND (pv.status = $2 OR $2 IS NULL)
 ORDER BY pv.updated_at DESC;
 
+-- name: GetAllProductVariantsByProductId :many
+SELECT pv.name, pv.id, pv.product_id
+FROM product_variants pv
+WHERE pv.product_id = $1;
+
 -- name: DeleteProductVariantById :exec
 DELETE FROM product_variants
 WHERE id = $1;

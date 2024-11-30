@@ -125,6 +125,41 @@ func (q *Queries) GetAllProductVariants(ctx context.Context, arg GetAllProductVa
 	return items, nil
 }
 
+const getAllProductVariantsByProductId = `-- name: GetAllProductVariantsByProductId :many
+SELECT pv.name, pv.id, pv.product_id
+FROM product_variants pv
+WHERE pv.product_id = $1
+`
+
+type GetAllProductVariantsByProductIdRow struct {
+	Name      string
+	ID        uuid.UUID
+	ProductID uuid.UUID
+}
+
+func (q *Queries) GetAllProductVariantsByProductId(ctx context.Context, productID uuid.UUID) ([]GetAllProductVariantsByProductIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllProductVariantsByProductId, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllProductVariantsByProductIdRow
+	for rows.Next() {
+		var i GetAllProductVariantsByProductIdRow
+		if err := rows.Scan(&i.Name, &i.ID, &i.ProductID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllVariantOptionsByPvId = `-- name: GetAllVariantOptionsByPvId :many
 SELECT vo.id, vo.name, vo.status, vo.created_at, vo.updated_at, pv.name as product_variant_name
 FROM variant_options vo

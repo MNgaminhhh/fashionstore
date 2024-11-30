@@ -109,7 +109,8 @@ func (pc *ProductController) ListProducts(c echo.Context) error {
 
 func (pc *ProductController) ListProductsOfVendor(c echo.Context) error {
 	role := c.Get("role").(database.UserRole)
-	if role != database.UserRoleVendors {
+	vendorStatus := c.Get("vendorStatus").(database.VendorsStatus)
+	if role != database.UserRoleVendors || vendorStatus != database.VendorsStatusAccepted {
 		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "get fail")
 	}
 	vendorId := c.Get("vendorId").(string)

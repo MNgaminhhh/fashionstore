@@ -155,17 +155,19 @@ WHERE
     (p.product_type ILIKE '%' || COALESCE($3, '') || '%' OR $3 IS NULL) AND
     (p.status = COALESCE($4, p.status) OR $4 IS NULL) AND
     (p.vendor_id = COALESCE(NULLIF($5::text, '')::UUID, p.vendor_id) OR $5 IS NULL) AND
-    (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL )
+    (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL ) AND
+    (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL)
 ORDER BY p.updated_at DESC
 `
 
 type ListProductsParams struct {
-	Column1 sql.NullString
-	Column2 sql.NullString
-	Column3 sql.NullString
-	Status  NullProductStatus
-	Column5 string
-	Column6 sql.NullString
+	Column1    sql.NullString
+	Column2    sql.NullString
+	Column3    sql.NullString
+	Status     NullProductStatus
+	Column5    string
+	Column6    sql.NullString
+	IsApproved sql.NullBool
 }
 
 type ListProductsRow struct {
@@ -196,6 +198,7 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 		arg.Status,
 		arg.Column5,
 		arg.Column6,
+		arg.IsApproved,
 	)
 	if err != nil {
 		return nil, err

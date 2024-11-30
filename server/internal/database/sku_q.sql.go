@@ -165,3 +165,30 @@ func (q *Queries) GetAllSkuOfVendor(ctx context.Context, arg GetAllSkuOfVendorPa
 	}
 	return items, nil
 }
+
+const updateSkuById = `-- name: UpdateSkuById :exec
+UPDATE skus
+SET sku = $1, offer = $2, in_stock = $3, price = $4, variant_option_ids = $5
+WHERE id = $6
+`
+
+type UpdateSkuByIdParams struct {
+	Sku              string
+	Offer            sql.NullInt32
+	InStock          sql.NullInt16
+	Price            int64
+	VariantOptionIds []uuid.UUID
+	ID               uuid.UUID
+}
+
+func (q *Queries) UpdateSkuById(ctx context.Context, arg UpdateSkuByIdParams) error {
+	_, err := q.db.ExecContext(ctx, updateSkuById,
+		arg.Sku,
+		arg.Offer,
+		arg.InStock,
+		arg.Price,
+		pq.Array(arg.VariantOptionIds),
+		arg.ID,
+	)
+	return err
+}
