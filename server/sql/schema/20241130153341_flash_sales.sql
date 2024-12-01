@@ -1,0 +1,21 @@
+-- -- +goose Up
+-- -- +goose StatementBegin
+-- CREATE TABLE flash_sales(
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     start_date TIMESTAMP NOT NULL,
+--     end_date TIMESTAMP NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+--
+-- CREATE TABLE flash_sales_items(
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     flash_sales_id UUID NOT NULL,
+--     product
+-- )
+-- -- +goose StatementEnd
+--
+-- -- +goose Down
+-- -- +goose StatementBegin
+-- SELECT 'down SQL query';
+-- -- +goose StatementEnd
