@@ -9,6 +9,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -317,6 +318,23 @@ type ChildCategory struct {
 	Status        sql.NullInt32
 	CreatedAt     sql.NullTime
 	UpdatedAt     sql.NullTime
+}
+
+type FlashSale struct {
+	ID        uuid.UUID
+	StartDate time.Time
+	EndDate   time.Time
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type FlashSalesItem struct {
+	ID           uuid.UUID
+	FlashSalesID uuid.UUID
+	ProductID    uuid.UUID
+	Show         sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
 }
 
 type Product struct {

@@ -36,6 +36,9 @@ const (
 	ErrCodeProductNotFound            = 50023
 	ErrCodeProductVariantNotFound     = 50024
 	ErrCodeCombinationOptionsIsExists = 50025
+	ErrCodeInvalidDateTimeFormat      = 50026
+	ErrCodeInvalidEndDate             = 50027
+	ErrCodeInvalidFlashSaleStartDate  = 50028
 	ErrCodeForbidden                  = 403
 )
 
@@ -76,4 +79,7 @@ var msg = map[int]string{
 	ErrCodeUnknown:                    "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau!",
 	ErrCodeProductVariantNotFound:     "Không tìm thấy dữ liệu!",
 	ErrCodeCombinationOptionsIsExists: "Loại hàng hóa này đã tồn tại. Vui lòng kiểm tra lại!",
+	ErrCodeInvalidDateTimeFormat:      "Định dạng phải là dd-MM-yyyy hh:mm",
+	ErrCodeInvalidEndDate:             "Ngày kết thúc phải sau ngày bắt đầu!",
+	ErrCodeInvalidFlashSaleStartDate:  "Ngày bắt đầu phải lớn hơn ngày hiện tại!",
 }

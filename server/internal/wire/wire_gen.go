@@ -39,6 +39,15 @@ func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
 	return categoryController, nil
 }
 
+// Injectors from flash_sale_wire.go:
+
+func InitFlashSaleRouterHandlerr() (*controller.FlashSalesController, error) {
+	iFlashSalesRepository := repository.NewFlashSalesRepository()
+	iFlashSalesService := service.NewFlashSalesService(iFlashSalesRepository)
+	flashSalesController := controller.NewFlashSaleController(iFlashSalesService)
+	return flashSalesController, nil
+}
+
 // Injectors from product_variant_wire.go:
 
 func InitProductVariantRouterHandlerr() (*controller.ProductVariantsController, error) {

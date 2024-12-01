@@ -11,9 +11,9 @@ func GetMessageError(pqError *pq.Error) int {
 	code := err.Code
 	name := err.Constraint
 	log.Println("code", code)
+	log.Println("constraint", name)
 	switch string(code) {
 	case string(UniqueViolation):
-
 		if name == "unique_child_name_per_sub_cate" || name == "unique_sub_name_per_category" || name == "categories_name_key" {
 			return response.ErrCodeNameAlreadyUsed
 		}
@@ -26,7 +26,11 @@ func GetMessageError(pqError *pq.Error) int {
 			return response.ErrCodeCateParentNotFound
 		}
 		return response.ErrCodeForeignKey
-
+	case string(FlashSaleCheck):
+		if name == "flash_sales_check" {
+			return response.ErrCodeInvalidEndDate
+		}
+		return response.ErrCodeInternal
 	default:
 		return response.ErrCodeInternal
 	}
