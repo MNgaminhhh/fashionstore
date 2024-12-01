@@ -14,7 +14,6 @@ CREATE TABLE skus (
     in_stock SMALLINT DEFAULT 0 CHECK (in_stock >= 0),
     sku VARCHAR(50) NOT NULL,
     price BIGINT NOT NULL CHECK (price >= 0),
-    variant_option_ids UUID[],
     offer INT DEFAULT 0 CHECK (offer >= 0 AND offer <= 100),
     offer_start_date TIMESTAMP,
     offer_end_date TIMESTAMP,
@@ -43,8 +42,28 @@ CREATE TABLE variant_options (
     FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 );
 
-ALTER TABLE skus
-    ADD CONSTRAINT unique_variantOptions_sku UNIQUE(variant_option_ids, sku);
+CREATE TABLE skus_variant_options(
+    sku_id UUID NOT NULL REFERENCES skus(id) ON DELETE CASCADE ,
+    variant_option UUID NOT NULL REFERENCES variant_options(id) ON DELETE CASCADE ,
+    PRIMARY KEY (sku_id, variant_option)
+);
+
+CREATE OR REPLACE FUNCTION check_unique_variant_combination(variant_ids UUID[])
+RETURNS BOOLEAN AS $$
+DECLARE
+existing_count INT;
+BEGIN
+SELECT COUNT(*) INTO existing_count
+FROM (
+         SELECT sku_id, ARRAY_AGG(variant_option ORDER BY variant_option) AS variant_combination
+         FROM skus_variant_options
+         GROUP BY sku_id
+     ) AS combinations
+WHERE variant_combination = ARRAY(SELECT unnest(variant_ids) ORDER BY 1);
+
+RETURN existing_count > 0;
+END;
+$$ LANGUAGE plpgsql;
 
 ALTER TABLE variant_options
     ADD CONSTRAINT unique_pvId_name UNIQUE (product_variant_id, name);
@@ -71,6 +90,7 @@ DROP TRIGGER IF EXISTS set_updated_at ON skus;
 DROP TRIGGER IF EXISTS set_updated_at ON product_variants;
 DROP TRIGGER IF EXISTS set_updated_at ON variant_options;
 
+DROP TABLE IF EXISTS skus_variant_options;
 DROP TABLE IF EXISTS variant_options;
 DROP TABLE IF EXISTS product_variants;
 DROP TABLE IF EXISTS skus;

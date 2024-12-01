@@ -39,6 +39,9 @@ func (j *Auth) GenerateToken(user *database.User) (string, error) {
 		}
 		claims["vendorId"] = vendor.ID
 		claims["vendorStatus"] = vendor.Status.VendorsStatus
+		if vendor.Status.VendorsStatus != database.VendorsStatusAccepted {
+			claims["role"] = database.UserRoleCustomer
+		}
 	}
 
 	signedAccessToken, err := token.SignedString([]byte(j.Secret))

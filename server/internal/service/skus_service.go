@@ -41,13 +41,40 @@ func NewSkusService(skusRepo repository.ISkusRepository) ISkusService {
 }
 
 func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
-	err := sv.skusRepo.CreateSku(customParam)
+	newSkuId := uuid.New()
+	err := sv.skusRepo.CreateSku(newSkuId, customParam)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			return pg_error.GetMessageError(pqErr)
 		}
 		return response.ErrCodeInternal
+	}
+	variantOptions := customParam.VariantOptions
+	skusVariantOptionsRepo := repository.NewSkusVariantOptionsRepository()
+	check, checkErr := skusVariantOptionsRepo.CheckExistVariantOptions(customParam.VariantOptions)
+	if checkErr != nil {
+		log.Println(checkErr)
+		return response.ErrCodeInternal
+	}
+	log.Println(*check)
+	if *check == true {
+		return response.ErrCodeCombinationOptionsIsExists
+	}
+	for _, vo := range variantOptions {
+		addSkusVariantsParam := validator.CreateSkuVariantOptionValidator{
+			SkuId:           newSkuId.String(),
+			VariantOptionId: vo.String(),
+		}
+		addSkusVariantOptionsErr := skusVariantOptionsRepo.CreateSkusVariantOptions(addSkusVariantsParam)
+		if addSkusVariantOptionsErr != nil {
+			_ = sv.skusRepo.DeleteSkuById(newSkuId)
+			var pqErr *pq.Error
+			if errors.As(addSkusVariantOptionsErr, &pqErr) {
+				return pg_error.GetMessageError(pqErr)
+			}
+			return response.ErrCodeInternal
+		}
 	}
 	return response.SuccessCode
 }
