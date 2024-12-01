@@ -144,3 +144,12 @@ func (pc *ProductVariantsController) DeleteVariantOptionsByPvId(c echo.Context) 
 	}
 	return response.SuccessResponse(c, code, "Xóa thành công!")
 }
+
+func (pc *ProductVariantsController) GetVariantOptionById(c echo.Context) error {
+	id := c.Param("id")
+	code, result := pc.pvService.GetVariantOptionById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Get Product Variant Fail")
+	}
+	return response.SuccessResponse(c, code, result)
+}

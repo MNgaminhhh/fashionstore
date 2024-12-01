@@ -29,6 +29,7 @@ type VariantOptionResponse struct {
 	Name               string    `json:"name,omitempty"`
 	Status             string    `json:"status,omitempty"`
 	ProductVariantName string    `json:"product_variant_name,omitempty"`
+	ProductVariantId   string    `json:"product_variant_id,omitempty"`
 	CreatedAt          time.Time `json:"created_at,omitempty"`
 	UpdatedAt          time.Time `json:"updated_at,omitempty"`
 }
@@ -43,6 +44,7 @@ type IProductVariantsService interface {
 	GetListVariantOptionsByPvId(pvId string, customParam validator.FilterVariantOptionValidator) (int, map[string]interface{})
 	UpdateVariantOptionsById(id string, customParam validator.UpdateVariantOptionValidator) int
 	DeleteVariantOptionById(id string) int
+	GetVariantOptionById(id string) (int, *VariantOptionResponse)
 }
 
 type ProductVariantsService struct {
@@ -230,6 +232,16 @@ func (ps *ProductVariantsService) DeleteVariantOptionById(id string) int {
 	return response.SuccessCode
 }
 
+func (ps *ProductVariantsService) GetVariantOptionById(id string) (int, *VariantOptionResponse) {
+	pvId, _ := uuid.Parse(id)
+	variantOption, err := ps.pVarRepo.GetVariantOptionById(pvId)
+	if err != nil {
+		return response.ErrCodeProductVariantNotFound, nil
+	}
+	responseData := MapVariantOptionToResponse(variantOption)
+	return response.SuccessCode, responseData
+}
+
 func MapProductVariantToResponse[T any](data *T) *ProductVariantResponse {
 	switch pv := any(data).(type) {
 	case *database.GetProductVariantByIdRow:
@@ -257,13 +269,26 @@ func MapProductVariantToResponse[T any](data *T) *ProductVariantResponse {
 	}
 }
 
-func MapVariantOptionToResponse(vo *database.GetAllVariantOptionsByPvIdRow) *VariantOptionResponse {
-	return &VariantOptionResponse{
-		ID:                 vo.ID.UUID.String(),
-		Name:               vo.Name.String,
-		Status:             string(vo.Status.VariantsStatus),
-		ProductVariantName: vo.ProductVariantName,
-		CreatedAt:          vo.CreatedAt.Time,
-		UpdatedAt:          vo.UpdatedAt.Time,
+func MapVariantOptionToResponse[T any](data *T) *VariantOptionResponse {
+	switch v := any(data).(type) {
+	case *database.GetAllVariantOptionsByPvIdRow:
+		return &VariantOptionResponse{
+			ID:                 v.ID.UUID.String(),
+			Name:               v.Name.String,
+			Status:             string(v.Status.VariantsStatus),
+			ProductVariantName: v.ProductVariantName,
+			CreatedAt:          v.CreatedAt.Time,
+			UpdatedAt:          v.UpdatedAt.Time,
+		}
+	case *database.VariantOption:
+		return &VariantOptionResponse{
+			ID:        v.ID.String(),
+			Name:      v.Name,
+			Status:    string(v.Status.VariantsStatus),
+			CreatedAt: v.CreatedAt.Time,
+			UpdatedAt: v.UpdatedAt.Time,
+		}
+	default:
+		return &VariantOptionResponse{}
 	}
 }
