@@ -6,7 +6,7 @@ import {
   StyledTableRow,
 } from "../../../styles";
 import { useRouter } from "next/navigation";
-import { Avatar } from "@mui/material";
+import { Avatar, Tooltip } from "@mui/material";
 import MTSwitch from "../../../../components/MTSwitch";
 import { useState } from "react";
 
@@ -68,12 +68,16 @@ export default function RowBrands({
         />
       </StyledTableCell>
       <StyledTableCell align="center" sx={{ minWidth: 110 }}>
-        <StyledIconButton onClick={() => handleEdit(brand.id)}>
-          <Edit />
-        </StyledIconButton>
-        <StyledIconButton onClick={() => onDelete(brand.id)}>
-          <Delete />
-        </StyledIconButton>
+        <Tooltip title="Chỉnh sửa" arrow>
+          <StyledIconButton onClick={() => handleEdit(brand.id)}>
+            <Edit sx={{ color: "#1976d2" }} />
+          </StyledIconButton>
+        </Tooltip>
+        <Tooltip title="Xoá" arrow>
+          <StyledIconButton onClick={() => onDelete(brand.id)}>
+            <Delete sx={{ color: "#d32f2f" }} />
+          </StyledIconButton>
+        </Tooltip>
       </StyledTableCell>
     </StyledTableRow>
   );

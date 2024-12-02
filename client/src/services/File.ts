@@ -1,6 +1,6 @@
 import Base from "./Base";
 
-class File extends Base {
+class FileServer extends Base {
   constructor() {
     super({
       url: "file",
@@ -26,4 +26,5 @@ class File extends Base {
   }
 }
 
-export default new File();
+const File = new FileServer();
+export default File;

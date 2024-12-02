@@ -1,6 +1,6 @@
 import Base from "./Base";
 
-class User extends Base {
+class UserServer extends Base {
   constructor() {
     super({
       url: "user",
@@ -39,4 +39,5 @@ class User extends Base {
   }
 }
 
-export default new User();
+const User = new UserServer();
+export default User;

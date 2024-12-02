@@ -3,7 +3,7 @@ export interface SlugParams {
 }
 
 export interface IdParams {
-  params: { id: string };
+  params: { id: string; vid: string; oid: string };
 }
 
 export interface Category {

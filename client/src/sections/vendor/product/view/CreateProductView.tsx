@@ -18,7 +18,7 @@ export default async function CreateProductView() {
   } catch (error) {
     return (
       <WrapperPage title="Tạo Sản Phẩm">
-        <p>Không thể tải danh sách danh mục. Vui lòng thử lại sau.</p>
+        <p>Không thể tải sản phẩm. Vui lòng thử lại sau!</p>
       </WrapperPage>
     );
   }

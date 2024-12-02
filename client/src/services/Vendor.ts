@@ -7,7 +7,7 @@ interface Filters {
   full_name?: string;
   address?: string;
 }
-class Vendor extends Base {
+class VendorServer extends Base {
   constructor() {
     super({
       url: "vendors",
@@ -92,11 +92,11 @@ class Vendor extends Base {
   }
 
   async updateStatus(
-      data: {
-        user_id: string;
-        status: string;
-      },
-      token?: string
+    data: {
+      user_id: string;
+      status: string;
+    },
+    token?: string
   ): Promise<any> {
     const rs = await this.execute({
       url: `vendors/status`,
@@ -110,5 +110,5 @@ class Vendor extends Base {
     return rs.data;
   }
 }
-
-export default new Vendor();
+const Vendor = new VendorServer();
+export default Vendor;

@@ -48,5 +48,5 @@ const SliderShow = forwardRef<Slider, Props>((props, ref) => {
     </RootStyle>
   );
 });
-
+SliderShow.displayName = "SliderShow";
 export default SliderShow;

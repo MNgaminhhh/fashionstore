@@ -3,6 +3,7 @@ package initialize
 import (
 	"backend/global"
 	"fmt"
+
 	"go.uber.org/zap"
 )
 
@@ -15,5 +16,5 @@ func Run() {
 	InitPostgres()
 	e := InitRouter()
 
-	e.Logger.Fatal(e.Start(":8081"))
+	e.Logger.Fatal(e.Start(":8080"))
 }

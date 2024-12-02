@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -31,9 +31,10 @@ import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-import { slugify } from "../../../../utils/slugify"; // Import hàm slugify
+import { slugify } from "../../../../utils/slugify";
 import CloseIcon from "@mui/icons-material/Close";
 import File from "../../../../services/File";
+import ChildCategory from "../../../../services/ChildCategory";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   name: yup
@@ -49,25 +50,25 @@ const VALIDATION_SCHEMA = yup.object().shape({
     .string()
     .max(500, "Mô tả ngắn không được vượt quá 500 ký tự"),
   long_description: yup.string(),
-  offer: yup
-    .number()
-    .min(0, "Ưu đãi phải không âm")
-    .max(100, "Ưu đãi không được vượt quá 100%"),
-  offer_start_date: yup.date().nullable(),
-  offer_end_date: yup
-    .date()
-    .nullable()
-    .when("offer", {
-      is: (offer: number) => offer > 0,
-      then: (schema: yup.DateSchema<Date | null>) =>
-        schema
-          .min(
-            yup.ref("offer_start_date"),
-            "Ngày kết thúc ưu đãi phải sau ngày bắt đầu"
-          )
-          .required("Ngày kết thúc ưu đãi là bắt buộc khi có ưu đãi"),
-      otherwise: (schema: yup.DateSchema<Date | null>) => schema.nullable(),
-    }),
+  // offer: yup
+  //   .number()
+  //   .min(0, "Ưu đãi phải không âm")
+  //   .max(100, "Ưu đãi không được vượt quá 100%"),
+  // offer_start_date: yup.date().nullable(),
+  // offer_end_date: yup
+  //   .date()
+  //   .nullable()
+  //   .when("offer", {
+  //     is: (offer: number) => offer > 0,
+  //     then: (schema: yup.DateSchema<Date | null>) =>
+  //       schema
+  //         .min(
+  //           yup.ref("offer_start_date"),
+  //           "Ngày kết thúc ưu đãi phải sau ngày bắt đầu"
+  //         )
+  //         .required("Ngày kết thúc ưu đãi là bắt buộc khi có ưu đãi"),
+  //     otherwise: (schema: yup.DateSchema<Date | null>) => schema.nullable(),
+  //   }),
 });
 
 type Props = {
@@ -76,68 +77,85 @@ type Props = {
   product?: ProductModel;
 };
 
+type ImageType = {
+  id: string;
+  src: string;
+  file?: File;
+};
+
 export default function ProductForm({ product, token, cat }: Props) {
   const router = useRouter();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [categories, setCategories] = useState(cat || []);
-  const [subCategories, setSubCategories] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [childCategories, setChildCategories] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [childCategories, setChildCategories] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState<ImageType[]>(
+    product?.images.map((url, index) => ({
+      id: `existing-${index}`,
+      src: url,
+    })) || []
+  );
+  useEffect(() => {
+    if (product?.category_id) {
+      fetchSubCategories(product.category_id);
+    }
+  }, [product?.category_id]);
+
+  useEffect(() => {
+    if (product?.sub_category_id) {
+      fetchChildCategories(product.sub_category_id);
+    }
+  }, [product?.sub_category_id]);
 
   const fetchSubCategories = async (categoryId: string) => {
     try {
-      const res = await SubCategory.getSubCategories(categoryId);
-      if (res.data.success) {
-        setSubCategories(res.data.data);
+      const res = await SubCategory.getList(token, true, categoryId);
+      if (res.data && Array.isArray(res.data.sub_categories)) {
+        setSubCategories(res.data.sub_categories);
+      } else {
+        setSubCategories([]);
       }
     } catch (error) {
-      notifyError("Không thể lấy danh sách sub-categories.");
+      console.error("Error fetching sub categories:", error);
+      setSubCategories([]);
     }
   };
 
   const fetchChildCategories = async (subCategoryId: string) => {
     try {
-      const res = await Categories.getChildCategories(subCategoryId);
-      if (res.data.success) {
-        setChildCategories(res.data.data);
+      const res = await ChildCategory.getList(token, true, subCategoryId);
+      if (res.data && Array.isArray(res.data.child_categories)) {
+        setChildCategories(res.data.child_categories);
+      } else {
+        setChildCategories([]);
       }
     } catch (error) {
-      notifyError("Không thể lấy danh sách child-categories.");
+      console.error("Error fetching child categories:", error);
+      setChildCategories([]);
     }
   };
 
   const INITIAL_VALUES: ProductModel = {
     name: product?.name || "",
     slug: product ? product.slug : "",
-    images: product?.images || [],
+    images: [],
     category_id: product?.category_id || "",
     sub_category_id: product?.sub_category_id || "",
     child_category_id: product?.child_category_id || "",
     short_description: product?.short_description || "",
     long_description: product?.long_description || "",
     product_type: product?.product_type || "none",
-    offer: product?.offer || 0,
-    offer_start_date: product?.offer_start_date || null,
-    offer_end_date: product?.offer_end_date || null,
     status: product?.status || "inactive",
   };
 
-  // Hàm xử lý khi gửi form
   const handleFormSubmit = async (values: ProductModel) => {
     try {
-      // Nếu slug chưa được tạo, tạo slug từ name
       if (!values.slug) {
         values.slug = slugify(values.name);
       }
 
       setUploading(true);
-
-      // Chuyển đổi các trường sub_category_id và child_category_id thành null nếu chúng là chuỗi rỗng
       const processedValues = {
         ...values,
         sub_category_id:
@@ -146,52 +164,52 @@ export default function ProductForm({ product, token, cat }: Props) {
           values.child_category_id === "" ? null : values.child_category_id,
       };
 
-      console.log("Processed Values:", processedValues);
+      let uploadedImageUrls: string[] = [];
+      for (const image of images) {
+        if (image.file) {
+          const formData = new FormData();
+          formData.append("file", image.file);
+          const uploadResponse = await File.upload(formData, token);
 
-      let uploadedImageUrls: string[] = [...processedValues.images]; // Các URL hình ảnh hiện có
-
-      if (selectedFiles.length > 0) {
-        // Tạo FormData cho các tệp
-        const formData = new FormData();
-        selectedFiles.forEach((file) => {
-          formData.append("file", file); // Giả sử API chấp nhận nhiều tệp dưới khóa 'files'
-        });
-
-        console.log("FormData Entries:");
-        formData.forEach((value, key) => {
-          console.log(key, value);
-        });
-
-        // Tải lên các tệp
-        const uploadResponse = await File.upload(formData, token);
-        console.log("Upload Response:", uploadResponse);
-
-        if (uploadResponse.data.success) {
-          const newImageUrls: string[] = uploadResponse.data.data.files; // Lấy URL từ response
-          uploadedImageUrls = [...uploadedImageUrls, ...newImageUrls];
+          if (uploadResponse.data.success) {
+            const newImageUrls: string[] = uploadResponse.data.data.files;
+            uploadedImageUrls.push(...newImageUrls);
+          } else {
+            throw new Error(
+              uploadResponse.data.message || "Tải lên hình ảnh thất bại."
+            );
+          }
         } else {
-          throw new Error(
-            uploadResponse.data.message || "Tải lên hình ảnh thất bại."
-          );
+          uploadedImageUrls.push(image.src);
         }
       }
 
-      // Gán URL hình ảnh đã tải lên vào dữ liệu sản phẩm
       const productData: ProductModel = {
         ...processedValues,
         images: uploadedImageUrls,
       };
 
-      console.log("Product Data:", productData);
+      let response;
 
-      // Gửi dữ liệu sản phẩm lên API
-      const rs = await Products.create(productData, token);
-      if (rs.data.success) {
-        notifySuccess("Tạo sản phẩm mới thành công!");
-        router.push("/admin/products");
+      if (product) {
+        response = await Products.update(product.id, productData, token, true);
       } else {
-        notifyError("Tạo sản phẩm thất bại: " + rs.data.message);
+        response = await Products.create(productData, token, true);
       }
+
+      if (response.data.success) {
+        notifySuccess(
+          product ? "Cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!"
+        );
+        router.push("/dashboard/vendor/product");
+      } else {
+        notifyError(
+          `${
+            product ? "Cập nhật sản phẩm thất bại: " : "Tạo sản phẩm thất bại: "
+          }${response.data.message}`
+        );
+      }
+
       setIsFormChanged(false);
     } catch (error: any) {
       console.error("Error:", error);
@@ -201,7 +219,6 @@ export default function ProductForm({ product, token, cat }: Props) {
     }
   };
 
-  // Hàm xử lý khi thay đổi trường input
   const handleFieldChange =
     (handleChange: any, setFieldValue: any) =>
     (
@@ -213,14 +230,12 @@ export default function ProductForm({ product, token, cat }: Props) {
       if (name) {
         setFieldValue(name, value);
         setIsFormChanged(true);
-
         if (name === "category_id") {
           fetchSubCategories(value as string);
           setFieldValue("sub_category_id", "");
-          setChildCategories([]);
           setFieldValue("child_category_id", "");
+          setChildCategories([]);
         }
-
         if (name === "sub_category_id") {
           fetchChildCategories(value as string);
           setFieldValue("child_category_id", "");
@@ -229,7 +244,6 @@ export default function ProductForm({ product, token, cat }: Props) {
       handleChange(event);
     };
 
-  // Cấu hình cho SunEditor
   const editorConfig = {
     buttonList: [
       ["undo", "redo"],
@@ -253,7 +267,7 @@ export default function ProductForm({ product, token, cat }: Props) {
         onSubmit={handleFormSubmit}
         initialValues={INITIAL_VALUES}
         validationSchema={VALIDATION_SCHEMA}
-        enableReinitialize={true} // Cho phép reinitialize khi product thay đổi
+        enableReinitialize={true}
       >
         {({
           values,
@@ -266,7 +280,6 @@ export default function ProductForm({ product, token, cat }: Props) {
         }) => (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              {/* Thông Tin Chung */}
               <Grid item xs={12}>
                 <Card sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" gutterBottom>
@@ -274,8 +287,7 @@ export default function ProductForm({ product, token, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    {/* Tên Sản Phẩm */}
-                    <Grid item sm={12} xs={12}>
+                    <Grid item sm={10} xs={12}>
                       <TextField
                         fullWidth
                         name="name"
@@ -292,22 +304,7 @@ export default function ProductForm({ product, token, cat }: Props) {
                         error={Boolean(touched.name && errors.name)}
                       />
                     </Grid>
-
-                    {/* Chọn Hình Ảnh Mới */}
-                    <Grid item sm={12} xs={12}>
-                      <MTDropZone2
-                        title="Kéo & thả hình ảnh sản phẩm vào đây"
-                        imageSize="Tải lên ảnh kích thước 1024*1024"
-                        files={selectedFiles}
-                        onChange={(updatedFiles) => {
-                          setSelectedFiles(updatedFiles);
-                          setIsFormChanged(true);
-                        }}
-                      />
-                    </Grid>
-
-                    {/* Trạng Thái Hiển Thị */}
-                    <Grid item sm={6} xs={12}>
+                    <Grid item sm={2} xs={12} sx={{ my: "auto" }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -325,19 +322,25 @@ export default function ProductForm({ product, token, cat }: Props) {
                         label="Hiển thị"
                       />
                     </Grid>
+                    <Grid item sm={12} xs={12}>
+                      <MTDropZone2
+                        title="Kéo & thả hình ảnh sản phẩm vào đây"
+                        imageSize="Tải lên ảnh kích thước 1024*1024"
+                        images={images}
+                        onChange={(updatedImages) => {
+                          setImages(updatedImages);
+                          setIsFormChanged(true);
+                        }}
+                      />
+                    </Grid>
                   </Grid>
                 </Card>
-              </Grid>
-
-              {/* Danh Mục */}
-              <Grid item xs={12}>
                 <Card sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" gutterBottom>
                     Danh Mục
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    {/* Danh Mục Chính */}
                     <Grid item sm={4} xs={12}>
                       <TextField
                         select
@@ -383,6 +386,7 @@ export default function ProductForm({ product, token, cat }: Props) {
                         error={Boolean(
                           touched.sub_category_id && errors.sub_category_id
                         )}
+                        disabled={!values.category_id}
                       >
                         <MenuItem value="">
                           <em>Không có</em>
@@ -414,6 +418,7 @@ export default function ProductForm({ product, token, cat }: Props) {
                         error={Boolean(
                           touched.child_category_id && errors.child_category_id
                         )}
+                        disabled={!values.sub_category_id}
                       >
                         <MenuItem value="">
                           <em>Không có</em>
@@ -431,136 +436,6 @@ export default function ProductForm({ product, token, cat }: Props) {
                   </Grid>
                 </Card>
               </Grid>
-
-              {/* Ưu Đãi */}
-              <Grid item xs={12}>
-                <Card sx={{ p: 3, mb: 3, boxShadow: 3, borderRadius: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Ưu Đãi
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Grid container spacing={3}>
-                    {/* Slider Ưu Đãi */}
-                    <Grid item xs={12}>
-                      <Typography gutterBottom>
-                        Ưu Đãi (%): {values.offer}%
-                      </Typography>
-                      <Slider
-                        value={values.offer}
-                        onChange={(event, newValue) => {
-                          setFieldValue("offer", newValue);
-                          setIsFormChanged(true);
-                        }}
-                        onBlur={handleBlur}
-                        step={1}
-                        min={0}
-                        max={100}
-                        valueLabelDisplay="auto"
-                        sx={{
-                          "& .MuiSlider-track": {
-                            color: "primary.main",
-                          },
-                          "& .MuiSlider-thumb": {
-                            color: "primary.main",
-                            "&:hover": {
-                              boxShadow: "0px 0px 8px rgba(33, 150, 243, 0.6)",
-                            },
-                          },
-                        }}
-                      />
-                      {touched.offer && errors.offer && (
-                        <Typography color="error" variant="caption">
-                          {errors.offer}
-                        </Typography>
-                      )}
-                    </Grid>
-
-                    {/* Ngày Bắt Đầu và Kết Thúc Ưu Đãi */}
-                    {values.offer > 0 && (
-                      <>
-                        <Grid item sm={3} xs={12}>
-                          <DatePicker
-                            label="Ngày bắt đầu ưu đãi"
-                            value={values.offer_start_date}
-                            onChange={(newValue) => {
-                              setFieldValue("offer_start_date", newValue);
-                              setIsFormChanged(true);
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                fullWidth
-                                onBlur={handleBlur}
-                                helperText={
-                                  touched.offer_start_date &&
-                                  errors.offer_start_date
-                                }
-                                error={Boolean(
-                                  touched.offer_start_date &&
-                                    errors.offer_start_date
-                                )}
-                                sx={{
-                                  "& .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "primary.main",
-                                    borderWidth: 2,
-                                  },
-                                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "primary.dark",
-                                  },
-                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                    {
-                                      borderColor: "primary.main",
-                                    },
-                                }}
-                              />
-                            )}
-                          />
-                        </Grid>
-                        <Grid item sm={3} xs={12}>
-                          <DatePicker
-                            label="Ngày kết thúc ưu đãi"
-                            value={values.offer_end_date}
-                            onChange={(newValue) => {
-                              setFieldValue("offer_end_date", newValue);
-                              setIsFormChanged(true);
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                fullWidth
-                                onBlur={handleBlur}
-                                helperText={
-                                  touched.offer_end_date &&
-                                  errors.offer_end_date
-                                }
-                                error={Boolean(
-                                  touched.offer_end_date &&
-                                    errors.offer_end_date
-                                )}
-                                sx={{
-                                  "& .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "primary.main",
-                                    borderWidth: 2,
-                                  },
-                                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "primary.dark",
-                                  },
-                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                    {
-                                      borderColor: "primary.main",
-                                    },
-                                }}
-                              />
-                            )}
-                          />
-                        </Grid>
-                      </>
-                    )}
-                  </Grid>
-                </Card>
-              </Grid>
-
-              {/* Mô Tả */}
               <Grid item xs={12}>
                 <Card sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" gutterBottom>
@@ -568,7 +443,6 @@ export default function ProductForm({ product, token, cat }: Props) {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    {/* Mô tả Sơ Lược */}
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
@@ -593,7 +467,6 @@ export default function ProductForm({ product, token, cat }: Props) {
                       />
                     </Grid>
 
-                    {/* Mô tả Đầy đủ */}
                     <Grid item xs={12}>
                       <Typography variant="subtitle1" gutterBottom>
                         Mô tả đầy đủ
@@ -617,63 +490,11 @@ export default function ProductForm({ product, token, cat }: Props) {
                 </Card>
               </Grid>
 
-              {/* Hiển Thị Hình Ảnh Hiện Có */}
-              {values.images.length > 0 && (
-                <Grid item xs={12}>
-                  <Card sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Hình ảnh hiện có
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Box display="flex" flexWrap="wrap" gap={2}>
-                      {values.images.map((image, index) => (
-                        <Box
-                          key={index}
-                          width={100}
-                          height={100}
-                          position="relative"
-                        >
-                          <img
-                            src={image}
-                            alt={`Existing Image ${index}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              borderRadius: "8px",
-                            }}
-                          />
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              const updatedImages = values.images.filter(
-                                (_, i) => i !== index
-                              );
-                              setFieldValue("images", updatedImages);
-                              setIsFormChanged(true);
-                            }}
-                            sx={{
-                              position: "absolute",
-                              top: 0,
-                              right: 0,
-                              backgroundColor: "rgba(255, 255, 255, 0.7)",
-                            }}
-                          >
-                            <CloseIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Card>
-                </Grid>
-              )}
-
-              {/* Nút Tạo Sản Phẩm */}
               <Grid item xs={12} mt={3} textAlign="center">
                 <Button
                   variant="outlined"
                   color="secondary"
-                  onClick={() => router.push("/admin/products")}
+                  onClick={() => router.push("/dashboard/vendor/product")}
                   sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
                 >
                   Trở về
