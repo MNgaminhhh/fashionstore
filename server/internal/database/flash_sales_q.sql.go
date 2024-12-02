@@ -52,6 +52,16 @@ func (q *Queries) DeleteFlashSaleById(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteFlashSaleItemById = `-- name: DeleteFlashSaleItemById :exec
+DELETE FROM flash_sales_items
+WHERE id = $1
+`
+
+func (q *Queries) DeleteFlashSaleItemById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteFlashSaleItemById, id)
+	return err
+}
+
 const getAllFlashSaleItemByFlashSaleId = `-- name: GetAllFlashSaleItemByFlashSaleId :many
 SELECT f.id, f.flash_sales_id, f.product_id, f.show, f.created_at, f.updated_at, p.name
 FROM flash_sales_items f
@@ -161,6 +171,38 @@ func (q *Queries) GetFlashSaleById(ctx context.Context, id uuid.UUID) (FlashSale
 	return i, err
 }
 
+const getFlashSaleItemById = `-- name: GetFlashSaleItemById :one
+SELECT f.id, f.flash_sales_id, f.product_id, f.show, f.created_at, f.updated_at, p.name
+FROM flash_sales_items f
+    LEFT JOIN products p ON f.product_id = p.id
+WHERE f.id = $1
+`
+
+type GetFlashSaleItemByIdRow struct {
+	ID           uuid.UUID
+	FlashSalesID uuid.UUID
+	ProductID    uuid.UUID
+	Show         sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	Name         sql.NullString
+}
+
+func (q *Queries) GetFlashSaleItemById(ctx context.Context, id uuid.UUID) (GetFlashSaleItemByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getFlashSaleItemById, id)
+	var i GetFlashSaleItemByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.FlashSalesID,
+		&i.ProductID,
+		&i.Show,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+	)
+	return i, err
+}
+
 const updateFlashSale = `-- name: UpdateFlashSale :exec
 UPDATE flash_sales
 SET start_date = $1, end_date = $2
@@ -175,5 +217,22 @@ type UpdateFlashSaleParams struct {
 
 func (q *Queries) UpdateFlashSale(ctx context.Context, arg UpdateFlashSaleParams) error {
 	_, err := q.db.ExecContext(ctx, updateFlashSale, arg.StartDate, arg.EndDate, arg.ID)
+	return err
+}
+
+const updateFlashSaleItemById = `-- name: UpdateFlashSaleItemById :exec
+UPDATE flash_sales_items
+SET product_id = $1, show = $2
+WHERE id = $3
+`
+
+type UpdateFlashSaleItemByIdParams struct {
+	ProductID uuid.UUID
+	Show      sql.NullBool
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateFlashSaleItemById(ctx context.Context, arg UpdateFlashSaleItemByIdParams) error {
+	_, err := q.db.ExecContext(ctx, updateFlashSaleItemById, arg.ProductID, arg.Show, arg.ID)
 	return err
 }

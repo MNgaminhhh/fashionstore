@@ -20,6 +20,10 @@ func NewProductController(productService service.IProductService) *ProductContro
 }
 
 func (pc *ProductController) AddProduct(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "create fail")
+	}
 	id := c.Get("vendorId").(string)
 	vendorId, _ := uuid.Parse(id)
 	var req validator.AddProductRequest

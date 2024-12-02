@@ -20,4 +20,13 @@ func (fr *FlashSalesRouter) InitFlashSalesRouter(router *echo.Group) {
 		flashSalesRouterGroup.PUT("/:id", flashSalesController.UpdateFlashSales, middleware.JWTMiddleware)
 		flashSalesRouterGroup.DELETE("/:id", flashSalesController.DeleteFlashSales, middleware.JWTMiddleware)
 	}
+
+	flashSaleItemsRouterGroup := router.Group("/flash-sale-items")
+	{
+		flashSaleItemsRouterGroup.GET("/flash-sale/:flashSaleId", flashSalesController.GetAllFlashSaleItemsByFlashSaleId)
+		flashSaleItemsRouterGroup.GET("/:id", flashSalesController.GetFlashSaleItemById)
+		flashSaleItemsRouterGroup.DELETE("/:id", flashSalesController.DeleteFlashSaleItem, middleware.JWTMiddleware)
+		flashSaleItemsRouterGroup.PUT("/:id", flashSalesController.UpdateFlashSaleItem, middleware.JWTMiddleware)
+		flashSaleItemsRouterGroup.POST("", flashSalesController.CreateFlashSaleItem, middleware.JWTMiddleware)
+	}
 }

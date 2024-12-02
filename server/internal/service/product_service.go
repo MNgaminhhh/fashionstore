@@ -244,6 +244,7 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	}
 	products, err := ps.productRepo.ListProducts(params)
 	if err != nil {
+		log.Println(err)
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			log.Println(err)
@@ -276,6 +277,7 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		resData, _ := mapListProductsRowToResponse(&product)
 		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
 		if getSkusErr != nil {
+			log.Println(getSkusErr)
 			return response.ErrCodeInternal, nil
 		}
 		if skus != nil && len(skus) > 0 {

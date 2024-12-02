@@ -26,6 +26,8 @@ CREATE TRIGGER set_updated_at
     BEFORE UPDATE ON flash_sales_items
     FOR EACH ROW
     EXECUTE FUNCTION update_product_timestamp();
+
+ALTER TABLE flash_sales_items ADD CONSTRAINT unique_flashSaleId_productId UNIQUE(flash_sales_id, product_id);
 -- +goose StatementEnd
 
 -- +goose Down

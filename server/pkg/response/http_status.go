@@ -11,6 +11,7 @@ const (
 	ErrCodeForeignKey   = 40301
 	ErrCodeDatabase     = 55001
 	ErrCodeUnknown      = 520
+	ErrCodeNoContent    = 521
 	//========
 	ErrCodeEmailNotFound              = 50001
 	ErrCodeIncorrectPassword          = 50002
@@ -82,4 +83,5 @@ var msg = map[int]string{
 	ErrCodeInvalidDateTimeFormat:      "Định dạng phải là dd-MM-yyyy hh:mm",
 	ErrCodeInvalidEndDate:             "Ngày kết thúc phải sau ngày bắt đầu!",
 	ErrCodeInvalidFlashSaleStartDate:  "Ngày bắt đầu phải lớn hơn ngày hiện tại!",
+	ErrCodeNoContent:                  "Không tìm thấy đối tượng!",
 }

@@ -3,6 +3,8 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
+	"backend/internal/validator"
+	"database/sql"
 	"github.com/google/uuid"
 	"log"
 	"time"
@@ -14,6 +16,11 @@ type IFlashSalesRepository interface {
 	GetFlashSalesById(id uuid.UUID) (*database.FlashSale, error)
 	UpdateFlashSale(newFlashSale database.FlashSale) error
 	DeleteFlashSaleById(id uuid.UUID) error
+	CreateFlashSaleItem(customParam validator.CreateFlashSaleItemValidator) error
+	GetAllFlashSaleItemByFlashSaleId(flashSaleId uuid.UUID, filterParam validator.FilterFlashSaleItemValidator) ([]database.GetAllFlashSaleItemByFlashSaleIdRow, error)
+	UpdateFlashSaleItem(newFlashSaleItem *database.GetFlashSaleItemByIdRow) error
+	DeleteFlashSaleItemById(id uuid.UUID) error
+	GetFlashSaleItemById(id uuid.UUID) (*database.GetFlashSaleItemByIdRow, error)
 }
 
 type FlashSalesRepository struct {
@@ -68,4 +75,53 @@ func (fr *FlashSalesRepository) UpdateFlashSale(newFlashSale database.FlashSale)
 func (fr *FlashSalesRepository) DeleteFlashSaleById(id uuid.UUID) error {
 	err := fr.sqlc.DeleteFlashSaleById(ctx, id)
 	return err
+}
+
+func (fr *FlashSalesRepository) CreateFlashSaleItem(customParam validator.CreateFlashSaleItemValidator) error {
+	flashSaleId, _ := uuid.Parse(customParam.FlashSaleId)
+	productId, _ := uuid.Parse(customParam.ProductId)
+	param := database.CreateFlashSaleItemParams{
+		FlashSalesID: flashSaleId,
+		ProductID:    productId,
+		Show:         sql.NullBool{},
+	}
+	if customParam.Show != nil {
+		param.Show = sql.NullBool{
+			Bool:  *customParam.Show,
+			Valid: true,
+		}
+	}
+	err := fr.sqlc.CreateFlashSaleItem(ctx, param)
+	return err
+}
+
+func (fr *FlashSalesRepository) GetAllFlashSaleItemByFlashSaleId(flashSaleId uuid.UUID, filterParam validator.FilterFlashSaleItemValidator) ([]database.GetAllFlashSaleItemByFlashSaleIdRow, error) {
+	result, err := fr.sqlc.GetAllFlashSaleItemByFlashSaleId(ctx, flashSaleId)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
+func (fr *FlashSalesRepository) UpdateFlashSaleItem(newFlashSaleItem *database.GetFlashSaleItemByIdRow) error {
+	param := database.UpdateFlashSaleItemByIdParams{
+		ProductID: newFlashSaleItem.ProductID,
+		Show:      newFlashSaleItem.Show,
+		ID:        newFlashSaleItem.ID,
+	}
+	err := fr.sqlc.UpdateFlashSaleItemById(ctx, param)
+	return err
+}
+
+func (fr *FlashSalesRepository) DeleteFlashSaleItemById(id uuid.UUID) error {
+	err := fr.sqlc.DeleteFlashSaleItemById(ctx, id)
+	return err
+}
+
+func (fr *FlashSalesRepository) GetFlashSaleItemById(id uuid.UUID) (*database.GetFlashSaleItemByIdRow, error) {
+	result, err := fr.sqlc.GetFlashSaleItemById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

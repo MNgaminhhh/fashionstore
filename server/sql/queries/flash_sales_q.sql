@@ -30,3 +30,18 @@ FROM flash_sales_items f
     LEFT JOIN products p ON f.product_id = p.id
 WHERE flash_sales_id = $1
 ORDER BY f.updated_at DESC;
+
+-- name: GetFlashSaleItemById :one
+SELECT f.*, p.name
+FROM flash_sales_items f
+    LEFT JOIN products p ON f.product_id = p.id
+WHERE f.id = $1;
+
+-- name: UpdateFlashSaleItemById :exec
+UPDATE flash_sales_items
+SET product_id = $1, show = $2
+WHERE id = $3;
+
+-- name: DeleteFlashSaleItemById :exec
+DELETE FROM flash_sales_items
+WHERE id = $1;

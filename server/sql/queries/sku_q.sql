@@ -10,7 +10,10 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
-    jsonb_object_agg(pv.name, vo.name) AS variant_options
+    jsonb_object_agg(
+        COALESCE(pv.name, ''),
+        COALESCE(vo.name, '')
+    ) AS variant_options
 FROM products p
         LEFT JOIN skus s ON p.id = s.product_id
         LEFT JOIN skus_variant_options so ON so.sku_id = s.id
@@ -31,7 +34,10 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
-    jsonb_object_agg(pv.name, vo.name) AS variant_options
+    jsonb_object_agg(
+        COALESCE(pv.name, ''),
+        COALESCE(vo.name, '')
+    ) AS variant_options
 FROM skus s
          LEFT JOIN products p ON p.id = s.product_id
          LEFT JOIN skus_variant_options so ON so.sku_id = s.id
