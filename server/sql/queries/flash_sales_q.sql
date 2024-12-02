@@ -20,3 +20,13 @@ WHERE id = $1;
 UPDATE flash_sales
 SET start_date = $1, end_date = $2
 WHERE id = $3;
+
+-- name: CreateFlashSaleItem :exec
+INSERT INTO flash_sales_items (flash_sales_id, product_id, show) VALUES ($1, $2, $3);
+
+-- name: GetAllFlashSaleItemByFlashSaleId :many
+SELECT f.*, p.name
+FROM flash_sales_items f
+    LEFT JOIN products p ON f.product_id = p.id
+WHERE flash_sales_id = $1
+ORDER BY f.updated_at DESC;

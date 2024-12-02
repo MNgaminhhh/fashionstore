@@ -7,10 +7,26 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+const createFlashSaleItem = `-- name: CreateFlashSaleItem :exec
+INSERT INTO flash_sales_items (flash_sales_id, product_id, show) VALUES ($1, $2, $3)
+`
+
+type CreateFlashSaleItemParams struct {
+	FlashSalesID uuid.UUID
+	ProductID    uuid.UUID
+	Show         sql.NullBool
+}
+
+func (q *Queries) CreateFlashSaleItem(ctx context.Context, arg CreateFlashSaleItemParams) error {
+	_, err := q.db.ExecContext(ctx, createFlashSaleItem, arg.FlashSalesID, arg.ProductID, arg.Show)
+	return err
+}
 
 const createFlashSales = `-- name: CreateFlashSales :exec
 INSERT INTO flash_sales (start_date, end_date) VALUES ($1, $2)
@@ -34,6 +50,55 @@ WHERE id = $1
 func (q *Queries) DeleteFlashSaleById(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteFlashSaleById, id)
 	return err
+}
+
+const getAllFlashSaleItemByFlashSaleId = `-- name: GetAllFlashSaleItemByFlashSaleId :many
+SELECT f.id, f.flash_sales_id, f.product_id, f.show, f.created_at, f.updated_at, p.name
+FROM flash_sales_items f
+    LEFT JOIN products p ON f.product_id = p.id
+WHERE flash_sales_id = $1
+ORDER BY f.updated_at DESC
+`
+
+type GetAllFlashSaleItemByFlashSaleIdRow struct {
+	ID           uuid.UUID
+	FlashSalesID uuid.UUID
+	ProductID    uuid.UUID
+	Show         sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	Name         sql.NullString
+}
+
+func (q *Queries) GetAllFlashSaleItemByFlashSaleId(ctx context.Context, flashSalesID uuid.UUID) ([]GetAllFlashSaleItemByFlashSaleIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFlashSaleItemByFlashSaleId, flashSalesID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllFlashSaleItemByFlashSaleIdRow
+	for rows.Next() {
+		var i GetAllFlashSaleItemByFlashSaleIdRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FlashSalesID,
+			&i.ProductID,
+			&i.Show,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllFlashSales = `-- name: GetAllFlashSales :many
