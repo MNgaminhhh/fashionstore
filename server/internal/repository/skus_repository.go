@@ -9,9 +9,10 @@ import (
 )
 
 type ISkusRepository interface {
-	CreateSku(customParam validator.CreateSkuValidator) error
+	CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator) error
 	GetAllSkusByProductId(productId uuid.UUID) ([]database.GetAllSkuByProductIdRow, error)
 	GetAllSkusByVendorId(vendorId uuid.UUID, filterParam validator.FilterSkuValidator) ([]database.GetAllSkuOfVendorRow, error)
+	DeleteSkuById(id uuid.UUID) error
 }
 
 type SkusRepository struct {
@@ -24,9 +25,10 @@ func NewSkusRepository() ISkusRepository {
 	}
 }
 
-func (sr *SkusRepository) CreateSku(customParam validator.CreateSkuValidator) error {
+func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator) error {
 	productId, _ := uuid.Parse(customParam.ProductId)
 	param := database.CreateSKUParams{
+		ID:        id,
 		ProductID: productId,
 		InStock: sql.NullInt16{
 			Int16: int16(customParam.InStock),
@@ -38,7 +40,6 @@ func (sr *SkusRepository) CreateSku(customParam validator.CreateSkuValidator) er
 			Int32: int32(customParam.Offer),
 			Valid: true,
 		},
-		VariantOptionIds: customParam.VariantOptions,
 	}
 	err := sr.sqlc.CreateSKU(ctx, param)
 	return err
@@ -59,6 +60,11 @@ func (sr *SkusRepository) GetAllSkusByVendorId(vendorId uuid.UUID, filterParam v
 		return nil, err
 	}
 	return results, nil
+}
+
+func (sr *SkusRepository) DeleteSkuById(id uuid.UUID) error {
+	err := sr.sqlc.DeleteSkuById(ctx, id)
+	return err
 }
 
 func (sr *SkusRepository) GetAllSkusByProductId(productId uuid.UUID) ([]database.GetAllSkuByProductIdRow, error) {

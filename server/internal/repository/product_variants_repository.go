@@ -11,7 +11,7 @@ import (
 
 type IProductVariantsRepository interface {
 	CreateProductVariant(customParam validator.CreateProductVariantValidator) error
-	GetListProductVariants(name *string, status *string) ([]database.GetAllProductVariantsRow, error)
+	GetListProductVariants(name *string, status *string, productIdStr *string) ([]database.GetAllProductVariantsRow, error)
 	GetProductVariantById(id uuid.UUID) (*database.GetProductVariantByIdRow, error)
 	DeleteProductVariantById(id uuid.UUID) error
 	UpdateProductVariant(pVariant *database.GetProductVariantByIdRow) error
@@ -45,7 +45,7 @@ func (vr *ProductVariantsRepository) CreateProductVariant(customParam validator.
 	return vr.sqlc.CreateProductVariant(ctx, param)
 }
 
-func (vr *ProductVariantsRepository) GetListProductVariants(name *string, status *string) ([]database.GetAllProductVariantsRow, error) {
+func (vr *ProductVariantsRepository) GetListProductVariants(name *string, status *string, productIdStr *string) ([]database.GetAllProductVariantsRow, error) {
 	param := database.GetAllProductVariantsParams{}
 	if name != nil {
 		param.Column1 = sql.NullString{
@@ -59,7 +59,9 @@ func (vr *ProductVariantsRepository) GetListProductVariants(name *string, status
 			Valid:          true,
 		}
 	}
-	log.Println(param)
+	if productIdStr != nil {
+		param.Column3 = *productIdStr
+	}
 	results, err := vr.sqlc.GetAllProductVariants(ctx, param)
 	if err != nil {
 		return nil, err

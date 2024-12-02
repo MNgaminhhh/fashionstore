@@ -11,6 +11,7 @@ const (
 	ErrCodeForeignKey   = 40301
 	ErrCodeDatabase     = 55001
 	ErrCodeUnknown      = 520
+	ErrCodeNoContent    = 521
 	//========
 	ErrCodeEmailNotFound              = 50001
 	ErrCodeIncorrectPassword          = 50002
@@ -35,6 +36,10 @@ const (
 	ErrCodeBannerNotFound             = 50022
 	ErrCodeProductNotFound            = 50023
 	ErrCodeProductVariantNotFound     = 50024
+	ErrCodeCombinationOptionsIsExists = 50025
+	ErrCodeInvalidDateTimeFormat      = 50026
+	ErrCodeInvalidEndDate             = 50027
+	ErrCodeInvalidFlashSaleStartDate  = 50028
 	ErrCodeForbidden                  = 403
 )
 
@@ -74,4 +79,9 @@ var msg = map[int]string{
 	ErrCodeDatabase:                   "Đã xảy ra lỗi trong cơ sở dữ liệu. Vui lòng thử lại sau!",
 	ErrCodeUnknown:                    "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau!",
 	ErrCodeProductVariantNotFound:     "Không tìm thấy dữ liệu!",
+	ErrCodeCombinationOptionsIsExists: "Loại hàng hóa này đã tồn tại. Vui lòng kiểm tra lại!",
+	ErrCodeInvalidDateTimeFormat:      "Định dạng phải là dd-MM-yyyy hh:mm",
+	ErrCodeInvalidEndDate:             "Ngày kết thúc phải sau ngày bắt đầu!",
+	ErrCodeInvalidFlashSaleStartDate:  "Ngày bắt đầu phải lớn hơn ngày hiện tại!",
+	ErrCodeNoContent:                  "Không tìm thấy đối tượng!",
 }

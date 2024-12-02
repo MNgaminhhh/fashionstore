@@ -23,7 +23,8 @@ func (cr *ProductRouter) InitProductVariantRouter(router *echo.Group) {
 
 	variantOptionGroup := router.Group("/variant-options")
 	{
-		variantOptionGroup.GET("/:id", productVariantController.GetListVariantOptionsByPvId)
+		variantOptionGroup.GET("/product-variant/:id", productVariantController.GetListVariantOptionsByPvId)
+		variantOptionGroup.GET("/:id", productVariantController.GetVariantOptionById)
 		variantOptionGroup.POST("", productVariantController.CreateProductVariantOptions, middleware.JWTMiddleware)
 		variantOptionGroup.PUT("/:id", productVariantController.UpdateVariantOptionsById, middleware.JWTMiddleware)
 		variantOptionGroup.DELETE("/:id", productVariantController.DeleteVariantOptionsByPvId, middleware.JWTMiddleware)

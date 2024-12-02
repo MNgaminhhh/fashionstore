@@ -11,32 +11,40 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 const createSKU = `-- name: CreateSKU :exec
-INSERT INTO skus (product_id, in_stock, sku, price, offer, variant_option_ids)
+INSERT INTO skus (id, product_id, in_stock, sku, price, offer)
 VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type CreateSKUParams struct {
-	ProductID        uuid.UUID
-	InStock          sql.NullInt16
-	Sku              string
-	Price            int64
-	Offer            sql.NullInt32
-	VariantOptionIds []uuid.UUID
+	ID        uuid.UUID
+	ProductID uuid.UUID
+	InStock   sql.NullInt16
+	Sku       string
+	Price     int64
+	Offer     sql.NullInt32
 }
 
 func (q *Queries) CreateSKU(ctx context.Context, arg CreateSKUParams) error {
 	_, err := q.db.ExecContext(ctx, createSKU,
+		arg.ID,
 		arg.ProductID,
 		arg.InStock,
 		arg.Sku,
 		arg.Price,
 		arg.Offer,
-		pq.Array(arg.VariantOptionIds),
 	)
+	return err
+}
+
+const deleteSkuById = `-- name: DeleteSkuById :exec
+DELETE FROM skus WHERE id = $1
+`
+
+func (q *Queries) DeleteSkuById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteSkuById, id)
 	return err
 }
 
@@ -48,10 +56,14 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
-    jsonb_object_agg(pv.name, vo.name) AS variant_options
+    jsonb_object_agg(
+        COALESCE(pv.name, ''),
+        COALESCE(vo.name, '')
+    ) AS variant_options
 FROM skus s
          LEFT JOIN products p ON p.id = s.product_id
-         LEFT JOIN variant_options vo ON s.variant_option_ids @> ARRAY[vo.id]
+         LEFT JOIN skus_variant_options so ON so.sku_id = s.id
+         LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.product_id = $1
 GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock
@@ -107,11 +119,15 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
-    jsonb_object_agg(COALESCE(pv.name, 'default_variant_name'), COALESCE(vo.name, '')) AS variant_options
+    jsonb_object_agg(
+        COALESCE(pv.name, ''),
+        COALESCE(vo.name, '')
+    ) AS variant_options
 FROM products p
-         LEFT JOIN skus s ON p.id = s.product_id
-         LEFT JOIN variant_options vo ON s.variant_option_ids @> ARRAY[vo.id]
-         LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
+        LEFT JOIN skus s ON p.id = s.product_id
+        LEFT JOIN skus_variant_options so ON so.sku_id = s.id
+        LEFT JOIN variant_options vo ON so.variant_option = vo.id
+        LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE (p.vendor_id = $1)
 AND (p.name ILIKE '%' || $2 || '%' OR $2 IS NULL)
 AND (s.sku = $3 OR $3 IS NULL)
@@ -164,4 +180,29 @@ func (q *Queries) GetAllSkuOfVendor(ctx context.Context, arg GetAllSkuOfVendorPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateSkuById = `-- name: UpdateSkuById :exec
+UPDATE skus
+SET sku = $1, offer = $2, in_stock = $3, price = $4
+WHERE id = $5
+`
+
+type UpdateSkuByIdParams struct {
+	Sku     string
+	Offer   sql.NullInt32
+	InStock sql.NullInt16
+	Price   int64
+	ID      uuid.UUID
+}
+
+func (q *Queries) UpdateSkuById(ctx context.Context, arg UpdateSkuByIdParams) error {
+	_, err := q.db.ExecContext(ctx, updateSkuById,
+		arg.Sku,
+		arg.Offer,
+		arg.InStock,
+		arg.Price,
+		arg.ID,
+	)
+	return err
 }

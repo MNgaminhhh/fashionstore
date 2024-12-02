@@ -4,7 +4,6 @@ import (
 	"backend/internal/database"
 	"backend/internal/repository"
 	"github.com/golang-jwt/jwt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -34,12 +33,15 @@ func (j *Auth) GenerateToken(user *database.User) (string, error) {
 
 	if user.Role == database.UserRoleVendors {
 		vendorRepo := repository.NewVendorRepository()
-		log.Println(user.ID)
 		vendor, err := vendorRepo.GetVendorByUUID(user.ID)
 		if err != nil {
 			return "", err
 		}
 		claims["vendorId"] = vendor.ID
+		claims["vendorStatus"] = vendor.Status.VendorsStatus
+		if vendor.Status.VendorsStatus != database.VendorsStatusAccepted {
+			claims["role"] = database.UserRoleCustomer
+		}
 	}
 
 	signedAccessToken, err := token.SignedString([]byte(j.Secret))

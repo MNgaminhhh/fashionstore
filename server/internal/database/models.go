@@ -9,6 +9,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -319,6 +320,23 @@ type ChildCategory struct {
 	UpdatedAt     sql.NullTime
 }
 
+type FlashSale struct {
+	ID        uuid.UUID
+	StartDate time.Time
+	EndDate   time.Time
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type FlashSalesItem struct {
+	ID           uuid.UUID
+	FlashSalesID uuid.UUID
+	ProductID    uuid.UUID
+	Show         sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+}
+
 type Product struct {
 	ID               uuid.UUID
 	Name             string
@@ -347,17 +365,21 @@ type ProductVariant struct {
 }
 
 type Sku struct {
-	ID               uuid.UUID
-	ProductID        uuid.UUID
-	InStock          sql.NullInt16
-	Sku              string
-	Price            int64
-	VariantOptionIds []uuid.UUID
-	Offer            sql.NullInt32
-	OfferStartDate   sql.NullTime
-	OfferEndDate     sql.NullTime
-	CreatedAt        sql.NullTime
-	UpdatedAt        sql.NullTime
+	ID             uuid.UUID
+	ProductID      uuid.UUID
+	InStock        sql.NullInt16
+	Sku            string
+	Price          int64
+	Offer          sql.NullInt32
+	OfferStartDate sql.NullTime
+	OfferEndDate   sql.NullTime
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+}
+
+type SkusVariantOption struct {
+	SkuID         uuid.UUID
+	VariantOption uuid.UUID
 }
 
 type SubCategory struct {

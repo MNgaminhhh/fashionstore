@@ -26,7 +26,13 @@ FROM product_variants pv
 LEFT JOIN products p ON pv.product_id = p.id
 WHERE (pv.name ILIKE '%' || $1 || '%' OR $1 IS  NULL)
 AND (pv.status = $2 OR $2 IS NULL)
+AND (($3::text = '' OR $3 IS NULL) OR p.id = $3::UUID)
 ORDER BY pv.updated_at DESC;
+
+-- name: GetAllProductVariantsByProductId :many
+SELECT pv.name, pv.id, pv.product_id
+FROM product_variants pv
+WHERE pv.product_id = $1;
 
 -- name: DeleteProductVariantById :exec
 DELETE FROM product_variants

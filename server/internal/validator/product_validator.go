@@ -39,5 +39,6 @@ type FilterProductRequest struct {
 	LowPrice    *int    `query:"low_price"`
 	HighPrice   *int    `query:"high_price"`
 	CateName    *string `query:"cate_name"`
+	IsApproved  *bool   `query:"is_approved"`
 	VendorId    *string
 }
