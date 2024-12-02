@@ -12,10 +12,11 @@ type UpdateProductVariantValidator struct {
 }
 
 type FilterProductVariantValidator struct {
-	Name   *string `json:"name"`
-	Status *string `json:"status" validate:"oneof=active inactive discontinued out_of_stock"`
-	Page   *int    `json:"page"`
-	Limit  *int    `json:"limit"`
+	Name      *string `json:"name"`
+	Status    *string `json:"status" validate:"oneof=active inactive discontinued out_of_stock"`
+	ProductId *string `json:"product_id"`
+	Page      *int    `json:"page"`
+	Limit     *int    `json:"limit"`
 }
 
 type CreateVariantOptionValidator struct {

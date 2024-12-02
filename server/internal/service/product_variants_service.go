@@ -115,7 +115,8 @@ func (ps *ProductVariantsService) GetAllProductVariants(filterParam validator.Fi
 	pPage := filterParam.Page
 	pLimit := filterParam.Limit
 	status := filterParam.Status
-	pVariants, err := ps.pVarRepo.GetListProductVariants(name, status)
+	productId := filterParam.ProductId
+	pVariants, err := ps.pVarRepo.GetListProductVariants(name, status, productId)
 	if err != nil {
 		log.Println(err)
 		return response.ErrCodeInternal, nil

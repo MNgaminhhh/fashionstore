@@ -76,12 +76,14 @@ FROM product_variants pv
 LEFT JOIN products p ON pv.product_id = p.id
 WHERE (pv.name ILIKE '%' || $1 || '%' OR $1 IS  NULL)
 AND (pv.status = $2 OR $2 IS NULL)
+AND (COALESCE(NULLIF($3::text, '')::UUID, p.id) OR $3 IS NULL)
 ORDER BY pv.updated_at DESC
 `
 
 type GetAllProductVariantsParams struct {
 	Column1 sql.NullString
 	Status  NullVariantsStatus
+	Column3 string
 }
 
 type GetAllProductVariantsRow struct {
@@ -95,7 +97,7 @@ type GetAllProductVariantsRow struct {
 }
 
 func (q *Queries) GetAllProductVariants(ctx context.Context, arg GetAllProductVariantsParams) ([]GetAllProductVariantsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getAllProductVariants, arg.Column1, arg.Status)
+	rows, err := q.db.QueryContext(ctx, getAllProductVariants, arg.Column1, arg.Status, arg.Column3)
 	if err != nil {
 		return nil, err
 	}

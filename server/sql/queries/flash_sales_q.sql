@@ -2,13 +2,15 @@
 INSERT INTO flash_sales (start_date, end_date) VALUES ($1, $2);
 
 -- name: GetAllFlashSales :many
-SELECT * FROM flash_sales
-ORDER BY updated_at;
+SELECT *
+FROM flash_sales
+WHERE (DATE(start_date) = $1::DATE OR $1 = '0001-01-01')
+  AND (DATE(end_date) = $2::DATE OR $2 = '0001-01-01')
+ORDER BY updated_at DESC;
 
 -- name: GetFlashSaleById :one
 SELECT * FROM flash_sales
-WHERE id = $1
-ORDER BY updated_at DESC;
+WHERE id = $1;
 
 -- name: DeleteFlashSaleById :exec
 DELETE FROM flash_sales

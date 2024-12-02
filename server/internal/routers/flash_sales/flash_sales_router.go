@@ -14,7 +14,10 @@ func (fr *FlashSalesRouter) InitFlashSalesRouter(router *echo.Group) {
 
 	flashSalesRouterGroup := router.Group("/flash-sales")
 	{
-		flashSalesRouterGroup.POST("", flashSalesController.CreateFlashSales, middleware.JWTMiddleware)
 		flashSalesRouterGroup.GET("", flashSalesController.GetFlashSales)
+		flashSalesRouterGroup.GET("/:id", flashSalesController.GetFlashSalesByID)
+		flashSalesRouterGroup.POST("", flashSalesController.CreateFlashSales, middleware.JWTMiddleware)
+		flashSalesRouterGroup.PUT("/:id", flashSalesController.UpdateFlashSales, middleware.JWTMiddleware)
+		flashSalesRouterGroup.DELETE("/:id", flashSalesController.DeleteFlashSales, middleware.JWTMiddleware)
 	}
 }

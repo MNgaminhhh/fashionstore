@@ -37,12 +37,20 @@ func (q *Queries) DeleteFlashSaleById(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAllFlashSales = `-- name: GetAllFlashSales :many
-SELECT id, start_date, end_date, created_at, updated_at FROM flash_sales
-ORDER BY updated_at
+SELECT id, start_date, end_date, created_at, updated_at
+FROM flash_sales
+WHERE (DATE(start_date) = $1::DATE OR $1 = '0001-01-01')
+  AND (DATE(end_date) = $2::DATE OR $2 = '0001-01-01')
+ORDER BY updated_at DESC
 `
 
-func (q *Queries) GetAllFlashSales(ctx context.Context) ([]FlashSale, error) {
-	rows, err := q.db.QueryContext(ctx, getAllFlashSales)
+type GetAllFlashSalesParams struct {
+	Column1 time.Time
+	Column2 time.Time
+}
+
+func (q *Queries) GetAllFlashSales(ctx context.Context, arg GetAllFlashSalesParams) ([]FlashSale, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFlashSales, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +81,6 @@ func (q *Queries) GetAllFlashSales(ctx context.Context) ([]FlashSale, error) {
 const getFlashSaleById = `-- name: GetFlashSaleById :one
 SELECT id, start_date, end_date, created_at, updated_at FROM flash_sales
 WHERE id = $1
-ORDER BY updated_at DESC
 `
 
 func (q *Queries) GetFlashSaleById(ctx context.Context, id uuid.UUID) (FlashSale, error) {

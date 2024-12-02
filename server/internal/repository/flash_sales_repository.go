@@ -3,16 +3,16 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
-	"backend/internal/validator"
 	"github.com/google/uuid"
+	"log"
 	"time"
 )
 
 type IFlashSalesRepository interface {
 	CreateFlashSale(startDate time.Time, endDate time.Time) error
-	GetAllFlashSales() ([]database.FlashSale, error)
+	GetAllFlashSales(startDate time.Time, endDate time.Time) ([]database.FlashSale, error)
 	GetFlashSalesById(id uuid.UUID) (*database.FlashSale, error)
-	UpdateFlashSale(id uuid.UUID, customParam validator.UpdateFlashSaleValidator) error
+	UpdateFlashSale(newFlashSale database.FlashSale) error
 	DeleteFlashSaleById(id uuid.UUID) error
 }
 
@@ -34,8 +34,13 @@ func (fr *FlashSalesRepository) CreateFlashSale(startDate time.Time, endDate tim
 	return err
 }
 
-func (fr *FlashSalesRepository) GetAllFlashSales() ([]database.FlashSale, error) {
-	results, err := fr.sqlc.GetAllFlashSales(ctx)
+func (fr *FlashSalesRepository) GetAllFlashSales(startDate time.Time, endDate time.Time) ([]database.FlashSale, error) {
+	param := database.GetAllFlashSalesParams{
+		Column1: startDate,
+		Column2: endDate,
+	}
+	log.Println(param)
+	results, err := fr.sqlc.GetAllFlashSales(ctx, param)
 	if err != nil {
 		return nil, err
 	}
@@ -50,17 +55,11 @@ func (fr *FlashSalesRepository) GetFlashSalesById(id uuid.UUID) (*database.Flash
 	return &flashSale, nil
 }
 
-func (fr *FlashSalesRepository) UpdateFlashSale(id uuid.UUID, customParam validator.UpdateFlashSaleValidator) error {
+func (fr *FlashSalesRepository) UpdateFlashSale(newFlashSale database.FlashSale) error {
 	param := database.UpdateFlashSaleParams{
-		StartDate: time.Time{},
-		EndDate:   time.Time{},
-		ID:        id,
-	}
-	if customParam.StartDate != nil {
-		param.StartDate = *customParam.StartDate
-	}
-	if customParam.EndDate != nil {
-		param.EndDate = *customParam.EndDate
+		StartDate: newFlashSale.StartDate,
+		EndDate:   newFlashSale.EndDate,
+		ID:        newFlashSale.ID,
 	}
 	err := fr.sqlc.UpdateFlashSale(ctx, param)
 	return err
