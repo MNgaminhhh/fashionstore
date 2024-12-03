@@ -15,6 +15,7 @@ import (
 )
 
 type SkuResponse struct {
+	Id          string          `json:"id"`
 	ProductName string          `json:"product_name,omitempty"`
 	ProductId   string          `json:"product_id,omitempty"`
 	Sku         string          `json:"sku,omitempty"`
@@ -85,6 +86,7 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
+			log.Println(err)
 			return response.ErrCodeDatabase, nil
 		}
 	}
@@ -101,7 +103,10 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 	totalPages := internal.CalculateTotalPages(totalResults, page)
 	var allResponseData []SkuResponse
 	for _, sku := range pagination {
-		resData, _ := mapResponseData(&sku)
+		resData, maErr := mapResponseData(&sku)
+		if maErr != nil {
+			log.Println(maErr)
+		}
 		if resData != nil {
 			allResponseData = append(allResponseData, *resData)
 		}
@@ -119,19 +124,19 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 func mapResponseData[T any](data *T) (*SkuResponse, error) {
 	switch s := any(data).(type) {
 	case *database.GetAllSkuOfVendorRow:
-		offer := int(s.Offer.Int32)
-		price := int(s.Price.Int64)
-		offerPrice := float64(price) * (1 - float64(offer)/100)
-		log.Println(offer, price, offerPrice)
+		//offer := int(s.Offer.Int32)
+		//price := int(s.Price.Int64)
+		////offerPrice := float64(price) * (1 - float64(offer)/100)
 		return &SkuResponse{
 			ProductName: s.ProductName,
-			ProductId:   "",
+			ProductId:   s.ProductID.String(),
+			Id:          s.ID.UUID.String(),
 			Sku:         s.Sku.String,
 			Price:       int(s.Price.Int64),
 			Variants:    s.VariantOptions,
 			InStock:     int(s.InStock.Int16),
 			Offer:       int(s.Offer.Int32),
-			OfferPrice:  int(offerPrice),
+			OfferPrice:  int(s.OfferPrice),
 		}, nil
 	default:
 		log.Println("Unhandled data type:", data)

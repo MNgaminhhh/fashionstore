@@ -14,7 +14,9 @@ CREATE TABLE flash_sales_items(
     product_id UUID NOT NULL,
     show BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (flash_sales_id) REFERENCES flash_sales(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 CREATE TRIGGER set_updated_at

@@ -48,12 +48,27 @@ func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSk
 func (sr *SkusRepository) GetAllSkusByVendorId(vendorId uuid.UUID, filterParam validator.FilterSkuValidator) ([]database.GetAllSkuOfVendorRow, error) {
 	param := database.GetAllSkuOfVendorParams{
 		VendorID: vendorId,
+		Price:    -1,
+		Price_2:  -1,
 	}
 	if filterParam.Sku != nil {
 		param.Sku = *filterParam.Sku
 	}
 	if filterParam.ProductName != nil {
 		param.Sku = *filterParam.ProductName
+	}
+	if filterParam.ProductId != nil {
+		param.Column4 = *filterParam.ProductId
+	}
+	if filterParam.Price != nil {
+		param.Price = int64(*filterParam.Price)
+	}
+	if filterParam.Offer != nil {
+		param.Offer.Valid = true
+		param.Offer.Int32 = int32(*filterParam.Offer)
+	}
+	if filterParam.OfferPrice != nil {
+		param.Price_2 = int64(*filterParam.OfferPrice)
 	}
 	results, err := sr.sqlc.GetAllSkuOfVendor(ctx, param)
 	if err != nil {
