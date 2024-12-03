@@ -13,7 +13,11 @@ type CreateSkuValidator struct {
 
 type FilterSkuValidator struct {
 	ProductName *string `json:"product_name"`
+	ProductId   *string `json:"product_id"`
 	Sku         *string `json:"sku"`
+	Price       *int    `json:"price"`
+	Offer       *int    `json:"offer"`
+	OfferPrice  *int    `json:"offer_price"`
 	Page        *int    `json:"page"`
 	Limit       *int    `json:"limit"`
 }
