@@ -23,9 +23,8 @@ type FilterSkuValidator struct {
 }
 
 type UpdateSkuValidator struct {
-	InStock        *int        `json:"in_stock" validate:"min=0"`
-	Price          *int        `json:"price" validate:"min=0"`
-	SKU            *string     `json:"sku"`
-	Offer          *int        `json:"offer" validate:"min=0 max=100"`
-	VariantOptions []uuid.UUID `json:"variant_options" validate:"required,min=1"`
+	InStock *int    `json:"in_stock" validate:"min=0"`
+	Price   *int    `json:"price" validate:"min=0"`
+	SKU     *string `json:"sku"`
+	Offer   *int    `json:"offer" validate:"min=0 max=100"`
 }

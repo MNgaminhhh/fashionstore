@@ -41,6 +41,7 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
+    (s.price*(100-s.offer)/100) AS offer_price,
     jsonb_object_agg(
         COALESCE(pv.name, ''),
         COALESCE(vo.name, '')
@@ -53,6 +54,24 @@ FROM skus s
 WHERE s.product_id = $1
 GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock
 ORDER BY s.price ASC;
+
+-- name: GetSkuById :one
+SELECT
+    p.name AS product_name,
+    p.vendor_id,
+    s.*,
+    (s.price*(100-s.offer)/100) AS offer_price,
+    jsonb_object_agg(
+            COALESCE(pv.name, ''),
+            COALESCE(vo.name, '')
+    ) AS variant_options
+FROM skus s
+         LEFT JOIN products p ON p.id = s.product_id
+         LEFT JOIN skus_variant_options so ON so.sku_id = s.id
+         LEFT JOIN variant_options vo ON so.variant_option = vo.id
+         LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
+WHERE s.id = $1
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price;
 
 -- name: UpdateSkuById :exec
 UPDATE skus

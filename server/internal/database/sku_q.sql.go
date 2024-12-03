@@ -56,6 +56,7 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
+    (s.price*(100-s.offer)/100) AS offer_price,
     jsonb_object_agg(
         COALESCE(pv.name, ''),
         COALESCE(vo.name, '')
@@ -77,6 +78,7 @@ type GetAllSkuByProductIdRow struct {
 	Sku            string
 	Offer          sql.NullInt32
 	InStock        sql.NullInt16
+	OfferPrice     int32
 	VariantOptions json.RawMessage
 }
 
@@ -96,6 +98,7 @@ func (q *Queries) GetAllSkuByProductId(ctx context.Context, productID uuid.UUID)
 			&i.Sku,
 			&i.Offer,
 			&i.InStock,
+			&i.OfferPrice,
 			&i.VariantOptions,
 		); err != nil {
 			return nil, err
@@ -205,6 +208,64 @@ func (q *Queries) GetAllSkuOfVendor(ctx context.Context, arg GetAllSkuOfVendorPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const getSkuById = `-- name: GetSkuById :one
+SELECT
+    p.name AS product_name,
+    p.vendor_id,
+    s.id, s.product_id, s.in_stock, s.sku, s.price, s.offer, s.offer_start_date, s.offer_end_date, s.created_at, s.updated_at,
+    (s.price*(100-s.offer)/100) AS offer_price,
+    jsonb_object_agg(
+            COALESCE(pv.name, ''),
+            COALESCE(vo.name, '')
+    ) AS variant_options
+FROM skus s
+         LEFT JOIN products p ON p.id = s.product_id
+         LEFT JOIN skus_variant_options so ON so.sku_id = s.id
+         LEFT JOIN variant_options vo ON so.variant_option = vo.id
+         LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
+WHERE s.id = $1
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price
+`
+
+type GetSkuByIdRow struct {
+	ProductName    sql.NullString
+	VendorID       uuid.NullUUID
+	ID             uuid.UUID
+	ProductID      uuid.UUID
+	InStock        sql.NullInt16
+	Sku            string
+	Price          int64
+	Offer          sql.NullInt32
+	OfferStartDate sql.NullTime
+	OfferEndDate   sql.NullTime
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+	OfferPrice     int32
+	VariantOptions json.RawMessage
+}
+
+func (q *Queries) GetSkuById(ctx context.Context, id uuid.UUID) (GetSkuByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getSkuById, id)
+	var i GetSkuByIdRow
+	err := row.Scan(
+		&i.ProductName,
+		&i.VendorID,
+		&i.ID,
+		&i.ProductID,
+		&i.InStock,
+		&i.Sku,
+		&i.Price,
+		&i.Offer,
+		&i.OfferStartDate,
+		&i.OfferEndDate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.OfferPrice,
+		&i.VariantOptions,
+	)
+	return i, err
 }
 
 const updateSkuById = `-- name: UpdateSkuById :exec

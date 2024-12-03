@@ -51,3 +51,42 @@ func (sc *SkusController) GetAllSkusOfVendor(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, results)
 }
+
+func (sc *SkusController) UpdateSku(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
+	}
+	id := c.Param("id")
+	var reqParam validator.UpdateSkuValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	code := sc.skusService.UpdateSku(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "update fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}
+
+func (sc *SkusController) DeleteSku(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
+	}
+	id := c.Param("id")
+	code := sc.skusService.DeleteSkuById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "delete fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
+}
+
+func (sc *SkusController) GetSkuById(c echo.Context) error {
+	id := c.Param("id")
+	code, result := sc.skusService.GetSkuById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, result)
+}

@@ -26,12 +26,15 @@ func GetMessageError(pqError *pq.Error) int {
 			return response.ErrCodeCateParentNotFound
 		}
 		return response.ErrCodeForeignKey
-	case string(FlashSaleCheck):
+	case "23514":
 		if name == "flash_sales_check" {
 			return response.ErrCodeInvalidEndDate
 		}
-		return response.ErrCodeInternal
+		if name == "skus_in_stock_check" {
+			return response.ErrCodeInStockCheck
+		}
+		return response.ErrCodeDatabase
 	default:
-		return response.ErrCodeInternal
+		return response.ErrCodeDatabase
 	}
 }

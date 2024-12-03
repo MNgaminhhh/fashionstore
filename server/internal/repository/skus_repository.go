@@ -13,6 +13,8 @@ type ISkusRepository interface {
 	GetAllSkusByProductId(productId uuid.UUID) ([]database.GetAllSkuByProductIdRow, error)
 	GetAllSkusByVendorId(vendorId uuid.UUID, filterParam validator.FilterSkuValidator) ([]database.GetAllSkuOfVendorRow, error)
 	DeleteSkuById(id uuid.UUID) error
+	UpdateSkuById(sku database.GetSkuByIdRow) error
+	GetSkuById(id uuid.UUID) (*database.GetSkuByIdRow, error)
 }
 
 type SkusRepository struct {
@@ -88,4 +90,24 @@ func (sr *SkusRepository) GetAllSkusByProductId(productId uuid.UUID) ([]database
 		return nil, err
 	}
 	return results, nil
+}
+
+func (sr *SkusRepository) UpdateSkuById(sku database.GetSkuByIdRow) error {
+	param := database.UpdateSkuByIdParams{
+		Sku:     sku.Sku,
+		Offer:   sku.Offer,
+		InStock: sku.InStock,
+		Price:   sku.Price,
+		ID:      sku.ID,
+	}
+	err := sr.sqlc.UpdateSkuById(ctx, param)
+	return err
+}
+
+func (sr *SkusRepository) GetSkuById(id uuid.UUID) (*database.GetSkuByIdRow, error) {
+	sku, err := sr.sqlc.GetSkuById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &sku, nil
 }
