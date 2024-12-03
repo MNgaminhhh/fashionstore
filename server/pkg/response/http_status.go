@@ -43,6 +43,8 @@ const (
 	ErrCodeInStock                    = 50029
 	ErrCodeInStockCheck               = 50030
 	ErrCodeEndDateEmpty               = 50031
+	ErrCodeDiscountFixedType          = 50032
+	ErrCodeValueDiscountPercentage    = 50033
 	ErrCodeForbidden                  = 403
 )
 
@@ -90,4 +92,6 @@ var msg = map[int]string{
 	ErrCodeInStock:                    "Số lượng hàng hóa vẫn còn trong kho!",
 	ErrCodeInStockCheck:               "Số lượng sản phẩm không thể nhỏ hơn 0!",
 	ErrCodeEndDateEmpty:               "Vui lòng nhập ngày kết thúc!",
+	ErrCodeDiscountFixedType:          "Giá tiền giảm tối đa không thể khác với giá tiền giảm với loại mã cố định!",
+	ErrCodeValueDiscountPercentage:    "Giá trị trong khoảng từ 1-100!",
 }

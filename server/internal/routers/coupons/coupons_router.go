@@ -16,4 +16,9 @@ func (cr *CouponRouter) InitCouponRouter(router *echo.Group) {
 	{
 		conditionGroup.POST("", couponsController.CreateCondition, middleware.JWTMiddleware)
 	}
+
+	couponGroup := router.Group("/coupons")
+	{
+		couponGroup.POST("", couponsController.CreateCoupon, middleware.JWTMiddleware)
+	}
 }

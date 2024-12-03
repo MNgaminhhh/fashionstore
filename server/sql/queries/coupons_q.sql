@@ -14,3 +14,6 @@ INSERT INTO coupons (
 -- name: DeleteCoupon :exec
 DELETE FROM coupons
 WHERE id = $1;
+
+-- name: CreateConditionCoupon :exec
+INSERT INTO conditions_coupons (coupon_id, condition_id,  condition_describe) VALUES ($1, $2, $3);

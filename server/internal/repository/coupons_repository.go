@@ -13,6 +13,7 @@ type ICouponsRepository interface {
 	CreateCondition(field database.ConditionField, operator database.ComparisonOperator, value any) error
 	CreateCoupon(id uuid.UUID, customParam validator.CreateCouponValidator, startDate time.Time, endDate time.Time) error
 	DeleteCoupon(couponId uuid.UUID) error
+	CreateConditionCoupon(couponId uuid.UUID, conditionId uuid.UUID, description string) error
 }
 
 type CouponRepository struct {
@@ -57,5 +58,15 @@ func (c CouponRepository) CreateCoupon(id uuid.UUID, customParam validator.Creat
 		MaxPrice:  int32(customParam.MaxPrice),
 	}
 	err := c.sqlc.CreateCoupon(ctx, param)
+	return err
+}
+
+func (c CouponRepository) CreateConditionCoupon(couponId uuid.UUID, conditionId uuid.UUID, description string) error {
+	param := database.CreateConditionCouponParams{
+		CouponID:          couponId,
+		ConditionID:       conditionId,
+		ConditionDescribe: description,
+	}
+	err := c.sqlc.CreateConditionCoupon(ctx, param)
 	return err
 }

@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TYPE condition_field AS ENUM ('price', 'shipping_cost', 'product_type');
 CREATE TYPE comparison_operator AS ENUM ('>', '>=', '=');
-CREATE TYPE discount_type AS ENUM('shipping', 'fixed', 'percentage');
+CREATE TYPE discount_type AS ENUM('shipping_fixed', 'shipping_percentage', 'fixed', 'percentage');
 
 CREATE TABLE conditions(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -27,7 +27,7 @@ CREATE TABLE coupons(
 );
 
 CREATE TABLE conditions_coupons(
-    coupon_id UUID REFERENCES coupons(id),
+    coupon_id UUID REFERENCES coupons(id) ON DELETE CASCADE ,
     condition_id UUID REFERENCES conditions(id),
     condition_describe TEXT NOT NULL,
     PRIMARY KEY (coupon_id, condition_id)

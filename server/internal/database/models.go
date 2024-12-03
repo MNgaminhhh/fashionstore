@@ -146,9 +146,10 @@ func (ns NullConditionField) Value() (driver.Value, error) {
 type DiscountType string
 
 const (
-	DiscountTypeShipping   DiscountType = "shipping"
-	DiscountTypeFixed      DiscountType = "fixed"
-	DiscountTypePercentage DiscountType = "percentage"
+	DiscountTypeShippingFixed      DiscountType = "shipping_fixed"
+	DiscountTypeShippingPercentage DiscountType = "shipping_percentage"
+	DiscountTypeFixed              DiscountType = "fixed"
+	DiscountTypePercentage         DiscountType = "percentage"
 )
 
 func (e *DiscountType) Scan(src interface{}) error {

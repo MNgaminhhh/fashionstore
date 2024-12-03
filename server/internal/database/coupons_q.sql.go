@@ -12,6 +12,21 @@ import (
 	"github.com/google/uuid"
 )
 
+const createConditionCoupon = `-- name: CreateConditionCoupon :exec
+INSERT INTO conditions_coupons (coupon_id, condition_id,  condition_describe) VALUES ($1, $2, $3)
+`
+
+type CreateConditionCouponParams struct {
+	CouponID          uuid.UUID
+	ConditionID       uuid.UUID
+	ConditionDescribe string
+}
+
+func (q *Queries) CreateConditionCoupon(ctx context.Context, arg CreateConditionCouponParams) error {
+	_, err := q.db.ExecContext(ctx, createConditionCoupon, arg.CouponID, arg.ConditionID, arg.ConditionDescribe)
+	return err
+}
+
 const createCoupon = `-- name: CreateCoupon :exec
 INSERT INTO coupons (
     id,
