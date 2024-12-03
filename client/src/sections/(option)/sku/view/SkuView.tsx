@@ -2,70 +2,53 @@
 
 import { useState } from "react";
 import { Formik } from "formik";
-import {
-  Card,
-  Stack,
-  Table,
-  TableBody,
-  TableContainer,
-  TextField,
-  Select,
-  MenuItem,
-  Box,
-  Button,
-  Divider,
-  Typography,
-} from "@mui/material";
+import Card from "@mui/material/Card";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
+import TextField from "@mui/material/TextField";
+import Scrollbar from "../../../../components/scrollbar";
+import WrapperPage from "../../../WrapperPage";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
+import { StyledTableCell } from "../../../styles";
+import { StyledPagination } from "../../../../components/table/styles";
+import { Box, Button, Divider, MenuItem, Select } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import Link from "next/link";
-import { tableHeading } from "../components/data";
-import RowVariant from "../components/RowVariant";
 import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-import Scrollbar from "../../../../components/scrollbar";
-import WrapperPage from "../../../WrapperPage";
-import { StyledTableCell } from "../../../styles";
-import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
-import Variant from "../../../../services/Variant";
-import { useParams } from "next/navigation";
+import { tableHeading } from "../components/data";
+import RowSku from "../components/RowSku";
+import Skus from "../../../../services/Skus";
 import ProductModel from "../../../../models/Product.model";
 
-type Props = { variants: any; pro: ProductModel; token: string };
+type Props = { skus: any; pro: ProductModel; token: string };
 
 const selectOptions: { [key: string]: { value: string; label: string }[] } = {
-  status: [
+  in_stock: [
     { value: "", label: "Tất cả" },
-    { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" },
+    { value: "true", label: "Còn hàng" },
+    { value: "false", label: "Hết hàng" },
   ],
 };
 
-export default function VariantView({
-  variants: initialVariants,
+export default function SkuView({
+  skus: initialSkus,
   pro: initialProduct,
   token,
 }: Props) {
-  console.log(initialProduct);
-  const params = useParams();
-  const { id } = params;
-  const [variants, setVariants] = useState(
-    initialVariants.productVariants || []
-  );
-  const [totalPages, setTotalPages] = useState(
-    initialVariants.total_pages || 1
-  );
+  const [skus, setSkus] = useState(initialSkus.skus || []);
+  const [totalPages, setTotalPages] = useState(initialSkus.totalPage || 1);
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    null
-  );
+  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit, setCurrentLimit] = useState(10);
   const pageSizes = [5, 10, 20, 50];
@@ -79,31 +62,31 @@ export default function VariantView({
   };
 
   const openDeleteDialog = (id: string) => {
-    setSelectedVariantId(id);
+    setSelectedSkuId(id);
     setDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDialogOpen(false);
-    setSelectedVariantId(null);
+    setSelectedSkuId(null);
   };
 
   const handleDelete = async () => {
-    if (selectedVariantId) {
+    if (selectedSkuId) {
       try {
-        const response = await Variant.delete(selectedVariantId, token, true);
+        const response = await Skus.delete(selectedSkuId, token, true);
 
         if (response.data.success) {
-          notifySuccess("Biến thể đã được xóa thành công.");
+          notifySuccess("SKU đã được xóa thành công.");
           await applyFilters(currentPage, currentLimit);
         } else {
           notifyError(
-            "Xóa biến thể thất bại: " +
+            "Xóa SKU thất bại: " +
               (response.data.message || "Vui lòng thử lại.")
           );
         }
       } catch (error) {
-        notifyError("Có lỗi xảy ra khi xóa biến thể.");
+        notifyError("Có lỗi xảy ra khi xóa SKU.");
       } finally {
         closeDeleteDialog();
       }
@@ -116,48 +99,25 @@ export default function VariantView({
     filters = searchValues
   ) => {
     try {
-      const response = await Variant.getVariantByProduct(
+      const response = await Skus.getByVendor(
         token,
         true,
         limit,
         page,
         filters
       );
-      setVariants(response?.data?.productVariants || []);
-      setTotalPages(response?.data?.total_pages || 1);
+      setSkus(response?.data?.skus || []);
+      setTotalPages(response?.data?.totalPage || 1);
     } catch {
       notifyError("Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
 
-  const handleToggleStatus = async (
-    id: string,
-    newStatus: "active" | "inactive"
-  ) => {
-    try {
-      const response = await Variant.updateStatus(id, newStatus, token);
-
-      if (response.data.success) {
-        setVariants((prevVariants) =>
-          prevVariants.map((variant: any) =>
-            variant.id === id ? { ...variant, status: newStatus } : variant
-          )
-        );
-        notifySuccess("Trạng thái biến thể đã được cập nhật thành công.");
-      } else {
-        notifyError(
-          "Cập nhật trạng thái thất bại: " + (response.data.message || "")
-        );
-      }
-    } catch (error: any) {
-      notifyError("Có lỗi xảy ra khi cập nhật trạng thái biến thể.");
-    }
-  };
   return (
-    <WrapperPage title="Quản Lý Biến Thể" title2={`Sản Phẩm: ${nameProduct}`}>
+    <WrapperPage title="Quản Lý SKU" title2={`Sản phẩm: ${nameProduct}`}>
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href={`/dashboard/vendor/product/${id}/variant/create`}
+          href="/dashboard/vendor/sku/create"
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -169,7 +129,7 @@ export default function VariantView({
             px: 3,
           }}
         >
-          Thêm biến thể
+          Thêm SKU
         </Button>
       </Box>
 
@@ -208,7 +168,8 @@ export default function VariantView({
                           align={headCell.align}
                           width={headCell.width}
                         >
-                          {headCell.id !== "action" ? (
+                          {headCell.id !== "action" &&
+                          headCell.id !== "variants" ? (
                             selectOptions[headCell.id] ? (
                               <Select
                                 size="small"
@@ -257,12 +218,11 @@ export default function VariantView({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {variants.map((variant: any) => (
-                      <RowVariant
-                        key={variant.id}
-                        variant={variant}
+                    {skus.map((sku: any, index: number) => (
+                      <RowSku
+                        key={index}
+                        sku={sku}
                         onDelete={openDeleteDialog}
-                        onToggleStatus={handleToggleStatus}
                       />
                     ))}
                   </TableBody>
@@ -307,6 +267,8 @@ export default function VariantView({
         open={dialogOpen}
         onClose={closeDeleteDialog}
         onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        content="Bạn có chắc chắn muốn xóa SKU này không?"
       />
     </WrapperPage>
   );

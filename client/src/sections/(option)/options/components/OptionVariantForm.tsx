@@ -58,7 +58,6 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
       const optionVariantData: Partial<OptionVariantModel> = {
         name: values.name,
         status: values.status,
-        product_variant: productVariantId,
       };
 
       let response;
@@ -70,7 +69,7 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
           token,
           true
         );
-        if (response.success) {
+        if (response.data.success) {
           notifySuccess("Cập nhật tùy chọn biến thể thành công!");
         } else {
           notifyError(
@@ -80,6 +79,7 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
           return;
         }
       } else {
+        optionVariantData.product_variant = productVariantId;
         response = await OptionVariant.create(optionVariantData, token, true);
         if (response.success) {
           notifySuccess("Tạo mới tùy chọn biến thể thành công!");

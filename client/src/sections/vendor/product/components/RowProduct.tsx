@@ -39,6 +39,9 @@ export default function RowProduct({
   const handleVariant = (id: string) => {
     router.push(`/dashboard/vendor/product/${id}/variant`);
   };
+  const handleDetail = (id: string) => {
+    router.push(`/dashboard/vendor/product/${id}/sku`);
+  };
   const handleEdit = (id: string) => {
     router.push(`/dashboard/vendor/product/${id}`);
   };
@@ -135,11 +138,11 @@ export default function RowProduct({
           <Divider />
           <StyledMenuItem
             onClick={() => {
-              handleEdit(product.id);
+              handleDetail(product.id);
               handleClose();
             }}
           >
-            SKU
+            Cấu hình chi tiết sản phẩm
           </StyledMenuItem>
         </StyledMenu>
         <Tooltip title="Chỉnh sửa" arrow>

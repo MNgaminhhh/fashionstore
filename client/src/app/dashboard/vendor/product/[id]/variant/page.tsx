@@ -3,6 +3,7 @@ import { get } from "lodash";
 import VariantView from "../../../../../../sections/(option)/variant/view/VariantView";
 import Variant from "../../../../../../services/Variant";
 import { IdParams } from "../../../../../../models/Common.model";
+import Products from "../../../../../../services/Products";
 
 export default async function VariantPage({ params }: IdParams) {
   // String(params.id)
@@ -10,5 +11,7 @@ export default async function VariantPage({ params }: IdParams) {
   const token = cookieStore.get("access_cookie")?.value;
   const vari = await Variant.getVariantByProduct(token);
   const infoVari = get(vari, "data", {});
-  return <VariantView token={token} variants={infoVari} />;
+  const product = await Products.findOne(params.id);
+  const infoPro = get(product, "data.data", {});
+  return <VariantView token={token} variants={infoVari} pro={infoPro} />;
 }

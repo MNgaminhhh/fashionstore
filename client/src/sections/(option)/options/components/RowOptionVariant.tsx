@@ -6,7 +6,7 @@ import {
   StyledTableCell,
   StyledTableRow,
 } from "../../../styles";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import MTSwitch from "../../../../components/MTSwitch";
 import { Box, Tooltip } from "@mui/material";
 import OptionVariantModel from "../../../../models/OptionVariant.model";
@@ -23,13 +23,15 @@ export default function RowOptionVariant({
   onToggleStatus,
 }: Props) {
   const router = useRouter();
+  const params = useParams();
+  const { id, vid } = params;
   const [status, setStatus] = useState<"active" | "inactive">(
     optionVariant.status
   );
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (oid: string) => {
     router.push(
-      `/dashboard/vendor/product/${optionVariant.product_variant_id}/option-variant/${id}/edit`
+      `/dashboard/vendor/product/${id}/variant/${vid}/option-variant/${oid}`
     );
   };
 
