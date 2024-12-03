@@ -202,6 +202,7 @@ export default function ProductForm({ product, token, cat }: Props) {
           product ? "Cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!"
         );
         router.push("/dashboard/vendor/product");
+        router.refresh;
       } else {
         notifyError(
           `${

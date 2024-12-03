@@ -18,7 +18,10 @@ export const navigationAdmin = [
     children: [
       { name: "Danh Sách DM", path: "/admin/categories" },
       { name: "Danh Sách DM Con", path: "/admin/categories/sub-category" },
-      { name: "Danh Sách DM Con Cấp 2", path: "/admin/categories/sub-category/child" },
+      {
+        name: "Danh Sách DM Con Cấp 2",
+        path: "/admin/categories/sub-category/child",
+      },
     ],
   },
   {
@@ -34,9 +37,9 @@ export const navigationAdmin = [
     name: "Quản Lý Website",
     icon: LanguageIcon,
     children: [
-      { name: "Danh Sách Banner", path: "/admin/banners" },
-      { name: "Thêm Banner", path: "/admin/banners/create" },
-      { name: "Đánh Giá Sản Phẩm", path: "/admin/banner/reviews" },
+      { name: "Danh Sách Banner", path: "/dashboard/admin/banners" },
+      { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
+      { name: "Đánh Giá Sản Phẩm", path: "/dashboard/admin/banner/reviews" },
     ],
   },
   {
@@ -125,8 +128,14 @@ export const navigation = [
     icon: MenuOpenIcon,
     children: [
       { name: "Danh Sách DM", path: "/dashboard/admin/categories" },
-      { name: "Danh Sách DM Con", path: "/dashboard/admin/categories/sub-category" },
-      { name: "Danh Sách DM Con Cấp 2", path: "/dashboard/admin/categories/sub-category/child" },
+      {
+        name: "Danh Sách DM Con",
+        path: "/dashboard/admin/categories/sub-category",
+      },
+      {
+        name: "Danh Sách DM Con Cấp 2",
+        path: "/dashboard/admin/categories/sub-category/child",
+      },
     ],
   },
   {
@@ -142,6 +151,7 @@ export const navigation = [
     name: "Quản Lý Website",
     icon: LanguageIcon,
     children: [
+      { name: "Flash Sale", path: "/dashboard/admin/flash-sale" },
       { name: "Danh Sách Banner", path: "/dashboard/admin/banners" },
       { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
       { name: "Đánh Giá Sản Phẩm", path: "/dashboard/admin/banner/reviews" },
@@ -165,7 +175,11 @@ export const navigation = [
     ],
   },
 
-  { name: "Khách Hàng", icon: CustomersIcon, path: "/dashboard/admin/customers" },
+  {
+    name: "Khách Hàng",
+    icon: CustomersIcon,
+    path: "/dashboard/admin/customers",
+  },
   {
     name: "Hoàn Tiền",
     icon: RefundIcon,
@@ -219,7 +233,11 @@ export const navigation = [
   },
   { type: "label", label: "Người Bán" },
   { name: "Tổng quan", icon: DashboardIcon, path: "/dashboard/vendor" },
-  { name: "Quản lý sản phẩm", icon: DashboardIcon, path: "/dashboard/vendor/product" },
+  {
+    name: "Quản lý sản phẩm",
+    icon: DashboardIcon,
+    path: "/dashboard/vendor/product",
+  },
   {
     name: "Đăng Xuất",
     icon: LogoutIcon,

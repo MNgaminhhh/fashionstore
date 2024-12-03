@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
 import WrapperPage from "../../../WrapperPage";
 import SkuForm from "../components/SkuForm";
-
-export default async function CreateSkuView() {
+import VariantModel from "../../../../models/Variant.model";
+type Props = { varOp: VariantModel[]; token: string };
+export default async function CreateSkuView({ varOp, token }: Props) {
   try {
     return (
       <WrapperPage title="Tạo Chi Tiết Sản Phẩm">
-        <SkuForm token={token} />
+        <SkuForm token={token} variOp={varOp} />
       </WrapperPage>
     );
   } catch (error) {

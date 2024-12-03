@@ -50,7 +50,24 @@ class OptionVariantServer extends Base {
 
     return rs.data;
   }
+  async getListOpVariant(
+    id: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    let url = `/variant-options/product-variant/${id}`;
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
 
+    return rs.data;
+  }
   async create(
     data: OpVariantIn,
     token: string | undefined = undefined,

@@ -7,6 +7,7 @@ interface VariantIn {
 interface Filters {
   name?: string;
   status?: string;
+  productId?: string;
 }
 class VariantServer extends Base {
   constructor() {
@@ -31,6 +32,9 @@ class VariantServer extends Base {
     if (filters.name) {
       queryParams.push(`name=${encodeURIComponent(filters.name)}`);
     }
+    if (filters.productId) {
+      queryParams.push(`productId=${encodeURIComponent(filters.productId)}`);
+    }
     if (filters.status) {
       queryParams.push(`status=${encodeURIComponent(filters.status)}`);
     }
@@ -51,6 +55,25 @@ class VariantServer extends Base {
     return rs.data;
   }
 
+  async getListVariantByProduct(
+    id: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    let url = `/product-variants?productId=${encodeURIComponent(id)}`;
+
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
+    return rs.data;
+  }
   async create(
     data: VariantIn,
     token: string | undefined = undefined,

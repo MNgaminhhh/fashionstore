@@ -20,8 +20,6 @@ import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
 import { Add } from "@mui/icons-material";
 import Link from "next/link";
-import { tableHeading } from "../components/data";
-import RowVariant from "../components/RowVariant";
 import {
   notifyError,
   notifySuccess,
@@ -31,44 +29,35 @@ import WrapperPage from "../../../WrapperPage";
 import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
-import Variant from "../../../../services/Variant";
-import { useParams } from "next/navigation";
-import ProductModel from "../../../../models/Product.model";
+import FlashSale from "../../../../services/FlashSale";
+import { tableHeading } from "../components/data";
+import RowFlashSale from "../components/RowFlashSale";
+import FlashSaleModel from "../../../../models/FlashSale.model";
 
-type Props = { variants: any; pro: ProductModel; token: string };
-
-const selectOptions: { [key: string]: { value: string; label: string }[] } = {
-  status: [
-    { value: "", label: "Tất cả" },
-    { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" },
-  ],
+type Props = {
+  flashSales: any;
+  token: string;
 };
 
-export default function VariantView({
-  variants: initialVariants,
-  pro: initialProduct,
+export default function FlashSaleView({
+  flashSales: initialFlashSales,
   token,
 }: Props) {
-  const params = useParams();
-  const { id } = params;
-  const [variants, setVariants] = useState(
-    initialVariants.productVariants || []
-  );
+  console.log(initialFlashSales);
+  const [flashSales, setFlashSales] = useState(initialFlashSales || []);
   const [totalPages, setTotalPages] = useState(
-    initialVariants.total_pages || 1
+    initialFlashSales.total_pages || 1
   );
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+  const [selectedFlashSaleId, setSelectedFlashSaleId] = useState<string | null>(
     null
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit, setCurrentLimit] = useState(10);
   const pageSizes = [5, 10, 20, 50];
-  const nameProduct = initialProduct?.name || "...";
 
   const handleSearchChange = (field: string, value: string) => {
     setSearchValues((prev) => ({
@@ -78,31 +67,31 @@ export default function VariantView({
   };
 
   const openDeleteDialog = (id: string) => {
-    setSelectedVariantId(id);
+    setSelectedFlashSaleId(id);
     setDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDialogOpen(false);
-    setSelectedVariantId(null);
+    setSelectedFlashSaleId(null);
   };
 
   const handleDelete = async () => {
-    if (selectedVariantId) {
+    if (selectedFlashSaleId) {
       try {
-        const response = await Variant.delete(selectedVariantId, token, true);
+        const response = await FlashSale.delete(selectedFlashSaleId, token);
 
         if (response.data.success) {
-          notifySuccess("Biến thể đã được xóa thành công.");
+          notifySuccess("Flash sale đã được xóa thành công.");
           await applyFilters(currentPage, currentLimit);
         } else {
           notifyError(
-            "Xóa biến thể thất bại: " +
+            "Xóa flash sale thất bại: " +
               (response.data.message || "Vui lòng thử lại.")
           );
         }
       } catch (error) {
-        notifyError("Có lỗi xảy ra khi xóa biến thể.");
+        notifyError("Có lỗi xảy ra khi xóa flash sale.");
       } finally {
         closeDeleteDialog();
       }
@@ -115,48 +104,28 @@ export default function VariantView({
     filters = searchValues
   ) => {
     try {
-      const response = await Variant.getVariantByProduct(
+      const response = await FlashSale.getFlashSale(
         token,
-        true,
         limit,
         page,
         filters
       );
-      setVariants(response?.data?.productVariants || []);
-      setTotalPages(response?.data?.total_pages || 1);
+      if (response.data.success) {
+        setFlashSales(response.data.data || []);
+        setTotalPages(response.data.total_pages || 1);
+      } else {
+        notifyError("Có lỗi xảy ra khi tải dữ liệu.");
+      }
     } catch {
       notifyError("Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
 
-  const handleToggleStatus = async (
-    id: string,
-    newStatus: "active" | "inactive"
-  ) => {
-    try {
-      const response = await Variant.updateStatus(id, newStatus, token);
-
-      if (response.data.success) {
-        setVariants((prevVariants) =>
-          prevVariants.map((variant: any) =>
-            variant.id === id ? { ...variant, status: newStatus } : variant
-          )
-        );
-        notifySuccess("Trạng thái biến thể đã được cập nhật thành công.");
-      } else {
-        notifyError(
-          "Cập nhật trạng thái thất bại: " + (response.data.message || "")
-        );
-      }
-    } catch (error: any) {
-      notifyError("Có lỗi xảy ra khi cập nhật trạng thái biến thể.");
-    }
-  };
   return (
-    <WrapperPage title="Quản Lý Biến Thể" title2={`Sản Phẩm: ${nameProduct}`}>
+    <WrapperPage title="Quản Lý Flash Sale">
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href={`/dashboard/vendor/product/${id}/variant/create`}
+          href={`/dashboard/vendor/flash-sale/create`}
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -168,7 +137,7 @@ export default function VariantView({
             px: 3,
           }}
         >
-          Thêm biến thể
+          Thêm Flash Sale
         </Button>
       </Box>
 
@@ -208,60 +177,42 @@ export default function VariantView({
                           width={headCell.width}
                         >
                           {headCell.id !== "action" ? (
-                            selectOptions[headCell.id] ? (
-                              <Select
-                                size="small"
-                                value={searchValues[headCell.id] || ""}
-                                onChange={(e) => {
-                                  const value = e.target.value as string;
-                                  handleSearchChange(headCell.id, value);
-                                  applyFilters(values.page, values.limit, {
-                                    ...searchValues,
-                                    [headCell.id]: value,
-                                  });
-                                }}
-                                displayEmpty
-                                sx={{ width: "100%" }}
-                              >
-                                {selectOptions[headCell.id].map((option) => (
-                                  <MenuItem
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            ) : (
-                              <TextField
-                                size="small"
-                                value={searchValues[headCell.id] || ""}
-                                onChange={(e) =>
-                                  handleSearchChange(
-                                    headCell.id,
-                                    e.target.value
-                                  )
+                            <TextField
+                              size="small"
+                              type={
+                                headCell.id.includes("date") ? "date" : "text"
+                              }
+                              InputLabelProps={
+                                headCell.id.includes("date")
+                                  ? { shrink: true }
+                                  : undefined
+                              }
+                              value={searchValues[headCell.id] || ""}
+                              onChange={(e) => {
+                                handleSearchChange(headCell.id, e.target.value);
+                                applyFilters(values.page, values.limit, {
+                                  ...searchValues,
+                                  [headCell.id]: e.target.value,
+                                });
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  handleSubmit();
                                 }
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    handleSubmit();
-                                  }
-                                }}
-                                sx={{ width: "100%" }}
-                              />
-                            )
+                              }}
+                              sx={{ width: "100%" }}
+                            />
                           ) : null}
                         </StyledTableCell>
                       ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {variants.map((variant: any) => (
-                      <RowVariant
-                        key={variant.id}
-                        variant={variant}
+                    {flashSales.map((flashSale: FlashSaleModel) => (
+                      <RowFlashSale
+                        key={flashSale.ID}
+                        flashSale={flashSale}
                         onDelete={openDeleteDialog}
-                        onToggleStatus={handleToggleStatus}
                       />
                     ))}
                   </TableBody>

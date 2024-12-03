@@ -9,10 +9,9 @@ export default async function CreateSkuPage({ params }: IdParams) {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get("access_cookie")?.value;
-    const filters = { status: "active" };
-    const varOp = await Variant.getOpVariant(params.id, token, true, filters);
-    const infoVendor = get(varOp, "data.data.vendors", {});
-    return <CreateSkuView />;
+    const varOp = await Variant.getListVariantByProduct(params.id, token);
+    const infoVarOp = get(varOp, "data.productVariants", {});
+    return <CreateSkuView token={token} varOp={infoVarOp} />;
   } catch (error) {
     notFound();
   }

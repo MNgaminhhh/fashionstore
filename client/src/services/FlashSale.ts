@@ -1,30 +1,23 @@
 import Base from "./Base";
 
 interface Filters {
-  name?: string;
-  cate_name?: string;
-  status?: string;
-  product_type?: string;
+  start_date?: string;
+  end_date?: string;
 }
-interface cuSkuModel {
-  in_stock: string;
-  price: string;
-  images: string[];
-  product_id: string;
-  offer?: number;
-  offer_start_date?: Date;
-  offer_end_date?: Date;
+interface cuFSModel {
+  start_date: string;
+  end_date: string;
 }
 
-class SkusServer extends Base {
+class FlashSaleServer extends Base {
   constructor() {
     super({
-      url: "skus",
+      url: "flash-sales",
     });
   }
   async findOne(id: string) {
     const rs = await this.execute({
-      url: `/skus/${id}`,
+      url: `/flash-sales/${id}`,
       method: "get",
       headers: {
         "Content-Type": "application/json",
@@ -32,32 +25,24 @@ class SkusServer extends Base {
     });
     return rs;
   }
-  async getByVendor(
+  async getFlashSale(
     token: string | undefined = undefined,
     withCredentials: boolean = true,
     limit: number = 10,
     page: number = 1,
     filters: Filters = {}
   ) {
-    let url = `/skus/vendors?limit=${encodeURIComponent(
+    let url = `/flash-sales?limit=${encodeURIComponent(
       limit
     )}&page=${encodeURIComponent(page)}`;
 
     const queryParams: string[] = [];
 
-    if (filters.name) {
-      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
+    if (filters.start_date) {
+      queryParams.push(`start_date=${encodeURIComponent(filters.start_date)}`);
     }
-    if (filters.cate_name) {
-      queryParams.push(`cate_name=${encodeURIComponent(filters.cate_name)}`);
-    }
-    if (filters.product_type) {
-      queryParams.push(
-        `product_type=${encodeURIComponent(filters.product_type)}`
-      );
-    }
-    if (filters.status) {
-      queryParams.push(`status=${encodeURIComponent(filters.status)}`);
+    if (filters.end_date) {
+      queryParams.push(`end_date=${encodeURIComponent(filters.end_date)}`);
     }
 
     if (queryParams.length > 0) {
@@ -77,12 +62,12 @@ class SkusServer extends Base {
   }
 
   async create(
-    data: cuSkuModel,
+    data: cuFSModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/skus`,
+      url: `/flash-sales`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
@@ -96,12 +81,12 @@ class SkusServer extends Base {
 
   async update(
     id: string,
-    data: cuSkuModel,
+    data: cuFSModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `/skus/${id}`,
+      url: `/flash-sales/${id}`,
       method: "put",
       headers: {
         "Content-Type": "application/json",
@@ -112,31 +97,14 @@ class SkusServer extends Base {
     });
     return rs;
   }
-  async updateStatus(
-    id: string,
-    newStatus: "active" | "inactive",
-    token: string | undefined = undefined,
-    withCredentials: boolean = true
-  ): Promise<any> {
-    const rs = await this.execute({
-      url: `/skus/${id}`,
-      method: "put",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : undefined,
-      },
-      data: { status: newStatus },
-      withCredentials: withCredentials,
-    });
-    return rs;
-  }
+
   async delete(
     id: string,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/skus/${id}`,
+      url: `/flash-sales/${id}`,
       method: "delete",
       headers: {
         "Content-Type": "application/json",
@@ -149,5 +117,5 @@ class SkusServer extends Base {
   }
 }
 
-const Skus = new SkusServer();
-export default Skus;
+const FlashSale = new FlashSaleServer();
+export default FlashSale;

@@ -26,6 +26,7 @@ import { tableHeading } from "../components/data";
 import RowSku from "../components/RowSku";
 import Skus from "../../../../services/Skus";
 import ProductModel from "../../../../models/Product.model";
+import { useParams, useRouter } from "next/navigation";
 
 type Props = { skus: any; pro: ProductModel; token: string };
 
@@ -42,6 +43,9 @@ export default function SkuView({
   pro: initialProduct,
   token,
 }: Props) {
+  const router = useRouter();
+  const params = useParams();
+  const { id } = params;
   const [skus, setSkus] = useState(initialSkus.skus || []);
   const [totalPages, setTotalPages] = useState(initialSkus.totalPage || 1);
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
@@ -53,6 +57,7 @@ export default function SkuView({
   const [currentLimit, setCurrentLimit] = useState(10);
   const pageSizes = [5, 10, 20, 50];
   const nameProduct = initialProduct?.name || "...";
+  const productId = Array.isArray(id) ? id[0] : id;
 
   const handleSearchChange = (field: string, value: string) => {
     setSearchValues((prev) => ({
@@ -117,7 +122,7 @@ export default function SkuView({
     <WrapperPage title="Quản Lý SKU" title2={`Sản phẩm: ${nameProduct}`}>
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href="/dashboard/vendor/sku/create"
+          href={`/dashboard/vendor/product/${productId}/sku/create`}
           color="primary"
           variant="contained"
           startIcon={<Add />}
