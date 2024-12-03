@@ -37,6 +37,7 @@ func InitRouter() *echo.Echo {
 	productVariantRouter := routers.AllRouterGroup.ProductVariants
 	skusRouter := routers.AllRouterGroup.SKUs
 	flashSalesRouter := routers.AllRouterGroup.FlashSales
+	couponsRouter := routers.AllRouterGroup.Coupons
 	MainGroup := e.Group("/api/v1")
 	{
 		userRouter.InitUserRouter(MainGroup)
@@ -49,6 +50,7 @@ func InitRouter() *echo.Echo {
 		productVariantRouter.InitProductVariantRouter(MainGroup)
 		skusRouter.InitSKURouter(MainGroup)
 		flashSalesRouter.InitFlashSalesRouter(MainGroup)
+		couponsRouter.InitCouponRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
 		return c.JSON(200, map[string]string{"status": "OK"})

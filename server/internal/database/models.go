@@ -14,6 +14,49 @@ import (
 	"github.com/google/uuid"
 )
 
+type ComparisonOperator string
+
+const (
+	ComparisonOperatorValue0 ComparisonOperator = ">"
+	ComparisonOperatorValue1 ComparisonOperator = ">="
+	ComparisonOperatorValue2 ComparisonOperator = "="
+)
+
+func (e *ComparisonOperator) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ComparisonOperator(s)
+	case string:
+		*e = ComparisonOperator(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ComparisonOperator: %T", src)
+	}
+	return nil
+}
+
+type NullComparisonOperator struct {
+	ComparisonOperator ComparisonOperator
+	Valid              bool // Valid is true if ComparisonOperator is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullComparisonOperator) Scan(value interface{}) error {
+	if value == nil {
+		ns.ComparisonOperator, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ComparisonOperator.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullComparisonOperator) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ComparisonOperator), nil
+}
+
 type ComponentsType string
 
 const (
@@ -55,6 +98,92 @@ func (ns NullComponentsType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ComponentsType), nil
+}
+
+type ConditionField string
+
+const (
+	ConditionFieldPrice        ConditionField = "price"
+	ConditionFieldShippingCost ConditionField = "shipping_cost"
+	ConditionFieldProductType  ConditionField = "product_type"
+)
+
+func (e *ConditionField) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConditionField(s)
+	case string:
+		*e = ConditionField(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConditionField: %T", src)
+	}
+	return nil
+}
+
+type NullConditionField struct {
+	ConditionField ConditionField
+	Valid          bool // Valid is true if ConditionField is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConditionField) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConditionField, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConditionField.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConditionField) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConditionField), nil
+}
+
+type DiscountType string
+
+const (
+	DiscountTypeShipping   DiscountType = "shipping"
+	DiscountTypeFixed      DiscountType = "fixed"
+	DiscountTypePercentage DiscountType = "percentage"
+)
+
+func (e *DiscountType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DiscountType(s)
+	case string:
+		*e = DiscountType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DiscountType: %T", src)
+	}
+	return nil
+}
+
+type NullDiscountType struct {
+	DiscountType DiscountType
+	Valid        bool // Valid is true if DiscountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDiscountType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DiscountType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DiscountType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDiscountType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DiscountType), nil
 }
 
 type ProductStatus string
@@ -318,6 +447,34 @@ type ChildCategory struct {
 	Status        sql.NullInt32
 	CreatedAt     sql.NullTime
 	UpdatedAt     sql.NullTime
+}
+
+type Condition struct {
+	ID       uuid.UUID
+	Field    ConditionField
+	Operator ComparisonOperator
+	Value    json.RawMessage
+}
+
+type ConditionsCoupon struct {
+	CouponID          uuid.UUID
+	ConditionID       uuid.UUID
+	ConditionDescribe string
+}
+
+type Coupon struct {
+	ID        uuid.UUID
+	Name      string
+	Code      string
+	Quantity  int32
+	StartDate time.Time
+	EndDate   time.Time
+	Type      DiscountType
+	Discount  int32
+	TotalUsed sql.NullInt32
+	MaxUse    int32
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type FlashSale struct {
