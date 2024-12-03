@@ -13,18 +13,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
+	"time"
 )
 
 type SkuResponse struct {
-	Id          string          `json:"id"`
-	ProductName string          `json:"product_name,omitempty"`
-	ProductId   string          `json:"product_id,omitempty"`
-	Sku         string          `json:"sku,omitempty"`
-	Price       int             `json:"price,omitempty"`
-	OfferPrice  int             `json:"offer_price,omitempty"`
-	Offer       int             `json:"offer"`
-	Variants    json.RawMessage `json:"variants,omitempty"`
-	InStock     int             `json:"in_stock,omitempty"`
+	Id             string          `json:"id"`
+	ProductName    string          `json:"product_name,omitempty"`
+	ProductId      string          `json:"product_id,omitempty"`
+	Sku            string          `json:"sku,omitempty"`
+	Price          int             `json:"price,omitempty"`
+	OfferPrice     int             `json:"offer_price,omitempty"`
+	Offer          int             `json:"offer"`
+	OfferStartDate string          `json:"offer_start_date,omitempty"`
+	OfferEndDate   string          `json:"offer_end_date,omitempty"`
+	Variants       json.RawMessage `json:"variants,omitempty"`
+	InStock        int             `json:"in_stock,omitempty"`
 }
 
 type ISkusService interface {
@@ -47,7 +50,26 @@ func NewSkusService(skusRepo repository.ISkusRepository) ISkusService {
 
 func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 	newSkuId := uuid.New()
-	err := sv.skusRepo.CreateSku(newSkuId, customParam)
+	var startDate time.Time
+	var endDate time.Time
+	if customParam.OfferStartDate != nil {
+		var parseErr error
+		startDate, parseErr = time.Parse("02-01-2006", *customParam.OfferStartDate)
+		if parseErr != nil {
+			return response.ErrCodeIncorrectDateFormat
+		}
+		if time.Now().After(startDate) {
+			return response.ErrCodeInvalidFlashSaleStartDate
+		}
+		if customParam.OfferEndDate == nil {
+			return response.ErrCodeEndDateEmpty
+		}
+		endDate, parseErr = time.Parse("02-01-2006", *customParam.OfferEndDate)
+		if parseErr != nil {
+			return response.ErrCodeIncorrectDateFormat
+		}
+	}
+	err := sv.skusRepo.CreateSku(newSkuId, customParam, &startDate, &endDate)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -195,15 +217,17 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 	switch s := any(data).(type) {
 	case *database.GetAllSkuOfVendorRow:
 		return &SkuResponse{
-			ProductName: s.ProductName,
-			ProductId:   s.ProductID.String(),
-			Id:          s.ID.UUID.String(),
-			Sku:         s.Sku.String,
-			Price:       int(s.Price.Int64),
-			Variants:    s.VariantOptions,
-			InStock:     int(s.InStock.Int16),
-			Offer:       int(s.Offer.Int32),
-			OfferPrice:  int(s.OfferPrice),
+			ProductName:    s.ProductName,
+			ProductId:      s.ProductID.String(),
+			Id:             s.ID.UUID.String(),
+			Sku:            s.Sku.String,
+			Price:          int(s.Price.Int64),
+			Variants:       s.VariantOptions,
+			InStock:        int(s.InStock.Int16),
+			Offer:          int(s.Offer.Int32),
+			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006"),
+			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006"),
+			OfferPrice:     int(s.OfferPrice),
 		}, nil
 	case *database.GetSkuByIdRow:
 		return &SkuResponse{

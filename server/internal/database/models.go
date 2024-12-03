@@ -228,6 +228,49 @@ func (ns NullProductStatus) Value() (driver.Value, error) {
 	return string(ns.ProductStatus), nil
 }
 
+type SkuStatus string
+
+const (
+	SkuStatusActive     SkuStatus = "active"
+	SkuStatusInactive   SkuStatus = "inactive"
+	SkuStatusOutOfStock SkuStatus = "out_of_stock"
+)
+
+func (e *SkuStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SkuStatus(s)
+	case string:
+		*e = SkuStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SkuStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSkuStatus struct {
+	SkuStatus SkuStatus
+	Valid     bool // Valid is true if SkuStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSkuStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SkuStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SkuStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSkuStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SkuStatus), nil
+}
+
 type UserRole string
 
 const (
@@ -317,10 +360,8 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 type VariantsStatus string
 
 const (
-	VariantsStatusActive       VariantsStatus = "active"
-	VariantsStatusInactive     VariantsStatus = "inactive"
-	VariantsStatusOutOfStock   VariantsStatus = "out_of_stock"
-	VariantsStatusDiscontinued VariantsStatus = "discontinued"
+	VariantsStatusActive   VariantsStatus = "active"
+	VariantsStatusInactive VariantsStatus = "inactive"
 )
 
 func (e *VariantsStatus) Scan(src interface{}) error {
@@ -472,7 +513,7 @@ type Coupon struct {
 	Type      DiscountType
 	Discount  int32
 	TotalUsed sql.NullInt32
-	MaxUse    int32
+	MaxPrice  int32
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }
@@ -527,6 +568,7 @@ type Sku struct {
 	InStock        sql.NullInt16
 	Sku            string
 	Price          int64
+	Status         SkuStatus
 	Offer          sql.NullInt32
 	OfferStartDate sql.NullTime
 	OfferEndDate   sql.NullTime

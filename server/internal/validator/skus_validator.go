@@ -7,6 +7,9 @@ type CreateSkuValidator struct {
 	InStock        int         `json:"in_stock" validate:"min=0"`
 	Price          float32     `json:"price" validate:"required"`
 	Status         string      `json:"status" validate:"required,oneof=active inactive out_of_stock discontinued"`
+	Sku            string      `json:"sku" validate:"required"`
+	OfferStartDate *string     `json:"offer_start_date"`
+	OfferEndDate   *string     `json:"offer_end_date"`
 	Offer          int         `json:"offer" validate:"min=0,max=100"`
 	VariantOptions []uuid.UUID `json:"variant_options" validate:"required,min=1"`
 }

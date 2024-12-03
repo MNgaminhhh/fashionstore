@@ -20,8 +20,8 @@ CREATE TABLE coupons(
     end_date TIMESTAMP NOT NULL check ( end_date > coupons.start_date ),
     type discount_type NOT NULL,
     discount INT NOT NULL,
-    total_used INT CHECK ( total_used <= coupons.quantity ),
-    max_use INT NOT NULL CHECK ( max_use > 0 ),
+    total_used INT DEFAULT 0 CHECK ( total_used <= coupons.quantity ),
+    max_price INT NOT NULL CHECK ( max_price > 0 ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -34,6 +34,11 @@ CREATE TABLE conditions_coupons(
 );
 
 ALTER TABLE coupons ADD CONSTRAINT unique_coupon_code UNIQUE(code);
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON coupons
+    FOR EACH ROW
+    EXECUTE FUNCTION update_product_timestamp();
 -- +goose StatementEnd
 
 -- +goose Down

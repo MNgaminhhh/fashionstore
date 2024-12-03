@@ -42,6 +42,7 @@ const (
 	ErrCodeInvalidFlashSaleStartDate  = 50028
 	ErrCodeInStock                    = 50029
 	ErrCodeInStockCheck               = 50030
+	ErrCodeEndDateEmpty               = 50031
 	ErrCodeForbidden                  = 403
 )
 
@@ -88,4 +89,5 @@ var msg = map[int]string{
 	ErrCodeNoContent:                  "Không tìm thấy đối tượng!",
 	ErrCodeInStock:                    "Số lượng hàng hóa vẫn còn trong kho!",
 	ErrCodeInStockCheck:               "Số lượng sản phẩm không thể nhỏ hơn 0!",
+	ErrCodeEndDateEmpty:               "Vui lòng nhập ngày kết thúc!",
 }

@@ -3,9 +3,13 @@
 
 CREATE TYPE variants_status AS ENUM (
     'active',
+    'inactive'
+);
+
+CREATE TYPE sku_status AS ENUM (
+    'active',
     'inactive',
-    'out_of_stock',
-    'discontinued'
+    'out_of_stock'
 );
 
 CREATE TABLE skus (
@@ -14,9 +18,10 @@ CREATE TABLE skus (
     in_stock SMALLINT DEFAULT 0 CHECK (in_stock >= 0),
     sku VARCHAR(50) NOT NULL,
     price BIGINT NOT NULL CHECK (price >= 0),
+    status sku_status NOT NULL DEFAULT 'inactive',
     offer INT DEFAULT 0 CHECK (offer >= 0 AND offer <= 100),
     offer_start_date TIMESTAMP,
-    offer_end_date TIMESTAMP,
+    offer_end_date TIMESTAMP check ( offer_end_date > skus.offer_start_date ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -96,4 +101,5 @@ DROP TABLE IF EXISTS product_variants;
 DROP TABLE IF EXISTS skus;
 
 DROP TYPE IF EXISTS variants_status;
+DROP TYPE IF EXISTS sku_status;
 -- +goose StatementEnd
