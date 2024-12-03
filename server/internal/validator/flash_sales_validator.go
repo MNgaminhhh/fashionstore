@@ -13,6 +13,8 @@ type CreateFlashSaleValidator struct {
 type FilterFlashSaleValidator struct {
 	StartDate *string `json:"start_date"`
 	EndDate   *string `json:"end_date"`
+	Limit     *int    `json:"limit"`
+	Page      *int    `json:"page"`
 }
 
 type CreateFlashSaleItemValidator struct {

@@ -26,7 +26,7 @@ type FlashSaleItemResponse struct {
 
 type IFlashSalesService interface {
 	CreateFlashSale(startDateStr string, endDateStr string) int
-	GetAllFlashSales(filterParam validator.FilterFlashSaleValidator) (int, []database.FlashSale)
+	GetAllFlashSales(filterParam validator.FilterFlashSaleValidator) (int, map[string]interface{})
 	GetFlashSaleById(id string) (int, *database.FlashSale)
 	DeleteFlashSale(id string) int
 	UpdateFlashSale(id string, customParam validator.UpdateFlashSaleValidator) int
@@ -68,28 +68,50 @@ func (fs *FlashSalesService) CreateFlashSale(startDateStr string, endDateStr str
 	return response.SuccessCode
 }
 
-func (fs *FlashSalesService) GetAllFlashSales(filterParam validator.FilterFlashSaleValidator) (int, []database.FlashSale) {
+func (fs *FlashSalesService) GetAllFlashSales(filterParam validator.FilterFlashSaleValidator) (int, map[string]interface{}) {
 	startDate := time.Time{}
 	endDate := time.Time{}
 	if filterParam.StartDate != nil {
 		startDateParse, parseTimeErr := time.Parse("02-01-2006", *filterParam.StartDate)
 		if parseTimeErr != nil {
-			return response.ErrCodeIncorrectDateFormat, make([]database.FlashSale, 0)
+			return response.ErrCodeIncorrectDateFormat, nil
 		}
 		startDate = startDateParse
 	}
 	if filterParam.EndDate != nil {
 		endDateParse, parseTimeErr := time.Parse("02-01-2006", *filterParam.EndDate)
 		if parseTimeErr != nil {
-			return response.ErrCodeIncorrectDateFormat, make([]database.FlashSale, 0)
+			return response.ErrCodeIncorrectDateFormat, nil
 		}
 		endDate = endDateParse
 	}
-	results, flashSalesErr := fs.flashSalesRepo.GetAllFlashSales(startDate, endDate)
+	flashSales, flashSalesErr := fs.flashSalesRepo.GetAllFlashSales(startDate, endDate)
 	if flashSalesErr != nil {
+		var pqErr *pq.Error
+		if errors.As(flashSalesErr, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
 		return response.ErrCodeInternal, nil
 	}
-	return response.SuccessCode, results
+	limit := len(flashSales)
+	page := 1
+	totalResults := len(flashSales)
+	if filterParam.Limit != nil {
+		limit = *filterParam.Limit
+	}
+	if filterParam.Page != nil {
+		page = *filterParam.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(flashSales, page, limit)
+	resData := map[string]interface{}{
+		"totalResults": totalResults,
+		"page":         page,
+		"limit":        limit,
+		"totalPages":   totalPages,
+		"flashSales":   pagination,
+	}
+	return response.SuccessCode, resData
 }
 
 func (fs *FlashSalesService) GetFlashSaleById(id string) (int, *database.FlashSale) {
