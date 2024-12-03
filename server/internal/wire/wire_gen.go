@@ -39,6 +39,15 @@ func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {
 	return categoryController, nil
 }
 
+// Injectors from coupons_wire.go:
+
+func InitCouponsRouterHandlerr() (*controller.CouponsController, error) {
+	iCouponsRepository := repository.NewCouponRepository()
+	iCouponsService := service.NewCouponsService(iCouponsRepository)
+	couponsController := controller.NewCouponsController(iCouponsService)
+	return couponsController, nil
+}
+
 // Injectors from flash_sale_wire.go:
 
 func InitFlashSaleRouterHandlerr() (*controller.FlashSalesController, error) {

@@ -14,6 +14,49 @@ import (
 	"github.com/google/uuid"
 )
 
+type ComparisonOperator string
+
+const (
+	ComparisonOperatorValue0 ComparisonOperator = ">"
+	ComparisonOperatorValue1 ComparisonOperator = ">="
+	ComparisonOperatorValue2 ComparisonOperator = "="
+)
+
+func (e *ComparisonOperator) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ComparisonOperator(s)
+	case string:
+		*e = ComparisonOperator(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ComparisonOperator: %T", src)
+	}
+	return nil
+}
+
+type NullComparisonOperator struct {
+	ComparisonOperator ComparisonOperator
+	Valid              bool // Valid is true if ComparisonOperator is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullComparisonOperator) Scan(value interface{}) error {
+	if value == nil {
+		ns.ComparisonOperator, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ComparisonOperator.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullComparisonOperator) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ComparisonOperator), nil
+}
+
 type ComponentsType string
 
 const (
@@ -57,6 +100,92 @@ func (ns NullComponentsType) Value() (driver.Value, error) {
 	return string(ns.ComponentsType), nil
 }
 
+type ConditionField string
+
+const (
+	ConditionFieldPrice        ConditionField = "price"
+	ConditionFieldShippingCost ConditionField = "shipping_cost"
+	ConditionFieldProductType  ConditionField = "product_type"
+)
+
+func (e *ConditionField) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConditionField(s)
+	case string:
+		*e = ConditionField(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConditionField: %T", src)
+	}
+	return nil
+}
+
+type NullConditionField struct {
+	ConditionField ConditionField
+	Valid          bool // Valid is true if ConditionField is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConditionField) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConditionField, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConditionField.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConditionField) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConditionField), nil
+}
+
+type DiscountType string
+
+const (
+	DiscountTypeShipping   DiscountType = "shipping"
+	DiscountTypeFixed      DiscountType = "fixed"
+	DiscountTypePercentage DiscountType = "percentage"
+)
+
+func (e *DiscountType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DiscountType(s)
+	case string:
+		*e = DiscountType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DiscountType: %T", src)
+	}
+	return nil
+}
+
+type NullDiscountType struct {
+	DiscountType DiscountType
+	Valid        bool // Valid is true if DiscountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDiscountType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DiscountType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DiscountType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDiscountType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DiscountType), nil
+}
+
 type ProductStatus string
 
 const (
@@ -97,6 +226,49 @@ func (ns NullProductStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ProductStatus), nil
+}
+
+type SkuStatus string
+
+const (
+	SkuStatusActive     SkuStatus = "active"
+	SkuStatusInactive   SkuStatus = "inactive"
+	SkuStatusOutOfStock SkuStatus = "out_of_stock"
+)
+
+func (e *SkuStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SkuStatus(s)
+	case string:
+		*e = SkuStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SkuStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSkuStatus struct {
+	SkuStatus SkuStatus
+	Valid     bool // Valid is true if SkuStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSkuStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SkuStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SkuStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSkuStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SkuStatus), nil
 }
 
 type UserRole string
@@ -188,10 +360,8 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 type VariantsStatus string
 
 const (
-	VariantsStatusActive       VariantsStatus = "active"
-	VariantsStatusInactive     VariantsStatus = "inactive"
-	VariantsStatusOutOfStock   VariantsStatus = "out_of_stock"
-	VariantsStatusDiscontinued VariantsStatus = "discontinued"
+	VariantsStatusActive   VariantsStatus = "active"
+	VariantsStatusInactive VariantsStatus = "inactive"
 )
 
 func (e *VariantsStatus) Scan(src interface{}) error {
@@ -320,6 +490,34 @@ type ChildCategory struct {
 	UpdatedAt     sql.NullTime
 }
 
+type Condition struct {
+	ID       uuid.UUID
+	Field    ConditionField
+	Operator ComparisonOperator
+	Value    json.RawMessage
+}
+
+type ConditionsCoupon struct {
+	CouponID          uuid.UUID
+	ConditionID       uuid.UUID
+	ConditionDescribe string
+}
+
+type Coupon struct {
+	ID        uuid.UUID
+	Name      string
+	Code      string
+	Quantity  int32
+	StartDate time.Time
+	EndDate   time.Time
+	Type      DiscountType
+	Discount  int32
+	TotalUsed sql.NullInt32
+	MaxPrice  int32
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
 type FlashSale struct {
 	ID        uuid.UUID
 	StartDate time.Time
@@ -370,6 +568,7 @@ type Sku struct {
 	InStock        sql.NullInt16
 	Sku            string
 	Price          int64
+	Status         SkuStatus
 	Offer          sql.NullInt32
 	OfferStartDate sql.NullTime
 	OfferEndDate   sql.NullTime

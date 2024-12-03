@@ -6,13 +6,16 @@ import (
 	"backend/internal/validator"
 	"database/sql"
 	"github.com/google/uuid"
+	"time"
 )
 
 type ISkusRepository interface {
-	CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator) error
+	CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator, offerStartDate *time.Time, offerEndDate *time.Time) error
 	GetAllSkusByProductId(productId uuid.UUID) ([]database.GetAllSkuByProductIdRow, error)
 	GetAllSkusByVendorId(vendorId uuid.UUID, filterParam validator.FilterSkuValidator) ([]database.GetAllSkuOfVendorRow, error)
 	DeleteSkuById(id uuid.UUID) error
+	UpdateSkuById(sku database.GetSkuByIdRow) error
+	GetSkuById(id uuid.UUID) (*database.GetSkuByIdRow, error)
 }
 
 type SkusRepository struct {
@@ -25,7 +28,7 @@ func NewSkusRepository() ISkusRepository {
 	}
 }
 
-func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator) error {
+func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSkuValidator, offerStartDate *time.Time, offerEndDate *time.Time) error {
 	productId, _ := uuid.Parse(customParam.ProductId)
 	param := database.CreateSKUParams{
 		ID:        id,
@@ -34,12 +37,23 @@ func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSk
 			Int16: int16(customParam.InStock),
 			Valid: true,
 		},
-		Sku:   "",
-		Price: int64(customParam.Price),
+		Sku:    customParam.Sku,
+		Status: database.SkuStatus(customParam.Status),
+		Price:  int64(customParam.Price),
 		Offer: sql.NullInt32{
 			Int32: int32(customParam.Offer),
 			Valid: true,
 		},
+	}
+	if offerStartDate != nil && offerEndDate != nil {
+		param.OfferStartDate = sql.NullTime{
+			Time:  *offerStartDate,
+			Valid: true,
+		}
+		param.OfferEndDate = sql.NullTime{
+			Time:  *offerEndDate,
+			Valid: true,
+		}
 	}
 	err := sr.sqlc.CreateSKU(ctx, param)
 	return err
@@ -88,4 +102,24 @@ func (sr *SkusRepository) GetAllSkusByProductId(productId uuid.UUID) ([]database
 		return nil, err
 	}
 	return results, nil
+}
+
+func (sr *SkusRepository) UpdateSkuById(sku database.GetSkuByIdRow) error {
+	param := database.UpdateSkuByIdParams{
+		Sku:     sku.Sku,
+		Offer:   sku.Offer,
+		InStock: sku.InStock,
+		Price:   sku.Price,
+		ID:      sku.ID,
+	}
+	err := sr.sqlc.UpdateSkuById(ctx, param)
+	return err
+}
+
+func (sr *SkusRepository) GetSkuById(id uuid.UUID) (*database.GetSkuByIdRow, error) {
+	sku, err := sr.sqlc.GetSkuById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &sku, nil
 }

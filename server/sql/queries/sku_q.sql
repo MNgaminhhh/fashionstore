@@ -1,6 +1,6 @@
 -- name: CreateSKU :exec
-INSERT INTO skus (id, product_id, in_stock, sku, price, offer)
-VALUES ($1, $2, $3, $4, $5, $6);
+INSERT INTO skus (id, product_id, in_stock, sku, price, offer, status, offer_start_date, offer_end_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
 -- name: GetAllSkuOfVendor :many
 SELECT
@@ -11,6 +11,8 @@ SELECT
     s.price,
     s.sku,
     s.offer,
+    s.offer_start_date,
+    s.offer_end_date,
     (s.price*(100-s.offer)/100) AS offer_price,
     s.in_stock,
     jsonb_object_agg(
@@ -29,7 +31,8 @@ AND (s.product_id  = COALESCE(NULLIF($4::text, '')::UUID, p.id) OR $4 IS NULL)
 AND (s.price = $5 OR $5 = -1)
 AND (s.offer = $6 OR $6 IS NULL)
 AND ((s.price*(100-s.offer)/100) = $7 OR $7 = -1)
-GROUP BY p.name, p.vendor_id, p.id, s.id, s.price, s.sku, s.offer, s.in_stock, s.updated_at
+GROUP BY p.name, p.vendor_id, p.id, s.id, s.price, s.sku, s.offer, s.in_stock, s.updated_at, s.offer_start_date,
+         s.offer_end_date
 ORDER BY s.updated_at DESC;
 
 
@@ -41,6 +44,7 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
+    (s.price*(100-s.offer)/100) AS offer_price,
     jsonb_object_agg(
         COALESCE(pv.name, ''),
         COALESCE(vo.name, '')
@@ -53,6 +57,24 @@ FROM skus s
 WHERE s.product_id = $1
 GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock
 ORDER BY s.price ASC;
+
+-- name: GetSkuById :one
+SELECT
+    p.name AS product_name,
+    p.vendor_id,
+    s.*,
+    (s.price*(100-s.offer)/100) AS offer_price,
+    jsonb_object_agg(
+            COALESCE(pv.name, ''),
+            COALESCE(vo.name, '')
+    ) AS variant_options
+FROM skus s
+         LEFT JOIN products p ON p.id = s.product_id
+         LEFT JOIN skus_variant_options so ON so.sku_id = s.id
+         LEFT JOIN variant_options vo ON so.variant_option = vo.id
+         LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
+WHERE s.id = $1
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price;
 
 -- name: UpdateSkuById :exec
 UPDATE skus

@@ -7,28 +7,35 @@ import (
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
+	"time"
 )
 
 type SkuResponse struct {
-	Id          string          `json:"id"`
-	ProductName string          `json:"product_name,omitempty"`
-	ProductId   string          `json:"product_id,omitempty"`
-	Sku         string          `json:"sku,omitempty"`
-	Price       int             `json:"price,omitempty"`
-	OfferPrice  int             `json:"offer_price,omitempty"`
-	Offer       int             `json:"offer"`
-	Variants    json.RawMessage `json:"variants,omitempty"`
-	InStock     int             `json:"in_stock,omitempty"`
+	Id             string          `json:"id"`
+	ProductName    string          `json:"product_name,omitempty"`
+	ProductId      string          `json:"product_id,omitempty"`
+	Sku            string          `json:"sku,omitempty"`
+	Price          int             `json:"price,omitempty"`
+	OfferPrice     int             `json:"offer_price,omitempty"`
+	Offer          int             `json:"offer"`
+	OfferStartDate string          `json:"offer_start_date,omitempty"`
+	OfferEndDate   string          `json:"offer_end_date,omitempty"`
+	Variants       json.RawMessage `json:"variants,omitempty"`
+	InStock        int             `json:"in_stock,omitempty"`
 }
 
 type ISkusService interface {
 	CreateSku(customParam validator.CreateSkuValidator) int
 	GetAllSkusOfVendor(id string, filterParam validator.FilterSkuValidator) (int, map[string]interface{})
+	UpdateSku(id string, customParam validator.UpdateSkuValidator) int
+	DeleteSkuById(id string) int
+	GetSkuById(id string) (int, *SkuResponse)
 }
 
 type SkusService struct {
@@ -43,7 +50,26 @@ func NewSkusService(skusRepo repository.ISkusRepository) ISkusService {
 
 func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 	newSkuId := uuid.New()
-	err := sv.skusRepo.CreateSku(newSkuId, customParam)
+	var startDate time.Time
+	var endDate time.Time
+	if customParam.OfferStartDate != nil {
+		var parseErr error
+		startDate, parseErr = time.Parse("02-01-2006", *customParam.OfferStartDate)
+		if parseErr != nil {
+			return response.ErrCodeIncorrectDateFormat
+		}
+		if time.Now().After(startDate) {
+			return response.ErrCodeInvalidFlashSaleStartDate
+		}
+		if customParam.OfferEndDate == nil {
+			return response.ErrCodeEndDateEmpty
+		}
+		endDate, parseErr = time.Parse("02-01-2006", *customParam.OfferEndDate)
+		if parseErr != nil {
+			return response.ErrCodeIncorrectDateFormat
+		}
+	}
+	err := sv.skusRepo.CreateSku(newSkuId, customParam, &startDate, &endDate)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -121,22 +147,99 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 	return response.SuccessCode, results
 }
 
+func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValidator) int {
+	skuId, _ := uuid.Parse(id)
+	sku, err := sv.skusRepo.GetSkuById(skuId)
+	if err != nil {
+		return response.ErrCodeNoContent
+	}
+	if customParam.SKU != nil {
+		sku.Sku = *customParam.SKU
+	}
+	if customParam.Price != nil {
+		sku.Price = int64(*customParam.Price)
+	}
+	if customParam.Offer != nil {
+		sku.Offer = sql.NullInt32{
+			Int32: int32(*customParam.Offer),
+			Valid: true,
+		}
+	}
+	if customParam.InStock != nil {
+		sku.InStock = sql.NullInt16{
+			Int16: int16(*customParam.InStock),
+			Valid: true,
+		}
+	}
+	err = sv.skusRepo.UpdateSkuById(*sku)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (sv *SkusService) DeleteSkuById(id string) int {
+	skuId, _ := uuid.Parse(id)
+	sku, findErr := sv.skusRepo.GetSkuById(skuId)
+	if findErr != nil {
+		return response.ErrCodeNoContent
+	}
+	if sku.InStock.Int16 > 0 {
+		return response.ErrCodeInStock
+	}
+	err := sv.skusRepo.DeleteSkuById(skuId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (sv *SkusService) GetSkuById(id string) (int, *SkuResponse) {
+	skuId, _ := uuid.Parse(id)
+	sku, err := sv.skusRepo.GetSkuById(skuId)
+	if err != nil {
+		log.Println(err)
+		return response.ErrCodeNoContent, nil
+	}
+	resData, _ := mapResponseData(sku)
+	return response.SuccessCode, resData
+}
+
 func mapResponseData[T any](data *T) (*SkuResponse, error) {
 	switch s := any(data).(type) {
 	case *database.GetAllSkuOfVendorRow:
-		//offer := int(s.Offer.Int32)
-		//price := int(s.Price.Int64)
-		////offerPrice := float64(price) * (1 - float64(offer)/100)
 		return &SkuResponse{
-			ProductName: s.ProductName,
+			ProductName:    s.ProductName,
+			ProductId:      s.ProductID.String(),
+			Id:             s.ID.UUID.String(),
+			Sku:            s.Sku.String,
+			Price:          int(s.Price.Int64),
+			Variants:       s.VariantOptions,
+			InStock:        int(s.InStock.Int16),
+			Offer:          int(s.Offer.Int32),
+			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006"),
+			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006"),
+			OfferPrice:     int(s.OfferPrice),
+		}, nil
+	case *database.GetSkuByIdRow:
+		return &SkuResponse{
+			Id:          s.ID.String(),
+			ProductName: s.ProductName.String,
 			ProductId:   s.ProductID.String(),
-			Id:          s.ID.UUID.String(),
-			Sku:         s.Sku.String,
-			Price:       int(s.Price.Int64),
+			Sku:         s.Sku,
+			Price:       int(s.Price),
+			OfferPrice:  int(s.OfferPrice),
+			Offer:       int(s.Offer.Int32),
 			Variants:    s.VariantOptions,
 			InStock:     int(s.InStock.Int16),
-			Offer:       int(s.Offer.Int32),
-			OfferPrice:  int(s.OfferPrice),
 		}, nil
 	default:
 		log.Println("Unhandled data type:", data)
