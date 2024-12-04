@@ -6,9 +6,11 @@ import (
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"log"
 	"strconv"
 	"time"
 )
@@ -16,6 +18,9 @@ import (
 type ICouponsService interface {
 	CreateCondition(customParam validator.CreateConditionValidator) int
 	GetAllCondition(filterDescription *string) (int, []database.Condition)
+	GetConditionById(id string) (int, *database.Condition)
+	UpdateCondition(id string, customParam validator.UpdateConditionValidator) int
+	DeleteCondition(id string) int
 
 	CreateCoupon(customParam validator.CreateCouponValidator) int
 }
@@ -63,6 +68,68 @@ func (c CouponsService) GetAllCondition(filterDescription *string) (int, []datab
 		return response.ErrCodeInternal, nil
 	}
 	return response.SuccessCode, results
+}
+
+func (c CouponsService) GetConditionById(id string) (int, *database.Condition) {
+	conditionId, _ := uuid.Parse(id)
+	result, err := c.couponsRepo.GetConditionById(conditionId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	return response.SuccessCode, result
+}
+
+func (c CouponsService) UpdateCondition(id string, customParam validator.UpdateConditionValidator) int {
+	conditionId, _ := uuid.Parse(id)
+	condition, findByIdErr := c.couponsRepo.GetConditionById(conditionId)
+	if findByIdErr != nil {
+		return response.ErrCodeNoContent
+	}
+	if customParam.Field != nil {
+		condition.Field = database.ConditionField(*customParam.Field)
+	}
+	if customParam.Description != nil {
+		condition.Description = *customParam.Description
+	}
+	if customParam.Value != nil {
+		mapValue := map[string]interface{}{
+			"value": *customParam.Value,
+		}
+		value, _ := json.Marshal(mapValue)
+		condition.Value = value
+	}
+	log.Println(condition)
+	err := c.couponsRepo.UpdateCondition(*condition)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (c CouponsService) DeleteCondition(id string) int {
+	conditionId, _ := uuid.Parse(id)
+	err := c.couponsRepo.DeleteCondition(conditionId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23503" {
+				if pqErr.Constraint == "conditions_coupons_condition_id_fkey" {
+					return response.ErrCodeConstraintDeleteCondition
+				}
+			}
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
 }
 
 func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator) int {

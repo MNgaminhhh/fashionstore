@@ -46,6 +46,7 @@ const (
 	ErrCodeDiscountFixedType          = 50032
 	ErrCodeValueDiscountPercentage    = 50033
 	ErrCodeCouponIsAlreadyExist       = 50034
+	ErrCodeConstraintDeleteCondition  = 50035
 	ErrCodeForbidden                  = 403
 )
 
@@ -96,4 +97,5 @@ var msg = map[int]string{
 	ErrCodeDiscountFixedType:          "Giá tiền giảm tối đa không thể khác với giá tiền giảm với loại mã cố định!",
 	ErrCodeValueDiscountPercentage:    "Giá trị trong khoảng từ 1-100!",
 	ErrCodeCouponIsAlreadyExist:       "Mã code coupon đã tồn tại!",
+	ErrCodeConstraintDeleteCondition:  "Không thể xóa điều kiện này vì đang được sử dụng ở coupon!",
 }

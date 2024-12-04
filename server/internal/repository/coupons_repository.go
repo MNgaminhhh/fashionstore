@@ -14,6 +14,8 @@ import (
 type ICouponsRepository interface {
 	CreateCondition(field database.ConditionField, operator database.ComparisonOperator, value any, description string) error
 	GetAllCondition(description *string) ([]database.Condition, error)
+	GetConditionById(id uuid.UUID) (*database.Condition, error)
+	UpdateCondition(condition database.Condition) error
 	DeleteCondition(id uuid.UUID) error
 
 	CreateCoupon(id uuid.UUID, customParam validator.CreateCouponValidator, startDate time.Time, endDate time.Time) error
@@ -30,10 +32,8 @@ func NewCouponRepository() ICouponsRepository {
 }
 
 func (c CouponRepository) CreateCondition(field database.ConditionField, operator database.ComparisonOperator, value any, description string) error {
-	var key string
-	key = string(field)
 	conditionValue := map[string]interface{}{
-		key: value,
+		"value": value,
 	}
 	conditionJSON, _ := json.Marshal(conditionValue)
 	param := database.CreateConditionParams{
@@ -43,6 +43,43 @@ func (c CouponRepository) CreateCondition(field database.ConditionField, operato
 		Description: description,
 	}
 	err := c.sqlc.CreateCondition(ctx, param)
+	return err
+}
+
+func (c CouponRepository) GetAllCondition(description *string) ([]database.Condition, error) {
+	filterDescription := sql.NullString{Valid: false}
+	if description != nil && *description != "" {
+		filterDescription = sql.NullString{
+			Valid:  true,
+			String: *description,
+		}
+	}
+	log.Println(filterDescription)
+	results, err := c.sqlc.GetAllCondition(ctx, filterDescription)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func (c CouponRepository) GetConditionById(id uuid.UUID) (*database.Condition, error) {
+	condition, err := c.sqlc.GetConditionById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &condition, nil
+}
+
+func (c CouponRepository) UpdateCondition(condition database.Condition) error {
+	param := database.UpdateConditionParams{
+		ID:          condition.ID,
+		Field:       condition.Field,
+		Operator:    condition.Operator,
+		Value:       condition.Value,
+		Description: condition.Description,
+	}
+	log.Println(param)
+	err := c.sqlc.UpdateCondition(ctx, param)
 	return err
 }
 
@@ -87,22 +124,6 @@ func (c CouponRepository) CreateConditionCoupon(couponId uuid.UUID, conditionId 
 }
 
 func (c CouponRepository) DeleteCondition(id uuid.UUID) error {
-	err := c.sqlc.DeleteCoupon(ctx, id)
+	err := c.sqlc.DeleteCondition(ctx, id)
 	return err
-}
-
-func (c CouponRepository) GetAllCondition(description *string) ([]database.Condition, error) {
-	filterDescription := sql.NullString{Valid: false}
-	if description != nil && *description != "" {
-		filterDescription = sql.NullString{
-			Valid:  true,
-			String: *description,
-		}
-	}
-	log.Println(filterDescription)
-	results, err := c.sqlc.GetAllCondition(ctx, filterDescription)
-	if err != nil {
-		return nil, err
-	}
-	return results, nil
 }

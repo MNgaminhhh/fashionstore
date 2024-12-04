@@ -9,6 +9,13 @@ type CreateConditionValidator struct {
 	Description string `json:"description" validate:"required,min=10"`
 }
 
+type UpdateConditionValidator struct {
+	Field       *string `json:"field" validate:"oneof=price shipping_cost"`
+	Operator    *string `json:"operator" validate:"oneof=> = >="`
+	Value       *string `json:"value"`
+	Description *string `json:"description" validate:"min=10"`
+}
+
 type CreateCouponValidator struct {
 	Code       string                     `json:"code" validate:"required"`
 	Quantity   int                        `json:"quantity" validate:"required"`
