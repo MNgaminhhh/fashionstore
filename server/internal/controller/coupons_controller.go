@@ -6,6 +6,7 @@ import (
 	"backend/internal/validator"
 	"backend/pkg/response"
 	"github.com/labstack/echo"
+	"log"
 )
 
 type CouponsController struct {
@@ -44,6 +45,49 @@ func (cc *CouponsController) GetAllCondition(c echo.Context) error {
 		return response.ErrorResponse(c, code, "get fail")
 	}
 	return response.SuccessResponse(c, code, results)
+}
+
+func (cc *CouponsController) GetConditionById(c echo.Context) error {
+	id := c.Param("id")
+	code, result := cc.couponsService.GetConditionById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, result)
+}
+
+func (cc *CouponsController) UpdateCondition(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "update fail")
+	}
+	id := c.Param("id")
+	var reqParam validator.UpdateConditionValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := cc.couponsService.UpdateCondition(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "update fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}
+
+func (cc *CouponsController) DeleteCondition(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "delete fail")
+	}
+	id := c.Param("id")
+	log.Println(id)
+	code := cc.couponsService.DeleteCondition(c.Param("id"))
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "delete fail")
+	}
+	return response.SuccessResponse(c, code, "Xóa thành công!")
 }
 
 func (cc *CouponsController) CreateCoupon(c echo.Context) error {
