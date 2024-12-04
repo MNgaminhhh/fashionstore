@@ -136,8 +136,6 @@ func (ps *ProductService) UpdateProduct(id string, customParam validator.UpdateP
 			return response.ErrCodeParamInvalid
 		}
 		oldProduct.SubCategoryID = uuid.NullUUID{UUID: subCategoryID, Valid: true}
-	} else {
-		oldProduct.SubCategoryID = uuid.NullUUID{Valid: false}
 	}
 
 	if customParam.ChildCategoryID != nil {
@@ -146,33 +144,21 @@ func (ps *ProductService) UpdateProduct(id string, customParam validator.UpdateP
 			return response.ErrCodeParamInvalid
 		}
 		oldProduct.ChildCategoryID = uuid.NullUUID{UUID: childCategoryID, Valid: true}
-	} else {
-		oldProduct.ChildCategoryID = uuid.NullUUID{Valid: false}
 	}
 	if customParam.ShortDesc != nil {
 		oldProduct.ShortDescription = sql.NullString{String: *customParam.ShortDesc, Valid: true}
-	} else {
-		oldProduct.ShortDescription = sql.NullString{Valid: false}
 	}
 	if customParam.LongDesc != nil {
 		oldProduct.LongDescription = sql.NullString{String: *customParam.LongDesc, Valid: true}
-	} else {
-		oldProduct.LongDescription = sql.NullString{Valid: false}
 	}
 	if customParam.ProductType != nil {
 		oldProduct.ProductType = sql.NullString{String: *customParam.ProductType, Valid: true}
-	} else {
-		oldProduct.ProductType = sql.NullString{Valid: false}
 	}
 	if customParam.Status != nil {
 		oldProduct.Status = database.NullProductStatus{ProductStatus: database.ProductStatus(*customParam.Status), Valid: true}
-	} else {
-		oldProduct.Status = database.NullProductStatus{Valid: false}
 	}
 	if customParam.IsApproved != nil {
 		oldProduct.IsApproved = sql.NullBool{Bool: *customParam.IsApproved, Valid: true}
-	} else {
-		oldProduct.IsApproved = sql.NullBool{Valid: false}
 	}
 
 	err = ps.productRepo.UpdateProduct(oldProduct)

@@ -29,6 +29,10 @@ type CreateCouponValidator struct {
 	Conditions []ConditionCouponValidator `json:"condition" validate:"required,dive,required"`
 }
 
+type UpdateCouponValidator struct {
+	Status *bool `json:"status"`
+}
+
 type ConditionCouponValidator struct {
 	ConditionId uuid.UUID `json:"condition_id" validate:"required"`
 }

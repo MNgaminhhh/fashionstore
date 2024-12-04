@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -91,6 +92,61 @@ func (q *Queries) DeleteCoupon(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getCouponById = `-- name: GetCouponById :one
+SELECT
+    c.id, c.name, c.code, c.quantity, c.start_date, c.end_date, c.type, c.discount, c.total_used, c.max_price, c.status, c.created_at, c.updated_at,
+    JSON_AGG(
+            JSON_BUILD_OBJECT(
+                    'condition_id', con.id,
+                    'condition_description', con.description
+            )
+    ) AS conditions
+FROM coupons c
+         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         LEFT JOIN conditions con ON cc.condition_id = con.id
+WHERE c.id = $1
+GROUP BY c.id
+`
+
+type GetCouponByIdRow struct {
+	ID         uuid.UUID
+	Name       string
+	Code       string
+	Quantity   int32
+	StartDate  time.Time
+	EndDate    time.Time
+	Type       DiscountType
+	Discount   int32
+	TotalUsed  sql.NullInt32
+	MaxPrice   int32
+	Status     sql.NullBool
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+	Conditions json.RawMessage
+}
+
+func (q *Queries) GetCouponById(ctx context.Context, id uuid.UUID) (GetCouponByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getCouponById, id)
+	var i GetCouponByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Code,
+		&i.Quantity,
+		&i.StartDate,
+		&i.EndDate,
+		&i.Type,
+		&i.Discount,
+		&i.TotalUsed,
+		&i.MaxPrice,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Conditions,
+	)
+	return i, err
+}
+
 const updateCouponByCouponId = `-- name: UpdateCouponByCouponId :exec
 UPDATE coupons
 SET name = $1, code = $2, quantity = $3, start_date = $4, end_date = $5, type = $6, discount = $7, max_price = $8, status = $9
@@ -123,5 +179,21 @@ func (q *Queries) UpdateCouponByCouponId(ctx context.Context, arg UpdateCouponBy
 		arg.Status,
 		arg.ID,
 	)
+	return err
+}
+
+const updateCouponStatus = `-- name: UpdateCouponStatus :exec
+UPDATE coupons
+SET status = $1
+WHERE id = $2
+`
+
+type UpdateCouponStatusParams struct {
+	Status sql.NullBool
+	ID     uuid.UUID
+}
+
+func (q *Queries) UpdateCouponStatus(ctx context.Context, arg UpdateCouponStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateCouponStatus, arg.Status, arg.ID)
 	return err
 }

@@ -24,5 +24,8 @@ func (cr *CouponRouter) InitCouponRouter(router *echo.Group) {
 	couponGroup := router.Group("/coupons")
 	{
 		couponGroup.POST("", couponsController.CreateCoupon, middleware.JWTMiddleware)
+		couponGroup.GET("/:id", couponsController.GetCouponById)
+		couponGroup.PUT("/status/:id", couponsController.UpdateCouponStatus, middleware.JWTMiddleware)
+		couponGroup.PUT("/:id", couponsController.UpdateCouponById, middleware.JWTMiddleware)
 	}
 }
