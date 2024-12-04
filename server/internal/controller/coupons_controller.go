@@ -108,3 +108,48 @@ func (cc *CouponsController) CreateCoupon(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Tạo mới thành công!")
 }
+
+func (cc *CouponsController) GetCouponById(c echo.Context) error {
+	id := c.Param("id")
+	code, result := cc.couponsService.GetCouponById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, result)
+}
+
+func (cc *CouponsController) UpdateCouponStatus(c echo.Context) error {
+	id := c.Param("id")
+	reqParam := validator.UpdateCouponValidator{}
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	if reqParam.Status == nil {
+		return response.SuccessResponse(c, response.SuccessCode, "update fail")
+	}
+	code := cc.couponsService.UpdateCouponStatus(id, *reqParam.Status)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}
+
+func (cc *CouponsController) UpdateCouponById(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleAdmin {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "update fail")
+	}
+	id := c.Param("id")
+	var reqParam validator.CreateCouponValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := cc.couponsService.UpdateCouponById(id, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "update fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}

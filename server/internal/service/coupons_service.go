@@ -15,6 +15,21 @@ import (
 	"time"
 )
 
+type CouponResponseData struct {
+	ID        string          `json:"id"`
+	Name      string          `json:"name,omitempty"`
+	Code      string          `json:"code,omitempty"`
+	Quantity  int             `json:"quantity,omitempty"`
+	StartDate string          `json:"startDate,omitempty"`
+	EndDate   string          `json:"endDate,omitempty"`
+	Type      string          `json:"type,omitempty"`
+	Discount  interface{}     `json:"discount,omitempty"`
+	TotalUsed int             `json:"totalUsed"`
+	Status    bool            `json:"status"`
+	Condition json.RawMessage `json:"condition,omitempty"`
+	MaxPrice  int             `json:"max_price"`
+}
+
 type ICouponsService interface {
 	CreateCondition(customParam validator.CreateConditionValidator) int
 	GetAllCondition(filterDescription *string) (int, []database.Condition)
@@ -23,6 +38,9 @@ type ICouponsService interface {
 	DeleteCondition(id string) int
 
 	CreateCoupon(customParam validator.CreateCouponValidator) int
+	GetCouponById(id string) (int, *CouponResponseData)
+	UpdateCouponStatus(id string, status bool) int
+	UpdateCouponById(id string, couponValidator validator.CreateCouponValidator) int
 }
 
 type CouponsService struct {
@@ -175,4 +193,127 @@ func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator
 		}
 	}
 	return response.SuccessCode
+}
+
+func (c CouponsService) GetCouponById(id string) (int, *CouponResponseData) {
+	couponId, _ := uuid.Parse(id)
+	result, err := c.couponsRepo.GetCouponById(couponId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return response.ErrCodeNoContent, nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	return response.SuccessCode, mapCouponToResponseData(result)
+}
+
+func (c CouponsService) UpdateCouponStatus(id string, status bool) int {
+	couponId, _ := uuid.Parse(id)
+	if status == false {
+		coupon, err := c.couponsRepo.GetCouponById(couponId)
+		if err != nil {
+			return response.ErrCodeNoContent
+		}
+		if coupon.Status.Bool != status && time.Now().After(coupon.StartDate) {
+			return response.ErrCodeInactiveCouponAfterStartDate
+		}
+	}
+	err := c.couponsRepo.UpdateCouponStatus(couponId, status)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (c CouponsService) UpdateCouponById(id string, couponValidator validator.CreateCouponValidator) int {
+	couponId, _ := uuid.Parse(id)
+	coupon, findErr := c.couponsRepo.GetCouponById(couponId)
+	if findErr != nil {
+		return response.ErrCodeNoContent
+	}
+	if coupon.Status.Bool == true && time.Now().After(coupon.StartDate) {
+		return response.ErrCodeCouponsAreUsing
+	}
+	coupon.Name = couponValidator.Name
+	coupon.Type = database.DiscountType(couponValidator.Type)
+	coupon.Code = couponValidator.Code
+	startDate, parseErr := time.Parse("02-01-2006", couponValidator.StartDate)
+	if parseErr != nil {
+		return response.ErrCodeIncorrectDateFormat
+	}
+	endDate, parseErr := time.Parse("02-01-2006", couponValidator.EndDate)
+	if parseErr != nil {
+		return response.ErrCodeIncorrectDateFormat
+	}
+	if time.Now().After(startDate) {
+		return response.ErrCodeInvalidFlashSaleStartDate
+	}
+	if endDate.Before(startDate) {
+		return response.ErrCodeInvalidEndDate
+	}
+	coupon.StartDate = startDate
+	coupon.EndDate = endDate
+	coupon.Discount = int32(couponValidator.Discount)
+	coupon.Quantity = int32(couponValidator.Quantity)
+	coupon.MaxPrice = int32(couponValidator.MaxPrice)
+	if coupon.Type == database.DiscountTypeFixed {
+		if couponValidator.MaxPrice != couponValidator.Discount {
+			return response.ErrCodeDiscountFixedType
+		}
+	} else {
+		if couponValidator.Discount < 0 || couponValidator.Discount > 100 {
+			return response.ErrCodeValueDiscountPercentage
+		}
+	}
+	deleteOldConditionErr := c.couponsRepo.DeleteConditionCouponByCouponId(couponId)
+	if deleteOldConditionErr != nil {
+		return response.ErrCodeInternal
+	}
+	for _, condition := range couponValidator.Conditions {
+		conditionId := condition.ConditionId
+		addConditionErr := c.couponsRepo.CreateConditionCoupon(couponId, conditionId)
+		if addConditionErr != nil {
+			var pqErr *pq.Error
+			if errors.As(addConditionErr, &pqErr) {
+				return pg_error.GetMessageError(pqErr)
+			}
+			return response.ErrCodeInternal
+		}
+	}
+	updateErr := c.couponsRepo.UpdateCouponById(*coupon)
+	if updateErr != nil {
+		var pqErr *pq.Error
+		if errors.As(updateErr, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func mapCouponToResponseData[T any](data *T) *CouponResponseData {
+	switch c := any(data).(type) {
+	case *database.GetCouponByIdRow:
+		return &CouponResponseData{
+			ID:        c.ID.String(),
+			Name:      c.Name,
+			Code:      c.Code,
+			Quantity:  int(c.Quantity),
+			StartDate: c.StartDate.Format("02-01-2006"),
+			EndDate:   c.EndDate.Format("02-01-2006"),
+			Type:      string(c.Type),
+			Discount:  c.Discount,
+			TotalUsed: int(c.TotalUsed.Int32),
+			Status:    c.Status.Bool,
+			Condition: c.Conditions,
+			MaxPrice:  int(c.MaxPrice),
+		}
+	default:
+		return &CouponResponseData{}
+	}
 }
