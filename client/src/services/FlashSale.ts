@@ -1,8 +1,8 @@
 import Base from "./Base";
 
 interface Filters {
-  start_date?: string;
-  end_date?: string;
+  startDate?: string;
+  endDate?: string;
 }
 interface cuFSModel {
   start_date: string;
@@ -38,11 +38,11 @@ class FlashSaleServer extends Base {
 
     const queryParams: string[] = [];
 
-    if (filters.start_date) {
-      queryParams.push(`start_date=${encodeURIComponent(filters.start_date)}`);
+    if (filters.startDate) {
+      queryParams.push(`startDate=${encodeURIComponent(filters.startDate)}`);
     }
-    if (filters.end_date) {
-      queryParams.push(`end_date=${encodeURIComponent(filters.end_date)}`);
+    if (filters.endDate) {
+      queryParams.push(`endDate=${encodeURIComponent(filters.endDate)}`);
     }
 
     if (queryParams.length > 0) {

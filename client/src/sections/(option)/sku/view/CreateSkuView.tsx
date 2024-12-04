@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import WrapperPage from "../../../WrapperPage";
 import SkuForm from "../components/SkuForm";
 import VariantModel from "../../../../models/Variant.model";

@@ -1,36 +1,24 @@
 import Base from "./Base";
 
 interface Filters {
-  name?: string;
-  cate_name?: string;
-  status?: string;
-  product_type?: string;
+  productName?: string;
+  show?: string;
 }
-interface cuProductModel {
-  name: string;
-  slug: string;
-  images: string[];
-  category_id: string;
-  sub_category_id: string;
-  child_category_id: string;
-  short_description: string;
-  long_description: string;
-  product_type: string;
-  offer?: number;
-  offer_start_date?: Date;
-  offer_end_date?: Date;
-  status: string;
+interface cuFSItemModel {
+  flash_sale_id: string;
+  product_id: string;
+  show: boolean;
 }
 
-class ProductsServer extends Base {
+class FlashSaleItemServer extends Base {
   constructor() {
     super({
-      url: "products",
+      url: "flash-sale-items",
     });
   }
   async findOne(id: string) {
     const rs = await this.execute({
-      url: `/products/${id}`,
+      url: `/flash-sale-items/${id}`,
       method: "get",
       headers: {
         "Content-Type": "application/json",
@@ -38,32 +26,27 @@ class ProductsServer extends Base {
     });
     return rs;
   }
-  async getByVendor(
+  async getFlashSaleItems(
+    id: string,
     token: string | undefined = undefined,
     withCredentials: boolean = true,
     limit: number = 10,
     page: number = 1,
     filters: Filters = {}
   ) {
-    let url = `/products/vendor?limit=${encodeURIComponent(
+    let url = `/flash-sale-items/flash-sale/${id}?limit=${encodeURIComponent(
       limit
     )}&page=${encodeURIComponent(page)}`;
 
     const queryParams: string[] = [];
 
-    if (filters.name) {
-      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
-    }
-    if (filters.cate_name) {
-      queryParams.push(`cate_name=${encodeURIComponent(filters.cate_name)}`);
-    }
-    if (filters.product_type) {
+    if (filters.productName) {
       queryParams.push(
-        `product_type=${encodeURIComponent(filters.product_type)}`
+        `productName=${encodeURIComponent(filters.productName)}`
       );
     }
-    if (filters.status) {
-      queryParams.push(`status=${encodeURIComponent(filters.status)}`);
+    if (filters.show) {
+      queryParams.push(`show=${encodeURIComponent(filters.show)}`);
     }
 
     if (queryParams.length > 0) {
@@ -81,28 +64,20 @@ class ProductsServer extends Base {
 
     return rs.data;
   }
-  async getByListProduct() {
-    let url = `/products`;
-    const rs = await this.execute({
-      url,
-      method: "get",
-    });
 
-    return rs.data;
-  }
   async create(
-    productData: cuProductModel,
+    data: cuFSItemModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/products`,
+      url: `/flash-sale-items`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
-      data: productData,
+      data: data,
       withCredentials: withCredentials,
     });
     return rs;
@@ -110,12 +85,12 @@ class ProductsServer extends Base {
 
   async update(
     id: string,
-    data: cuProductModel,
+    data: cuFSItemModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `/products/${id}`,
+      url: `/flash-sale-items/${id}`,
       method: "put",
       headers: {
         "Content-Type": "application/json",
@@ -128,12 +103,12 @@ class ProductsServer extends Base {
   }
   async updateStatus(
     id: string,
-    newStatus: "active" | "inactive",
+    newStatus: boolean,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `/products/${id}`,
+      url: `/flash-sale-items/${id}`,
       method: "put",
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +125,7 @@ class ProductsServer extends Base {
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/products/${id}`,
+      url: `/flash-sale-items/${id}`,
       method: "delete",
       headers: {
         "Content-Type": "application/json",
@@ -163,5 +138,5 @@ class ProductsServer extends Base {
   }
 }
 
-const Products = new ProductsServer();
-export default Products;
+const FlashSaleItem = new FlashSaleItemServer();
+export default FlashSaleItem;

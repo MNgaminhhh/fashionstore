@@ -1,23 +1,20 @@
 export const tableHeading = [
   {
-    id: "startDate",
-    label: "Ngày Giờ Bắt Đầu",
+    id: "product_name",
+    label: "Tên Sản Phẩm",
     align: "left",
     width: "550px",
-    type: "date",
   },
   {
-    id: "endDate",
-    label: "Ngày Giờ Kết Thúc",
+    id: "show",
+    label: "Hiển Thị",
     align: "left",
-    width: "550px",
-    type: "date",
+    width: "100px",
   },
   {
     id: "action",
     label: "Hành động",
     align: "center",
     width: "150px",
-    type: "action",
   },
 ];

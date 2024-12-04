@@ -1,7 +1,9 @@
 interface FlashSaleModel {
-  id: string;
+  ID: string;
   start_date: string;
   end_date: string;
+  StartDate: string;
+  EndDate: string;
 }
 
 export default FlashSaleModel;

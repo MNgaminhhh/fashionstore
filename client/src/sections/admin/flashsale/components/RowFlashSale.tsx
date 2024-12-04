@@ -1,4 +1,3 @@
-// RowFlashSale.tsx
 import React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,44 +9,53 @@ import {
 import { useRouter } from "next/navigation";
 import { Tooltip } from "@mui/material";
 import FlashSaleModel from "../../../../models/FlashSale.model";
-import { format } from "date-fns";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import DisplaySettingsIcon from "@mui/icons-material/DisplaySettings";
+dayjs.extend(utc);
 
 type Props = {
   flashSale: FlashSaleModel;
   onDelete: (id: string) => void;
 };
 
-// Helper function to format date and time using date-fns
-const formatDateTime = (isoString: string): string => {
-  if (!isoString) return "-";
-  const date = new Date(isoString);
+const formatDateTime = (dateString: string): string => {
+  if (!dateString) return "-";
 
-  if (isNaN(date.getTime())) return "-"; // Invalid date
-
-  // Format: "HH:mm dd/MM/yyyy"
-  return format(date, "HH:mm dd/MM/yyyy");
+  try {
+    return dayjs.utc(dateString).format("HH:mm:ss YYYY-MM-DD");
+  } catch (error) {
+    return "-";
+  }
 };
 
 export default function RowFlashSale({ flashSale, onDelete }: Props) {
   const router = useRouter();
 
   const handleEdit = (id: string) => {
-    router.push(`/dashboard/vendor/flash-sale/${id}/edit`);
+    router.push(`/dashboard/admin/flash-sale/${id}`);
   };
-
+  const handleFSDetail = (id: string) => {
+    router.push(`/dashboard/admin/flash-sale/${id}/flash-items`);
+  };
   const handleDelete = (id: string) => {
     onDelete(id);
   };
 
   return (
     <StyledTableRow tabIndex={-1} role="checkbox">
-      <StyledTableCell align="left" sx={{ fontWeight: 500, color: "#333" }}>
+      <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
         {formatDateTime(flashSale.StartDate)}
       </StyledTableCell>
-      <StyledTableCell align="left" sx={{ fontWeight: 500, color: "#333" }}>
+      <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
         {formatDateTime(flashSale.EndDate)}
       </StyledTableCell>
       <StyledTableCell align="center" sx={{ minWidth: 150 }}>
+        <Tooltip title="Cấu hình sản phẩm cho Flash Sale" arrow>
+          <StyledIconButton onClick={() => handleFSDetail(flashSale.ID)}>
+            <DisplaySettingsIcon sx={{ color: "#000000" }} />
+          </StyledIconButton>
+        </Tooltip>
         <Tooltip title="Chỉnh sửa" arrow>
           <StyledIconButton onClick={() => handleEdit(flashSale.ID)}>
             <EditIcon sx={{ color: "#1976d2" }} />

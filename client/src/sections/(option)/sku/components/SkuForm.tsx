@@ -265,7 +265,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
         }) => (
           <Form>
             <Grid container spacing={4}>
-              {/* Thông Tin Chính */}
               <Grid item xs={12}>
                 <Paper elevation={3} sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom>
@@ -274,7 +273,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                   <Divider sx={{ mb: 3 }} />
 
                   <Grid container spacing={3}>
-                    {/* Mã SKU */}
                     <Grid item sm={6} xs={12}>
                       <TextField
                         fullWidth
@@ -294,7 +292,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                       />
                     </Grid>
 
-                    {/* Giá */}
                     <Grid item sm={6} xs={12}>
                       <TextField
                         fullWidth
@@ -316,7 +313,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                       />
                     </Grid>
 
-                    {/* Số Lượng */}
                     <Grid item sm={6} xs={12}>
                       <TextField
                         fullWidth
@@ -341,7 +337,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                 </Paper>
               </Grid>
 
-              {/* Quản Lý Ưu Đãi */}
               <Grid item xs={12}>
                 <Card
                   sx={{
@@ -577,7 +572,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
               </Grid>
             </Grid>
 
-            {/* Nút Trở về và Nút Gửi */}
             <Box
               display="flex"
               justifyContent="flex-end"

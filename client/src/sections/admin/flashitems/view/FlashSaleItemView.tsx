@@ -28,71 +28,82 @@ import WrapperPage from "../../../WrapperPage";
 import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
-import RowFlashSale from "../components/RowFlashSale";
-import FlashSaleModel from "../../../../models/FlashSale.model";
-import FlashSale from "../../../../services/FlashSale";
-import dayjs from "dayjs"; // Import dayjs
+import RowFlashSaleItem from "../components/RowFlashSaleItem";
+import FlashSaleItem from "../../../../services/FlashSaleItem";
+import { useParams } from "next/navigation";
 import { tableHeading } from "../components/data";
 
 type Props = {
-  flashSales: any;
+  flashSaleItemsData: any;
   token: string;
 };
 
-export default function FlashSaleView({
-  flashSales: initialFlashSales,
+export default function FlashSaleItemView({
+  flashSaleItemsData,
   token,
 }: Props) {
-  const [flashSales, setFlashSales] = useState<FlashSaleModel[]>(
-    initialFlashSales?.flashSales || []
+  const params = useParams();
+  const { id } = params;
+  const [flashSaleItems, setFlashSaleItems] = useState<any[]>(
+    flashSaleItemsData?.flashSaleItems || []
   );
   const [totalPages, setTotalPages] = useState<number>(
-    initialFlashSales?.totalPages || 1
+    flashSaleItemsData?.totalPages || 1
   );
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [selectedFlashSaleId, setSelectedFlashSaleId] = useState<string | null>(
-    null
-  );
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentLimit, setCurrentLimit] = useState<number>(10);
   const pageSizes: number[] = [5, 10, 20, 50];
+
+  const selectOptions: { [key: string]: { value: string; label: string }[] } = {
+    show: [
+      { value: "", label: "Tất cả" },
+      { value: "true", label: "Hiển Thị" },
+      { value: "false", label: "Không Hiển Thị" },
+    ],
+  };
 
   const handleSearchChange = (field: string, value: string) => {
     setSearchValues((prev) => ({
       ...prev,
       [field]: value,
     }));
+    applyFilters(1, currentLimit, {
+      ...searchValues,
+      [field]: value,
+    });
   };
 
   const openDeleteDialog = (id: string) => {
-    setSelectedFlashSaleId(id);
+    setSelectedItemId(id);
     setDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDialogOpen(false);
-    setSelectedFlashSaleId(null);
+    setSelectedItemId(null);
   };
 
   const handleDelete = async () => {
-    if (selectedFlashSaleId) {
+    if (selectedItemId) {
       try {
-        const response = await FlashSale.delete(selectedFlashSaleId, token);
+        const response = await FlashSaleItem.delete(selectedItemId, token);
 
         if (response.data.success) {
-          notifySuccess("Flash sale đã được xóa thành công.");
+          notifySuccess("Flash Sale Item đã được xoá thành công.");
           await applyFilters(currentPage, currentLimit);
         } else {
           notifyError(
-            "Xóa flash sale thất bại: " +
+            "Xoá Flash Sale Item thất bại: " +
               (response.data.message || "Vui lòng thử lại.")
           );
         }
       } catch (error) {
-        notifyError("Có lỗi xảy ra khi xóa flash sale.");
+        notifyError("Có lỗi xảy ra khi xoá Flash Sale Item.");
       } finally {
         closeDeleteDialog();
       }
@@ -106,26 +117,24 @@ export default function FlashSaleView({
   ) => {
     try {
       const formattedFilters: { [key: string]: string } = { ...filters };
-
-      if (filters.startDate) {
-        formattedFilters.startDate = dayjs(filters.startDate).format(
-          "DD-MM-YYYY"
-        );
+      if (filters.product_name) {
+        formattedFilters.productName = filters.product_name;
+      }
+      if (filters.show) {
+        formattedFilters.show = filters.show;
       }
 
-      if (filters.endDate) {
-        formattedFilters.endDate = dayjs(filters.endDate).format("DD-MM-YYYY");
-      }
-
-      const response = await FlashSale.getFlashSale(
+      const response = await FlashSaleItem.getFlashSaleItems(
+        id,
         token,
         true,
         limit,
         page,
         formattedFilters
       );
+
       if (response.success) {
-        setFlashSales(response?.data?.flashSales || []);
+        setFlashSaleItems(response?.data?.flashSaleItems || []);
         setTotalPages(response?.data?.totalPages || 1);
       } else {
         notifyError("Có lỗi xảy ra khi tải dữ liệu.");
@@ -135,11 +144,33 @@ export default function FlashSaleView({
     }
   };
 
+  const handleToggleShow = async (id: string, newStatus: boolean) => {
+    try {
+      const response = await FlashSaleItem.updateStatus(id, newStatus, token);
+
+      if (response.data.success) {
+        setFlashSaleItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === id ? { ...item, show: newStatus } : item
+          )
+        );
+        notifySuccess("Trạng thái hiển thị đã được cập nhật thành công.");
+      } else {
+        notifyError(
+          "Cập nhật trạng thái thất bại: " + (response.data.message || "")
+        );
+      }
+    } catch (error: any) {
+      console.error("Error:", error);
+      notifyError("Có lỗi xảy ra khi cập nhật trạng thái Flash Sale Item.");
+    }
+  };
+
   return (
-    <WrapperPage title="Quản Lý Flash Sale">
+    <WrapperPage title="Quản Lý Các Sản Phẩm Của Flash Sale">
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href={`/dashboard/admin/flash-sale/create`}
+          href={`/dashboard/admin/flash-sale/${id}/flash-items/create`}
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -151,7 +182,7 @@ export default function FlashSaleView({
             px: 3,
           }}
         >
-          Thêm Flash Sale
+          Thêm Sản Phẩm Vào Flash Sale
         </Button>
       </Box>
 
@@ -190,43 +221,72 @@ export default function FlashSaleView({
                           align={headCell.align}
                           width={headCell.width}
                         >
-                          {headCell.id === "startDate" ||
-                          headCell.id === "endDate" ? (
-                            <TextField
-                              size="small"
-                              type="date"
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                              value={searchValues[headCell.id] || ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                handleSearchChange(headCell.id, value);
-                                applyFilters(values.page, values.limit, {
-                                  ...searchValues,
-                                  [headCell.id]: value,
-                                });
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  handleSubmit();
+                          {headCell.id === "product_name" ||
+                          headCell.id === "show" ? (
+                            headCell.id === "show" ? (
+                              <Select
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value as string;
+                                  handleSearchChange(headCell.id, value);
+                                }}
+                                displayEmpty
+                                sx={{ width: "100%" }}
+                              >
+                                {selectOptions[headCell.id].map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            ) : (
+                              <TextField
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) =>
+                                  handleSearchChange(
+                                    headCell.id,
+                                    e.target.value
+                                  )
                                 }
-                              }}
-                              sx={{ width: "100%" }}
-                            />
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    handleSubmit();
+                                  }
+                                }}
+                                placeholder={`Tìm kiếm ${headCell.label}`}
+                                sx={{ width: "100%" }}
+                              />
+                            )
                           ) : null}
                         </StyledTableCell>
                       ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {flashSales.map((flashSale: FlashSaleModel) => (
-                      <RowFlashSale
-                        key={flashSale.ID}
-                        flashSale={flashSale}
-                        onDelete={openDeleteDialog}
-                      />
-                    ))}
+                    {flashSaleItems.length > 0 ? (
+                      flashSaleItems.map((item) => (
+                        <RowFlashSaleItem
+                          key={item.id}
+                          flashSaleItem={item}
+                          onDelete={openDeleteDialog}
+                          handleToggleShow={handleToggleShow}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <StyledTableCell
+                          colSpan={tableHeading.length}
+                          align="center"
+                        >
+                          Không tìm thấy dữ liệu
+                        </StyledTableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
