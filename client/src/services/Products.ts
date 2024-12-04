@@ -179,6 +179,24 @@ class ProductsServer extends Base {
     });
     return rs;
   }
+  async updateApproval(
+    id: string,
+    newStatus: boolean,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `/products/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: { is_approved: newStatus },
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
   async delete(
     id: string,
     token: string | undefined = undefined,

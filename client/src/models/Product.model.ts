@@ -15,6 +15,8 @@ interface ProductModel {
   sub_category_id: string;
   child_category_id: string;
   short_description: string;
+  lowest_price: string;
+  highest_price: string;
   long_description: string;
   offer: number;
   offer_start_date: Date;

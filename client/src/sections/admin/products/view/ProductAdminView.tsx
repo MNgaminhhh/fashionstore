@@ -100,22 +100,15 @@ export default function ProductAdminView({
 
   const handleToggleApproval = async (id: string, currentApproval: number) => {
     try {
-      const updatedApproval = currentApproval === 1 ? 0 : 1;
-      const response = await Products.update(
+      const newStatus = !!currentApproval;
+      const response = await Products.updateApproval(
         id,
-        { is_approved: updatedApproval },
+        newStatus,
         token,
         true
       );
 
       if (response.data.success) {
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.id === id
-              ? { ...product, is_approved: updatedApproval }
-              : product
-          )
-        );
         notifySuccess(
           "Trạng thái phê duyệt sản phẩm đã được cập nhật thành công."
         );
@@ -153,6 +146,7 @@ export default function ProductAdminView({
                         <StyledTableCell
                           key={headCell.id}
                           align={headCell.align}
+                          width={headCell.width}
                         >
                           {headCell.label}
                         </StyledTableCell>
@@ -163,8 +157,10 @@ export default function ProductAdminView({
                         <StyledTableCell
                           key={headCell.id}
                           align={headCell.align}
+                          width={headCell.width}
                         >
-                          {headCell.id !== "action" ? (
+                          {headCell.id !== "action" &&
+                          headCell.id !== "images" ? (
                             <TextField
                               size="small"
                               value={searchValues[headCell.id] || ""}
@@ -188,8 +184,6 @@ export default function ProductAdminView({
                       <RowProductAdmin
                         key={product.id}
                         product={product}
-                        tableHeading={tableHeading}
-                        onDelete={openDeleteDialog}
                         onToggleApproval={handleToggleApproval}
                       />
                     ))}
