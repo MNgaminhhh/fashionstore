@@ -66,9 +66,17 @@ const getAllFlashSaleItemByFlashSaleId = `-- name: GetAllFlashSaleItemByFlashSal
 SELECT f.id, f.flash_sales_id, f.product_id, f.show, f.created_at, f.updated_at, p.name
 FROM flash_sales_items f
     LEFT JOIN products p ON f.product_id = p.id
-WHERE flash_sales_id = $1
+WHERE f.flash_sales_id = $1
+    AND (p.name ILIKE '%' ||$2 || '%' OR $2 IS NULL)
+    AND (show = $3 OR $3 IS NULL)
 ORDER BY f.updated_at DESC
 `
+
+type GetAllFlashSaleItemByFlashSaleIdParams struct {
+	FlashSalesID uuid.UUID
+	Column2      sql.NullString
+	Show         sql.NullBool
+}
 
 type GetAllFlashSaleItemByFlashSaleIdRow struct {
 	ID           uuid.UUID
@@ -80,8 +88,8 @@ type GetAllFlashSaleItemByFlashSaleIdRow struct {
 	Name         sql.NullString
 }
 
-func (q *Queries) GetAllFlashSaleItemByFlashSaleId(ctx context.Context, flashSalesID uuid.UUID) ([]GetAllFlashSaleItemByFlashSaleIdRow, error) {
-	rows, err := q.db.QueryContext(ctx, getAllFlashSaleItemByFlashSaleId, flashSalesID)
+func (q *Queries) GetAllFlashSaleItemByFlashSaleId(ctx context.Context, arg GetAllFlashSaleItemByFlashSaleIdParams) ([]GetAllFlashSaleItemByFlashSaleIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFlashSaleItemByFlashSaleId, arg.FlashSalesID, arg.Column2, arg.Show)
 	if err != nil {
 		return nil, err
 	}

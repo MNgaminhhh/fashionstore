@@ -18,7 +18,7 @@ type FlashSaleItemResponse struct {
 	ID          uuid.UUID `json:"id"`
 	FlashSaleId uuid.UUID `json:"flash_sale_id,omitempty"`
 	ProductId   uuid.UUID `json:"product_id,omitempty"`
-	Show        bool      `json:"show,omitempty"`
+	Show        bool      `json:"show"`
 	ProductName string    `json:"product_name,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
@@ -86,6 +86,9 @@ func (fs *FlashSalesService) GetAllFlashSales(filterParam validator.FilterFlashS
 		endDate = endDateParse
 	}
 	flashSales, flashSalesErr := fs.flashSalesRepo.GetAllFlashSales(startDate, endDate)
+	for ind, f := range flashSales {
+		log.Println(ind, f)
+	}
 	if flashSalesErr != nil {
 		var pqErr *pq.Error
 		if errors.As(flashSalesErr, &pqErr) {
