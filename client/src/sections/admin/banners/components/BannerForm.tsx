@@ -45,7 +45,6 @@ const VALIDATION_SCHEMA = yup.object().shape({
 type Props = { banner?: BannerModel };
 
 export default function BannerForm({ banner }: Props) {
-  console.log(banner);
   const [files, setFiles] = useState<File[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(
     banner?.banner_image || null

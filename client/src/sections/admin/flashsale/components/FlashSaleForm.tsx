@@ -31,7 +31,6 @@ type Props = {
 };
 
 export default function FlashSaleForm({ flashSale, token }: Props) {
-  console.log(flashSale);
   const router = useRouter();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [uploading, setUploading] = useState(false);

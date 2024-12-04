@@ -124,7 +124,6 @@ export default function OptionVariantView({
         page,
         filters
       );
-      console.log(response?.data);
       setOptionVariants(response?.data?.results || []);
       setTotalPages(response?.data?.totalPage || 1);
     } catch {

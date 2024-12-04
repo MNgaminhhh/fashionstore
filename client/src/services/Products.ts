@@ -81,6 +81,41 @@ class ProductsServer extends Base {
 
     return rs.data;
   }
+  async getByAdmin(
+    limit: number = 10,
+    page: number = 1,
+    filters: Filters = {}
+  ) {
+    let url = `/products?limit=${encodeURIComponent(
+      limit
+    )}&page=${encodeURIComponent(page)}`;
+
+    const queryParams: string[] = [];
+
+    if (filters.name) {
+      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
+    }
+    if (filters.cate_name) {
+      queryParams.push(`cate_name=${encodeURIComponent(filters.cate_name)}`);
+    }
+    if (filters.product_type) {
+      queryParams.push(
+        `product_type=${encodeURIComponent(filters.product_type)}`
+      );
+    }
+    if (filters.status) {
+      queryParams.push(`status=${encodeURIComponent(filters.status)}`);
+    }
+    if (queryParams.length > 0) {
+      url += `&${queryParams.join("&")}`;
+    }
+    const rs = await this.execute({
+      url,
+      method: "get",
+    });
+
+    return rs;
+  }
   async getByListProduct() {
     let url = `/products`;
     const rs = await this.execute({

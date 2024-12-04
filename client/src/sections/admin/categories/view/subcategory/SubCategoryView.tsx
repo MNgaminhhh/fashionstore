@@ -55,7 +55,6 @@ export default function SubCategoryView({ subcategories: initialSubs, token }: P
         if (selectedSubCategoryId) {
             try {
                 const response = await SubCategory.delete(token, true, selectedSubCategoryId);
-                console.log(response)
                 if (response.success) {
                     notifySuccess("Danh mục con đã được xóa thành công.");
                     await applyFilters(currentPage, currentLimit);

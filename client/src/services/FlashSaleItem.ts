@@ -114,7 +114,7 @@ class FlashSaleItemServer extends Base {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
-      data: { status: newStatus },
+      data: { show: newStatus },
       withCredentials: withCredentials,
     });
     return rs;

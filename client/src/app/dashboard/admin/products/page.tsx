@@ -4,9 +4,9 @@ import Products from "../../../../services/Products";
 import ProductAdminView from "../../../../sections/admin/products/view/ProductAdminView";
 
 export default async function ProductAdminPage() {
-    const cookieStore = cookies();
-    const token = cookieStore.get("access_cookie")?.value;
-    const products = await Products.getTableFilter(token);
-    const infoPro = get(products, "data.data", {});
-    return <ProductAdminView products={infoPro} token={token} />;
+  const cookieStore = cookies();
+  const token = cookieStore.get("access_cookie")?.value;
+  const products = await Products.getByAdmin(10, 1);
+  const infoPro = get(products, "data.data", {});
+  return <ProductAdminView products={infoPro} token={token} />;
 }

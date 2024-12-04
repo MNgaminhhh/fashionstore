@@ -152,9 +152,11 @@ export const navigation = [
     icon: LanguageIcon,
     children: [
       { name: "Flash Sale", path: "/dashboard/admin/flash-sale" },
+      { name: "Thêm Flash Sale", path: "/dashboard/admin/flash-sale/create" },
       { name: "Danh Sách Banner", path: "/dashboard/admin/banners" },
       { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
-      { name: "Đánh Giá Sản Phẩm", path: "/dashboard/admin/banner/reviews" },
+      { name: "Danh Sách Mã Giảm Giá", path: "/dashboard/admin/coupons" },
+      { name: "Thêm Mã Giảm Giá", path: "/dashboard/admin/coupons/create" },
     ],
   },
   {
