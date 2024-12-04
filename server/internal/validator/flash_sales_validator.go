@@ -30,7 +30,6 @@ type UpdateFlashSaleItemValidator struct {
 }
 
 type FilterFlashSaleItemValidator struct {
-	ProductId   *string `json:"product_id"`
 	ProductName *string `json:"product_name"`
 	Show        *bool   `json:"show"`
 	Page        *int    `json:"page"`

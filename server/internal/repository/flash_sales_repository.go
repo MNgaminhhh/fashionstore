@@ -96,7 +96,24 @@ func (fr *FlashSalesRepository) CreateFlashSaleItem(customParam validator.Create
 }
 
 func (fr *FlashSalesRepository) GetAllFlashSaleItemByFlashSaleId(flashSaleId uuid.UUID, filterParam validator.FilterFlashSaleItemValidator) ([]database.GetAllFlashSaleItemByFlashSaleIdRow, error) {
-	result, err := fr.sqlc.GetAllFlashSaleItemByFlashSaleId(ctx, flashSaleId)
+	param := database.GetAllFlashSaleItemByFlashSaleIdParams{
+		FlashSalesID: flashSaleId,
+		Column2:      sql.NullString{},
+		Show:         sql.NullBool{},
+	}
+	if filterParam.ProductName != nil {
+		param.Column2 = sql.NullString{
+			String: *filterParam.ProductName,
+			Valid:  true,
+		}
+	}
+	if filterParam.Show != nil {
+		param.Show = sql.NullBool{
+			Bool:  *filterParam.Show,
+			Valid: true,
+		}
+	}
+	result, err := fr.sqlc.GetAllFlashSaleItemByFlashSaleId(ctx, param)
 	if err != nil {
 		return nil, err
 	}

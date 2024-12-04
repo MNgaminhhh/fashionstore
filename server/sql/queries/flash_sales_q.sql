@@ -28,7 +28,9 @@ INSERT INTO flash_sales_items (flash_sales_id, product_id, show) VALUES ($1, $2,
 SELECT f.*, p.name
 FROM flash_sales_items f
     LEFT JOIN products p ON f.product_id = p.id
-WHERE flash_sales_id = $1
+WHERE f.flash_sales_id = $1
+    AND (p.name ILIKE '%' ||$2 || '%' OR $2 IS NULL)
+    AND (show = $3 OR $3 IS NULL)
 ORDER BY f.updated_at DESC;
 
 -- name: GetFlashSaleItemById :one
