@@ -37,6 +37,15 @@ func (cc *CouponsController) CreateCondition(c echo.Context) error {
 	return response.SuccessResponse(c, code, "Tạo mới thành công!")
 }
 
+func (cc *CouponsController) GetAllCondition(c echo.Context) error {
+	filterDescription := c.QueryParam("description")
+	code, results := cc.couponsService.GetAllCondition(&filterDescription)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
+
 func (cc *CouponsController) CreateCoupon(c echo.Context) error {
 	role := c.Get("role").(database.UserRole)
 	if role != database.UserRoleAdmin {

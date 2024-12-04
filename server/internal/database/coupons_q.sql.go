@@ -7,23 +7,23 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 const createConditionCoupon = `-- name: CreateConditionCoupon :exec
-INSERT INTO conditions_coupons (coupon_id, condition_id,  condition_describe) VALUES ($1, $2, $3)
+INSERT INTO conditions_coupons (coupon_id, condition_id) VALUES ($1, $2)
 `
 
 type CreateConditionCouponParams struct {
-	CouponID          uuid.UUID
-	ConditionID       uuid.UUID
-	ConditionDescribe string
+	CouponID    uuid.UUID
+	ConditionID uuid.UUID
 }
 
 func (q *Queries) CreateConditionCoupon(ctx context.Context, arg CreateConditionCouponParams) error {
-	_, err := q.db.ExecContext(ctx, createConditionCoupon, arg.CouponID, arg.ConditionID, arg.ConditionDescribe)
+	_, err := q.db.ExecContext(ctx, createConditionCoupon, arg.CouponID, arg.ConditionID)
 	return err
 }
 
@@ -37,8 +37,9 @@ INSERT INTO coupons (
     end_date,
     type,
     discount,
-    max_price
-) VALUES ($1, $2, $3, $4, $5, $6,$7, $8, $9)
+    max_price,
+    status
+) VALUES ($1, $2, $3, $4, $5, $6,$7, $8, $9, $10)
 `
 
 type CreateCouponParams struct {
@@ -51,6 +52,7 @@ type CreateCouponParams struct {
 	Type      DiscountType
 	Discount  int32
 	MaxPrice  int32
+	Status    sql.NullBool
 }
 
 func (q *Queries) CreateCoupon(ctx context.Context, arg CreateCouponParams) error {
@@ -64,7 +66,18 @@ func (q *Queries) CreateCoupon(ctx context.Context, arg CreateCouponParams) erro
 		arg.Type,
 		arg.Discount,
 		arg.MaxPrice,
+		arg.Status,
 	)
+	return err
+}
+
+const deleteConditionCouponByCouponId = `-- name: DeleteConditionCouponByCouponId :exec
+DELETE FROM conditions_coupons
+WHERE coupon_id = $1
+`
+
+func (q *Queries) DeleteConditionCouponByCouponId(ctx context.Context, couponID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteConditionCouponByCouponId, couponID)
 	return err
 }
 
@@ -75,5 +88,40 @@ WHERE id = $1
 
 func (q *Queries) DeleteCoupon(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteCoupon, id)
+	return err
+}
+
+const updateCouponByCouponId = `-- name: UpdateCouponByCouponId :exec
+UPDATE coupons
+SET name = $1, code = $2, quantity = $3, start_date = $4, end_date = $5, type = $6, discount = $7, max_price = $8, status = $9
+WHERE id = $10
+`
+
+type UpdateCouponByCouponIdParams struct {
+	Name      string
+	Code      string
+	Quantity  int32
+	StartDate time.Time
+	EndDate   time.Time
+	Type      DiscountType
+	Discount  int32
+	MaxPrice  int32
+	Status    sql.NullBool
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateCouponByCouponId(ctx context.Context, arg UpdateCouponByCouponIdParams) error {
+	_, err := q.db.ExecContext(ctx, updateCouponByCouponId,
+		arg.Name,
+		arg.Code,
+		arg.Quantity,
+		arg.StartDate,
+		arg.EndDate,
+		arg.Type,
+		arg.Discount,
+		arg.MaxPrice,
+		arg.Status,
+		arg.ID,
+	)
 	return err
 }

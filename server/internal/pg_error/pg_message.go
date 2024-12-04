@@ -20,6 +20,9 @@ func GetMessageError(pqError *pq.Error) int {
 		if name == "unique_child_name_code_per_sub_cate" || name == "unique_sub_name_code_per_category" || name == "categories_name_code_key" {
 			return response.ErrCodeNameCodeAlreadyUsed
 		}
+		if name == "unique_coupon_code" {
+			return response.ErrCodeCouponIsAlreadyExist
+		}
 		return response.ErrCodeConflict
 	case string(ForeignKeyViolation):
 		if name == "child_categories_sub_category_id_fkey" || name == "sub_categories_category_id_fkey" {

@@ -3,9 +3,10 @@ package validator
 import "github.com/google/uuid"
 
 type CreateConditionValidator struct {
-	Field    string `json:"field" validate:"required,oneof=price shipping_cost"`
-	Operator string `json:"operator" validate:"required,oneof=> = >="`
-	Value    string `json:"value" validate:"required"`
+	Field       string `json:"field" validate:"required,oneof=price shipping_cost"`
+	Operator    string `json:"operator" validate:"required,oneof=> = >="`
+	Value       string `json:"value" validate:"required"`
+	Description string `json:"description" validate:"required,min=10"`
 }
 
 type CreateCouponValidator struct {
@@ -17,10 +18,10 @@ type CreateCouponValidator struct {
 	Discount   int                        `json:"discount" validate:"required"`
 	MaxPrice   int                        `json:"max_price" validate:"required"`
 	Name       string                     `json:"name" validate:"required"`
+	Status     *bool                      `json:"status"`
 	Conditions []ConditionCouponValidator `json:"condition" validate:"required,dive,required"`
 }
 
 type ConditionCouponValidator struct {
 	ConditionId uuid.UUID `json:"condition_id" validate:"required"`
-	Description string    `json:"description" validate:"required"`
 }

@@ -15,6 +15,8 @@ import (
 
 type ICouponsService interface {
 	CreateCondition(customParam validator.CreateConditionValidator) int
+	GetAllCondition(filterDescription *string) (int, []database.Condition)
+
 	CreateCoupon(customParam validator.CreateCouponValidator) int
 }
 
@@ -29,6 +31,7 @@ func NewCouponsService(couponsRepo repository.ICouponsRepository) ICouponsServic
 func (c CouponsService) CreateCondition(customParam validator.CreateConditionValidator) int {
 	field := database.ConditionField(customParam.Field)
 	operator := database.ComparisonOperator(customParam.Operator)
+	description := customParam.Description
 	var value any
 	if field == database.ConditionFieldPrice || field == database.ConditionFieldShippingCost {
 		var errParseInt error
@@ -39,7 +42,7 @@ func (c CouponsService) CreateCondition(customParam validator.CreateConditionVal
 	} else {
 		value = customParam.Value
 	}
-	err := c.couponsRepo.CreateCondition(field, operator, value)
+	err := c.couponsRepo.CreateCondition(field, operator, value, description)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -48,6 +51,18 @@ func (c CouponsService) CreateCondition(customParam validator.CreateConditionVal
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode
+}
+
+func (c CouponsService) GetAllCondition(filterDescription *string) (int, []database.Condition) {
+	results, err := c.couponsRepo.GetAllCondition(filterDescription)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	return response.SuccessCode, results
 }
 
 func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator) int {
@@ -83,8 +98,7 @@ func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator
 	}
 	for _, condition := range customParam.Conditions {
 		conditionId := condition.ConditionId
-		description := condition.Description
-		addConditionErr := c.couponsRepo.CreateConditionCoupon(newId, conditionId, description)
+		addConditionErr := c.couponsRepo.CreateConditionCoupon(newId, conditionId)
 		if addConditionErr != nil {
 			_ = c.couponsRepo.DeleteCoupon(conditionId)
 			var pqErr *pq.Error

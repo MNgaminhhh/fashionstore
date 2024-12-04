@@ -492,16 +492,16 @@ type ChildCategory struct {
 }
 
 type Condition struct {
-	ID       uuid.UUID
-	Field    ConditionField
-	Operator ComparisonOperator
-	Value    json.RawMessage
+	ID          uuid.UUID
+	Field       ConditionField
+	Operator    ComparisonOperator
+	Value       json.RawMessage
+	Description string
 }
 
 type ConditionsCoupon struct {
-	CouponID          uuid.UUID
-	ConditionID       uuid.UUID
-	ConditionDescribe string
+	CouponID    uuid.UUID
+	ConditionID uuid.UUID
 }
 
 type Coupon struct {
@@ -515,6 +515,7 @@ type Coupon struct {
 	Discount  int32
 	TotalUsed sql.NullInt32
 	MaxPrice  int32
+	Status    sql.NullBool
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }

@@ -45,6 +45,7 @@ const (
 	ErrCodeEndDateEmpty               = 50031
 	ErrCodeDiscountFixedType          = 50032
 	ErrCodeValueDiscountPercentage    = 50033
+	ErrCodeCouponIsAlreadyExist       = 50034
 	ErrCodeForbidden                  = 403
 )
 
@@ -94,4 +95,5 @@ var msg = map[int]string{
 	ErrCodeEndDateEmpty:               "Vui lòng nhập ngày kết thúc!",
 	ErrCodeDiscountFixedType:          "Giá tiền giảm tối đa không thể khác với giá tiền giảm với loại mã cố định!",
 	ErrCodeValueDiscountPercentage:    "Giá trị trong khoảng từ 1-100!",
+	ErrCodeCouponIsAlreadyExist:       "Mã code coupon đã tồn tại!",
 }
