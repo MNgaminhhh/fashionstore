@@ -75,6 +75,15 @@ func InitProductRouterHandlerr() (*controller.ProductController, error) {
 	return productController, nil
 }
 
+// Injectors from shipping_rules_wire.go:
+
+func InitShippingRulesRouterHandlerr() (*controller.ShippingRulesController, error) {
+	iShippingRulesRepository := repository.NewShippingRulesRepository()
+	iShippingRulesService := service.NewShippingRulesService(iShippingRulesRepository)
+	shippingRulesController := controller.NewShippingRulesController(iShippingRulesService)
+	return shippingRulesController, nil
+}
+
 // Injectors from sku_wire.go:
 
 func InitSkuRouterRouterHandlerr() (*controller.SkusController, error) {
