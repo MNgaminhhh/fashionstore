@@ -86,6 +86,7 @@ func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 	}
 	log.Println(*check)
 	if *check == true {
+		_ = sv.skusRepo.DeleteSkuById(newSkuId)
 		return response.ErrCodeCombinationOptionsIsExists
 	}
 	for _, vo := range variantOptions {

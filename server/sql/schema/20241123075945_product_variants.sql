@@ -16,7 +16,7 @@ CREATE TABLE skus (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL,
     in_stock SMALLINT DEFAULT 0 CHECK (in_stock >= 0),
-    sku VARCHAR(50) NOT NULL,
+    sku VARCHAR(50) NOT NULL UNIQUE,
     price BIGINT NOT NULL CHECK (price >= 0),
     status sku_status NOT NULL DEFAULT 'inactive',
     offer INT DEFAULT 0 CHECK (offer >= 0 AND offer <= 100),
