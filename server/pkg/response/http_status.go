@@ -49,7 +49,8 @@ const (
 	ErrCodeConstraintDeleteCondition    = 50035
 	ErrCodeInactiveCouponAfterStartDate = 50036
 	ErrCodeCouponsAreUsing              = 50037
-	ErrCodeShippingCost                 = 50008
+	ErrCodeShippingCost                 = 50038
+	ErrCodeUniqueMinOrderCost           = 50039
 	ErrCodeForbidden                    = 403
 )
 
@@ -104,4 +105,5 @@ var msg = map[int]string{
 	ErrCodeInactiveCouponAfterStartDate: "Không thể chuyển trạng thái vì đã đến ngày có thể sử dụng mã!",
 	ErrCodeCouponsAreUsing:              "Không thể cập nhật mã giảm trong thời gian sử dụng!",
 	ErrCodeShippingCost:                 "Giá tiền mà giá trị đơn nhỏ nhất phải là bôi số của 100",
+	ErrCodeUniqueMinOrderCost:           "Giá trị tối thiểu đơn hàng này đã tồn tại!",
 }

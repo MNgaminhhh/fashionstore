@@ -39,8 +39,28 @@ func (cc *CouponsController) CreateCondition(c echo.Context) error {
 }
 
 func (cc *CouponsController) GetAllCondition(c echo.Context) error {
-	filterDescription := c.QueryParam("description")
-	code, results := cc.couponsService.GetAllCondition(&filterDescription)
+	var reqParam validator.FilterConditionValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "create fail")
+	}
+	code, results := cc.couponsService.GetAllCondition(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
+
+func (cc *CouponsController) GetAllCoupons(c echo.Context) error {
+	var reqParam validator.FilterCouponsValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "create fail")
+	}
+	if reqParam.Type != nil && *reqParam.Type != "" {
+		if err := c.Validate(reqParam); err != nil {
+			return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+		}
+	}
+	code, results := cc.couponsService.GetAllCoupon(reqParam)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "get fail")
 	}

@@ -12,6 +12,28 @@ INSERT INTO coupons (
     status
 ) VALUES ($1, $2, $3, $4, $5, $6,$7, $8, $9, $10);
 
+-- name: GetAllCoupon :many
+SELECT
+    c.*,
+    JSON_AGG(
+            JSON_BUILD_OBJECT(
+                    'condition_id', con.id,
+                    'condition_description', con.description
+            )
+    ) AS conditions
+FROM coupons c
+         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         LEFT JOIN conditions con ON cc.condition_id = con.id
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+AND (type = COALESCE(NULLIF($2, '')::discount_type, type) OR $2 = '' )
+AND (quantity = $3 OR $3 = -1)
+AND (total_used = $4 OR $4 IS NULL)
+AND (discount = $5 OR $5 = -1)
+AND (max_price = $6 OR $6 = -1)
+AND (status = $7 OR $7 IS NULL)
+GROUP BY c.id
+ORDER BY updated_at DESC;
+
 -- name: GetCouponById :one
 SELECT
     c.*,

@@ -520,6 +520,17 @@ type Coupon struct {
 	UpdatedAt sql.NullTime
 }
 
+type DeliveryInfo struct {
+	ID           uuid.UUID
+	UserID       uuid.UUID
+	ReceiverName string
+	Address      string
+	PhoneNumber  string
+	Email        string
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+}
+
 type FlashSale struct {
 	ID        uuid.UUID
 	StartDate time.Time
