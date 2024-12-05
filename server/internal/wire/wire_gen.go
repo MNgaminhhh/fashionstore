@@ -48,6 +48,15 @@ func InitCouponsRouterHandlerr() (*controller.CouponsController, error) {
 	return couponsController, nil
 }
 
+// Injectors from delivery_info_wire.go:
+
+func InitDeliveryInfoRouterHandlerr() (*controller.DeliveryInfoController, error) {
+	iDeliveryInfoRepository := repository.NewDeliveryInfoRepository()
+	iDeliveryInfoService := service.NewDeliveryInfoService(iDeliveryInfoRepository)
+	deliveryInfoController := controller.NewDeliveryInfoController(iDeliveryInfoService)
+	return deliveryInfoController, nil
+}
+
 // Injectors from flash_sale_wire.go:
 
 func InitFlashSaleRouterHandlerr() (*controller.FlashSalesController, error) {

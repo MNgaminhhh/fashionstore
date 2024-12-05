@@ -5,6 +5,7 @@ import (
 	"backend/internal/routers/brand"
 	"backend/internal/routers/categories"
 	"backend/internal/routers/coupons"
+	"backend/internal/routers/delivery_info"
 	"backend/internal/routers/flash_sales"
 	"backend/internal/routers/product"
 	"backend/internal/routers/product_variant"
@@ -28,6 +29,7 @@ type RouterGroup struct {
 	FlashSales      *flash_sales.FlashSalesRouter
 	Coupons         *coupons.CouponRouter
 	ShippingRules   *shipping_rules.ShippingRuleRouter
+	DeliveryInfo    *delivery_info.DeliveryInfoRouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -43,4 +45,5 @@ var AllRouterGroup = &RouterGroup{
 	FlashSales:      &flash_sales.FlashSalesRouter{},
 	Coupons:         &coupons.CouponRouter{},
 	ShippingRules:   &shipping_rules.ShippingRuleRouter{},
+	DeliveryInfo:    &delivery_info.DeliveryInfoRouter{},
 }
