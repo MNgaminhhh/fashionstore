@@ -119,7 +119,7 @@ export default function CategoriesView({ categories: initialCats, token }: Props
         <WrapperPage title="Quản Lý Danh Mục">
             <Box display="flex" justifyContent="flex-end" mb={2}>
                 <Button
-                    href="/admin/categories/create"
+                    href="/dashboard/admin/categories/create"
                     color="primary"
                     variant="contained"
                     startIcon={<Add />}

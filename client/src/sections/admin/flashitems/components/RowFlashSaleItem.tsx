@@ -6,7 +6,7 @@ import {
   StyledTableCell,
   StyledTableRow,
 } from "../../../styles";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Tooltip, Box } from "@mui/material";
 import FlashSaleItemModel from "../../../../models/FlashSaleItem.model";
 import MTSwitch from "../../../../components/MTSwitch";
@@ -23,9 +23,11 @@ export default function RowFlashSaleItem({
   handleToggleShow,
 }: Props) {
   const router = useRouter();
-
+  const param = useParams();
+  const { id } = param;
+  const productId = Array.isArray(id) ? id[0] : id;
   const handleEdit = (id: string) => {
-    router.push(`/dashboard/admin/flash-sale-item/${id}/edit`);
+    router.push(`/dashboard/admin/flash-sale/${productId}/flash-items/${id}`);
   };
 
   const handleDelete = (id: string) => {

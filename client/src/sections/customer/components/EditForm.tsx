@@ -15,6 +15,7 @@ import User from "../../../services/User";
 import File from "../../../services/File";
 import { get } from "../../../hooks/useLocalStorage";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
+import { useAppContext } from "../../../context/AppContext";
 
 type Props = { user: UserModel };
 
@@ -22,6 +23,7 @@ export default function ProfileEditForm({ user }: Props) {
   const [avatarSrc, setAvatarSrc] = useState(user.avt || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isFormChanged, setIsFormChanged] = useState(false);
+  const { sessionToken } = useAppContext();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -44,14 +46,13 @@ export default function ProfileEditForm({ user }: Props) {
 
   const handleFormSubmit = async (values: typeof INITIAL_VALUES) => {
     try {
-      const token = get("token");
       let avatarUrl = user.avt;
 
       if (avatarFile) {
         const formData = new FormData();
         formData.append("file", avatarFile);
 
-        const uploadRes = await File.upload(formData, token);
+        const uploadRes = await File.upload(formData, sessionToken);
 
         if (uploadRes.data.success && uploadRes.data.data.files.length > 0) {
           avatarUrl = uploadRes.data.data.files[0];
@@ -61,7 +62,7 @@ export default function ProfileEditForm({ user }: Props) {
       }
       const res = await User.updateProfile(
         { ...values, avt: avatarUrl },
-        token
+        sessionToken
       );
 
       if (res.data.success) {

@@ -14,9 +14,7 @@ import DetailDialog from "./DetailDialog";
 import { useAppContext } from "../../../../context/AppContext";
 type Props = {
   product: ProductModel;
-  onDelete: (id: string) => void;
-  onToggleApproval: (id: string, isApproved: boolean) => void;
-  onToggleStatus: (id: string, status: boolean) => void;
+  onProductTypeChange?: (id: string, newType: string) => void;
 };
 const mappingTypeProduct: { [key: string]: string } = {
   none: "Không Có",
@@ -26,7 +24,19 @@ const mappingTypeProduct: { [key: string]: string } = {
   top_product: "Sản Phẩm Hàng Đầu",
 };
 
-export default function RowProductAdmin({ product, onToggleApproval }: Props) {
+const typeColorMapping: { [key: string]: string } = {
+  none: "#B0BEC5",
+  new_arrival: "#4CAF50",
+  best_product: "#FF9800",
+  featured_product: "#2196F3",
+  top_product: "#9C27B0",
+  default: "#757575",
+};
+
+export default function RowProductTypeAdmin({
+  product,
+  onProductTypeChange,
+}: Props) {
   const router = useRouter();
   const { sessionToken } = useAppContext();
   const [status, setStatus] = useState(product.status === "active");
@@ -38,17 +48,6 @@ export default function RowProductAdmin({ product, onToggleApproval }: Props) {
 
   const handleCloseDetail = () => {
     setDetailOpen(false);
-  };
-
-  const handleToggleApproval = () => {
-    const newApprovalStatus = !isApproved;
-    setIsApproved(newApprovalStatus);
-    onToggleApproval(product.id, newApprovalStatus);
-  };
-
-  const handleApprovalChange = (newStatus: boolean) => {
-    setIsApproved(newStatus);
-    onToggleApproval(product.id, newStatus);
   };
 
   return (
@@ -98,11 +97,6 @@ export default function RowProductAdmin({ product, onToggleApproval }: Props) {
           </Box>
         </StyledTableCell>
 
-        <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#555" }}>
-          {mappingTypeProduct[product.product_type] ||
-            product.product_type ||
-            "-"}
-        </StyledTableCell>
         <StyledTableCell align="center" sx={{ fontWeight: 400 }}>
           <Typography
             variant="body2"
@@ -114,12 +108,24 @@ export default function RowProductAdmin({ product, onToggleApproval }: Props) {
             {status ? "Hiển thị" : "Ẩn"}
           </Typography>
         </StyledTableCell>
-        <StyledTableCell align="center" sx={{ fontWeight: 400 }}>
-          <MTSwitch
-            color="info"
-            checked={isApproved}
-            onChange={handleToggleApproval}
-          />
+        <StyledTableCell align="left" sx={{ fontWeight: 400 }}>
+          <Box
+            sx={{
+              display: "inline-block",
+              padding: "4px 8px",
+              borderRadius: "12px",
+              backgroundColor:
+                typeColorMapping[product.product_type] ||
+                typeColorMapping["default"],
+              color: "#fff",
+              textTransform: "capitalize",
+              fontSize: "0.875rem",
+            }}
+          >
+            {mappingTypeProduct[product.product_type] ||
+              product.product_type ||
+              "-"}
+          </Box>
         </StyledTableCell>
         <StyledTableCell align="center" sx={{ minWidth: 110 }}>
           <StyledIconButton onClick={handleViewDetailProduct}>
@@ -133,7 +139,7 @@ export default function RowProductAdmin({ product, onToggleApproval }: Props) {
         handleCloseDialog={handleCloseDetail}
         product={product}
         token={sessionToken}
-        onApprovalChange={handleApprovalChange} // Pass the handler
+        onProductTypeChange={onProductTypeChange}
       />
     </>
   );

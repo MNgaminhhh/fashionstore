@@ -114,7 +114,7 @@ export default function BannersView({ banners: initialBanners, token }: Props) {
     <WrapperPage title="Danh Sách Banner">
       <Box display="flex" justifyContent="flex-end" mb={2}>
         <Button
-          href="/admin/banners/create"
+          href="/dashboard/admin/banners/create"
           color="primary"
           variant="contained"
           startIcon={<Add />}

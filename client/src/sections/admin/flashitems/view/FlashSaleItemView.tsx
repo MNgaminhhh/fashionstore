@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import { Add } from "@mui/icons-material";
+import { Add, ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
 import {
   notifyError,
@@ -30,7 +30,7 @@ import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
 import RowFlashSaleItem from "../components/RowFlashSaleItem";
 import FlashSaleItem from "../../../../services/FlashSaleItem";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { tableHeading } from "../components/data";
 
 type Props = {
@@ -42,6 +42,7 @@ export default function FlashSaleItemView({
   flashSaleItemsData,
   token,
 }: Props) {
+  const router = useRouter();
   const params = useParams();
   const { id } = params;
   const [flashSaleItems, setFlashSaleItems] = useState<any[]>(
@@ -165,10 +166,31 @@ export default function FlashSaleItemView({
       notifyError("Có lỗi xảy ra khi cập nhật trạng thái Flash Sale Item.");
     }
   };
-
+  const handleBack = () => {
+    router.push("/dashboard/admin/flash-sale");
+  };
   return (
     <WrapperPage title="Quản Lý Các Sản Phẩm Của Flash Sale">
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Button
+          onClick={handleBack}
+          color="secondary"
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          sx={{
+            minHeight: 44,
+            textTransform: "none",
+            borderRadius: 1,
+            px: 3,
+          }}
+        >
+          Quay lại
+        </Button>
         <Button
           href={`/dashboard/admin/flash-sale/${id}/flash-items/create`}
           color="primary"

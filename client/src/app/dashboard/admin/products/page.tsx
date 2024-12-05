@@ -6,7 +6,7 @@ import ProductAdminView from "../../../../sections/admin/products/view/ProductAd
 export default async function ProductAdminPage() {
   const cookieStore = cookies();
   const token = cookieStore.get("access_cookie")?.value;
-  const products = await Products.getByAdmin(10, 1);
+  const products = await Products.getAllProduct(10, 1);
   const infoPro = get(products, "data.data", {});
   return <ProductAdminView products={infoPro} token={token} />;
 }

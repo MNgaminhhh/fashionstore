@@ -25,6 +25,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemText from "@mui/material/ListItemText";
 import { Avatar } from "@mui/material";
+import { useAppContext } from "../../../../context/AppContext";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   sequence: yup.number().required("Thứ tự là bắt buộc"),
@@ -53,19 +54,18 @@ export default function BrandForm({ brand, vendor }: Props) {
     sequence: brand?.sequence ? parseInt(brand.sequence) : 0,
     name: brand?.name || "",
     store_id: brand?.store_id || "",
-    visible: brand?.visible === "true" || brand?.visible === true,
+    visible: brand?.visible || true,
     image: brand?.image || "",
   };
-
+  const { sessionToken } = useAppContext();
   const handleFormSubmit = async (values: typeof INITIAL_VALUES) => {
     try {
-      const token = get("token");
       let imageUrl = values.image;
 
       if (files.length > 0) {
         const formData = new FormData();
         formData.append("file", files[0]);
-        const uploadRes = await File.upload(formData, token);
+        const uploadRes = await File.upload(formData, sessionToken);
 
         if (uploadRes.data.success && uploadRes.data.data.files.length > 0) {
           imageUrl = uploadRes.data.data.files[0];
@@ -77,7 +77,7 @@ export default function BrandForm({ brand, vendor }: Props) {
         const res = await Brand.update(
           brand.id,
           { ...values, image: imageUrl },
-          token
+          sessionToken
         );
         if (res.data.success) {
           notifySuccess("Thay đổi thông tin thương hiệu thành công!");
@@ -87,7 +87,10 @@ export default function BrandForm({ brand, vendor }: Props) {
           );
         }
       } else {
-        const res = await Brand.create({ ...values, image: imageUrl }, token);
+        const res = await Brand.create(
+          { ...values, image: imageUrl },
+          sessionToken
+        );
         if (res.data.success) {
           notifySuccess("Tạo thương hiệu mới thành công!");
         } else {
@@ -95,6 +98,8 @@ export default function BrandForm({ brand, vendor }: Props) {
         }
       }
       setIsFormChanged(false);
+      router.push(`/dashboard/admin/brands`);
+      router.refresh();
     } catch (error) {
       notifyError("Có lỗi xảy ra. Vui lòng thử lại sau!");
     }
@@ -268,7 +273,7 @@ export default function BrandForm({ brand, vendor }: Props) {
                 <Button
                   variant="outlined"
                   color="secondary"
-                  onClick={() => router.push("/admin/brands")}
+                  onClick={() => router.push("/dashboard/admin/brands")}
                   sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
                 >
                   Trở về

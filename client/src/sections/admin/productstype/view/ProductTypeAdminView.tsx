@@ -8,36 +8,52 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import TextField from "@mui/material/TextField";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import Scrollbar from "../../../../components/scrollbar";
-import RowBrands from "../components/RowBrands";
 import WrapperPage from "../../../WrapperPage";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import Brand from "../../../../services/Brand";
 import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
-import { Box, Button, Divider } from "@mui/material";
-import { Add } from "@mui/icons-material";
-import Link from "next/link";
-import { tableHeading } from "../components/data";
+import { Box, Button, Divider, MenuItem, Select } from "@mui/material";
 import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-import DialogBox from "../../../../components/dialog/DialogBox";
+import Products from "../../../../services/Products";
+import { tableHeading } from "../components/data";
+import RowProductTypeAdmin from "../components/RowProductTypeAdmin";
 
-type Props = { brands: any[]; token: string };
-
-export default function BrandsView({ brands: initialBrands, token }: Props) {
-  const [brands, setBrands] = useState(initialBrands.brands || []);
-  const [totalPages, setTotalPages] = useState(initialBrands.total_page || 1);
+type Props = { products: any; token: string };
+const selectOptions: { [key: string]: { value: string; label: string }[] } = {
+  is_approved: [
+    { value: "", label: "Tất cả" },
+    { value: "true", label: "Đã duyệt" },
+    { value: "false", label: "Chưa duyệt" },
+  ],
+  status: [
+    { value: "", label: "Tất cả" },
+    { value: "active", label: "Hiển thị" },
+    { value: "inactive", label: "Ẩn" },
+  ],
+  product_type: [
+    { value: "", label: "Tất cả" },
+    { value: "none", label: "Không có" },
+    { value: "best_product", label: "Sản phẩm tốt nhất" },
+    { value: "featured_product", label: "Sản phẩm nổi bật" },
+    { value: "top_product", label: "Sản phẩm hàng đầu" },
+  ],
+};
+export default function ProductTypeAdminView({
+  products: initialProducts,
+  token,
+}: Props) {
+  const [products, setProducts] = useState(initialProducts?.products || []);
+  const [totalPages, setTotalPages] = useState(
+    initialProducts?.total_pages || 1
+  );
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit, setCurrentLimit] = useState(10);
   const pageSizes = [5, 10, 20, 50];
@@ -49,155 +65,108 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
     }));
   };
 
-  const openDeleteDialog = (id: string) => {
-    setSelectedBrandId(id);
-    setDialogOpen(true);
-  };
-
-  const closeDeleteDialog = () => {
-    setDialogOpen(false);
-    setSelectedBrandId(null);
-  };
-
-  const handleDelete = async () => {
-    if (selectedBrandId) {
-      try {
-        await Brand.delete(token, true, selectedBrandId);
-        notifySuccess("Thương hiệu đã được xóa thành công");
-        await applyFilters(currentPage, currentLimit);
-      } catch (error) {
-        notifyError("Có lỗi xảy ra khi xóa thương hiệu");
-      } finally {
-        closeDeleteDialog();
-      }
-    }
-  };
-
   const applyFilters = async (
     page: number,
     limit: number,
     filters = searchValues
   ) => {
     try {
-      const response = await Brand.findAll(token, true, limit, page, filters);
-      const data = response?.data?.data?.brands || [];
-      setBrands(data);
-      setTotalPages(response?.data?.data?.total_page || 1);
-    } catch (error) {
-      notifyError("Có lỗi xảy ra khi tải dữ liệu");
+      const response = await Products.getAllProduct(limit, page, filters);
+      setProducts(response?.data?.data?.products || []);
+      setTotalPages(response?.data?.data?.total_pages || 1);
+    } catch {
+      notifyError("Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
-  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+
+  const handleUpdateProductType = async (id: string, newType: string) => {
     try {
-      const updatedStatus = currentStatus ? true : false;
-      const response = await Brand.update(
+      const response = await Products.updateProductType(
         id,
-        { visible: updatedStatus },
+        newType,
         token,
         true
       );
+
       if (response.data.success) {
-        setBrands((prev) =>
-          prev.map((brand) =>
-            brand.id === id ? { ...brand, status: updatedStatus } : brand
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === id ? { ...product, product_type: newType } : product
           )
         );
-        notifySuccess("Trạng thái thương hiệu đã được cập nhật thành công");
+        notifySuccess("Kiểu sản phẩm đã được cập nhật thành công!");
       } else {
         notifyError(
-          "Cập nhật trạng thái thất bại: " + (response.data.message || "")
+          "Cập nhật kiểu sản phẩm thất bại: " + (response.data.message || "!")
         );
       }
     } catch (error) {
-      notifyError("Có lỗi xảy ra khi cập nhật trạng thái thương hiệu");
+      notifyError("Có lỗi xảy ra khi cập nhật kiểu sản phẩm!");
     }
   };
 
   return (
-    <WrapperPage title="Quản Lý Thương Hiệu">
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button
-          href="/dashboard/admin/brands/create"
-          color="primary"
-          variant="contained"
-          startIcon={<Add />}
-          LinkComponent={Link}
-          sx={{
-            minHeight: 44,
-            textTransform: "none",
-            borderRadius: 1,
-            px: 3,
-          }}
-        >
-          Thêm thương hiệu
-        </Button>
-      </Box>
-
+    <WrapperPage title="Cập Nhật Kiểu Sản Phẩm Đã Duyệt">
       <Card>
         <Formik
           initialValues={{
             page: currentPage,
             limit: currentLimit,
           }}
-          onSubmit={async (values, { setSubmitting }) => {
+          onSubmit={async (values) => {
             setCurrentPage(values.page);
             setCurrentLimit(values.limit);
             await applyFilters(values.page, values.limit);
-            setSubmitting(false);
           }}
         >
           {({ values, handleSubmit, setFieldValue }) => (
             <>
-              <TableContainer
-                sx={{
-                  maxHeight: 900,
-                }}
-                component={Scrollbar}
-              >
+              <TableContainer component={Scrollbar}>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
-                    <TableRow sx={{ backgroundColor: "grey.200", height: 56 }}>
+                    <TableRow>
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
                           align={headCell.align}
                           width={headCell.width}
-                          sx={{ backgroundColor: "grey.200" }}
                         >
                           {headCell.label}
                         </StyledTableCell>
                       ))}
                     </TableRow>
-                    <TableRow sx={{ backgroundColor: "grey.100", height: 56 }}>
+                    <TableRow>
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
                           align={headCell.align}
                           width={headCell.width}
-                          sx={{ backgroundColor: "grey.100" }}
                         >
                           {headCell.id !== "action" &&
-                          headCell.id !== "image" &&
-                          headCell.id !== "sequence" ? (
-                            headCell.id === "visible" ? (
+                          headCell.id !== "images" ? (
+                            selectOptions[headCell.id] ? (
                               <Select
-                                fullWidth
                                 size="small"
                                 value={searchValues[headCell.id] || ""}
                                 onChange={(e) => {
-                                  const newValue = e.target.value as string;
-                                  handleSearchChange(headCell.id, newValue);
+                                  const value = e.target.value as string;
+                                  handleSearchChange(headCell.id, value);
                                   applyFilters(values.page, values.limit, {
                                     ...searchValues,
-                                    [headCell.id]: newValue,
+                                    [headCell.id]: value,
                                   });
                                 }}
+                                displayEmpty
+                                sx={{ width: "100%" }}
                               >
-                                <MenuItem value="">
-                                  Vui lòng chọn giá trị
-                                </MenuItem>
-                                <MenuItem value="true">Hiển thị</MenuItem>
-                                <MenuItem value="false">Ẩn</MenuItem>
+                                {selectOptions[headCell.id].map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
                               </Select>
                             ) : (
                               <TextField
@@ -211,7 +180,7 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                                 }
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
-                                    applyFilters(values.page, values.limit);
+                                    handleSubmit();
                                   }
                                 }}
                                 sx={{ width: "100%" }}
@@ -223,13 +192,12 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {brands.length > 0 ? (
-                      brands.map((brand) => (
-                        <RowBrands
-                          brand={brand}
-                          key={brand.id}
-                          onDelete={() => openDeleteDialog(brand.id)}
-                          onToggleVisibility={handleToggleStatus}
+                    {products.length > 0 ? (
+                      products.map((product) => (
+                        <RowProductTypeAdmin
+                          key={product.id}
+                          product={product}
+                          onProductTypeChange={handleUpdateProductType}
                         />
                       ))
                     ) : (
@@ -238,7 +206,7 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                           colSpan={tableHeading.length}
                           align="center"
                         >
-                          Không có dữ liệu
+                          Không tìm thấy dữ liệu
                         </StyledTableCell>
                       </TableRow>
                     )}
@@ -280,11 +248,6 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
           )}
         </Formik>
       </Card>
-      <DialogBox
-        open={dialogOpen}
-        onClose={closeDeleteDialog}
-        onConfirm={handleDelete}
-      />
     </WrapperPage>
   );
 }

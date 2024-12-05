@@ -44,7 +44,7 @@ class Banner extends Base {
     withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
-      url: `brands`,
+      url: `/banners`,
       method: "post",
       headers: {
         "Content-Type": "application/json",

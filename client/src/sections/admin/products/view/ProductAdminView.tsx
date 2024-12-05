@@ -19,13 +19,30 @@ import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-import DialogBox from "../../../../components/dialog/DialogBox";
 import Products from "../../../../services/Products";
 import { tableHeading } from "../components/data";
 import RowProductAdmin from "../components/RowProductAdmin";
 
 type Props = { products: any; token: string };
-
+const selectOptions: { [key: string]: { value: string; label: string }[] } = {
+  is_approved: [
+    { value: "", label: "Tất cả" },
+    { value: "true", label: "Đã duyệt" },
+    { value: "false", label: "Chưa duyệt" },
+  ],
+  status: [
+    { value: "", label: "Tất cả" },
+    { value: "active", label: "Hiển thị" },
+    { value: "inactive", label: "Ẩn" },
+  ],
+  product_type: [
+    { value: "", label: "Tất cả" },
+    { value: "none", label: "Không có" },
+    { value: "best_product", label: "Sản phẩm tốt nhất" },
+    { value: "featured_product", label: "Sản phẩm nổi bật" },
+    { value: "top_product", label: "Sản phẩm hàng đầu" },
+  ],
+};
 export default function ProductAdminView({
   products: initialProducts,
   token,
@@ -36,10 +53,6 @@ export default function ProductAdminView({
   );
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
-  );
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit, setCurrentLimit] = useState(10);
@@ -52,47 +65,15 @@ export default function ProductAdminView({
     }));
   };
 
-  const openDeleteDialog = (id: string) => {
-    setSelectedProductId(id);
-    setDialogOpen(true);
-  };
-
-  const closeDeleteDialog = () => {
-    setDialogOpen(false);
-    setSelectedProductId(null);
-  };
-
-  const handleDelete = async () => {
-    if (selectedProductId) {
-      try {
-        const response = await Products.delete(token, true, selectedProductId);
-
-        if (response.data.success) {
-          notifySuccess("Sản phẩm đã được xóa thành công.");
-          await applyFilters(currentPage, currentLimit);
-        } else {
-          notifyError(
-            "Xóa sản phẩm thất bại: " +
-              (response.data.message || "Vui lòng thử lại.")
-          );
-        }
-      } catch (error) {
-        notifyError("Có lỗi xảy ra khi xóa sản phẩm.");
-      } finally {
-        closeDeleteDialog();
-      }
-    }
-  };
-
   const applyFilters = async (
     page: number,
     limit: number,
     filters = searchValues
   ) => {
     try {
-      const response = await Products.getByAdmin(limit, page, filters);
-      setProducts(response?.data?.products || []);
-      setTotalPages(response?.data?.total_pages || 1);
+      const response = await Products.getAllProduct(limit, page, filters);
+      setProducts(response?.data?.data?.products || []);
+      setTotalPages(response?.data?.data?.total_pages || 1);
     } catch {
       notifyError("Có lỗi xảy ra khi tải dữ liệu.");
     }
@@ -123,7 +104,7 @@ export default function ProductAdminView({
   };
 
   return (
-    <WrapperPage title="Danh Sách Sản Phẩm">
+    <WrapperPage title="Danh Sách Duyệt Sản Phẩm">
       <Card>
         <Formik
           initialValues={{
@@ -161,19 +142,48 @@ export default function ProductAdminView({
                         >
                           {headCell.id !== "action" &&
                           headCell.id !== "images" ? (
-                            <TextField
-                              size="small"
-                              value={searchValues[headCell.id] || ""}
-                              onChange={(e) =>
-                                handleSearchChange(headCell.id, e.target.value)
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  applyFilters(values.page, values.limit);
+                            selectOptions[headCell.id] ? (
+                              <Select
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value as string;
+                                  handleSearchChange(headCell.id, value);
+                                  applyFilters(values.page, values.limit, {
+                                    ...searchValues,
+                                    [headCell.id]: value,
+                                  });
+                                }}
+                                displayEmpty
+                                sx={{ width: "100%" }}
+                              >
+                                {selectOptions[headCell.id].map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            ) : (
+                              <TextField
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) =>
+                                  handleSearchChange(
+                                    headCell.id,
+                                    e.target.value
+                                  )
                                 }
-                              }}
-                              sx={{ width: "100%" }}
-                            />
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    handleSubmit();
+                                  }
+                                }}
+                                sx={{ width: "100%" }}
+                              />
+                            )
                           ) : null}
                         </StyledTableCell>
                       ))}
@@ -225,11 +235,6 @@ export default function ProductAdminView({
           )}
         </Formik>
       </Card>
-      <DialogBox
-        open={dialogOpen}
-        onClose={closeDeleteDialog}
-        onConfirm={handleDelete}
-      />
     </WrapperPage>
   );
 }

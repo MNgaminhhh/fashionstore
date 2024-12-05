@@ -11,12 +11,12 @@ import * as yup from "yup";
 import MTDropZone from "../../../../components/MTDropZone";
 import File from "../../../../services/File";
 import Banner from "../../../../services/Banner";
-import { get } from "../../../../hooks/useLocalStorage";
 import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
 import BannerModel from "../../../../models/Banner.model";
+import { useAppContext } from "../../../../context/AppContext";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   serial: yup.number().required("Thứ tự là bắt buộc"),
@@ -60,16 +60,16 @@ export default function BannerForm({ banner }: Props) {
     status: banner?.status === "1" || banner?.status === 1 ? 1 : 0,
     banner_image: banner?.banner_image || "",
   };
+  const { sessionToken } = useAppContext();
 
   const handleFormSubmit = async (values: typeof INITIAL_VALUES) => {
     try {
-      const token = get("token");
       let imageUrl = values.banner_image;
 
       if (files.length > 0) {
         const formData = new FormData();
         formData.append("file", files[0]);
-        const uploadRes = await File.upload(formData, token);
+        const uploadRes = await File.upload(formData, sessionToken);
 
         if (uploadRes.data.success && uploadRes.data.data.files.length > 0) {
           imageUrl = uploadRes.data.data.files[0];
@@ -82,7 +82,7 @@ export default function BannerForm({ banner }: Props) {
         const res = await Banner.update(
           banner.id,
           { ...values, banner_image: imageUrl },
-          token
+          sessionToken
         );
         if (res.data.success) {
           notifySuccess("Thay đổi thông tin banner thành công!");
@@ -94,7 +94,7 @@ export default function BannerForm({ banner }: Props) {
       } else {
         const res = await Banner.create(
           { ...values, banner_image: imageUrl },
-          token
+          sessionToken
         );
         if (res.data.success) {
           notifySuccess("Tạo banner mới thành công!");
@@ -103,6 +103,8 @@ export default function BannerForm({ banner }: Props) {
         }
       }
       setIsFormChanged(false);
+      router.push(`/dashboard/admin/banners`);
+      router.refresh();
     } catch (error) {
       notifyError("Có lỗi xảy ra. Vui lòng thử lại sau!");
     }
@@ -253,7 +255,7 @@ export default function BannerForm({ banner }: Props) {
                 <Button
                   variant="outlined"
                   color="secondary"
-                  onClick={() => router.push("/admin/banners")}
+                  onClick={() => router.push("/dashboard/admin/banners")}
                   sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
                 >
                   Trở về

@@ -32,7 +32,7 @@ export default function RowBrands({
   const [isVisible, setIsVisible] = useState(brand.visible);
 
   const handleEdit = (id: string) => {
-    router.push(`/admin/brands/${id}`);
+    router.push(`/dashboard/admin/brands/${id}`);
   };
 
   const handleToggleVisibility = () => {

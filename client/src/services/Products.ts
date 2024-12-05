@@ -6,6 +6,17 @@ interface Filters {
   status?: string;
   product_type?: string;
 }
+
+interface Filterss {
+  name?: string;
+  store_name?: string;
+  status?: string;
+  product_type?: string;
+  low_price?: string;
+  high_price?: string;
+  cate_name?: string;
+  is_approved?: string;
+}
 interface cuProductModel {
   name: string;
   slug: string;
@@ -81,17 +92,31 @@ class ProductsServer extends Base {
 
     return rs.data;
   }
-  async getByAdmin(
+
+  async getAllProduct(
     limit: number = 10,
     page: number = 1,
-    filters: Filters = {}
+    filters: Filterss = {}
   ) {
     let url = `/products?limit=${encodeURIComponent(
       limit
     )}&page=${encodeURIComponent(page)}`;
 
     const queryParams: string[] = [];
-
+    if (filters.store_name) {
+      queryParams.push(`store_name=${encodeURIComponent(filters.store_name)}`);
+    }
+    if (filters.low_price) {
+      queryParams.push(`low_price=${encodeURIComponent(filters.low_price)}`);
+    }
+    if (filters.high_price) {
+      queryParams.push(`high_price=${encodeURIComponent(filters.high_price)}`);
+    }
+    if (filters.is_approved) {
+      queryParams.push(
+        `is_approved=${encodeURIComponent(filters.is_approved)}`
+      );
+    }
     if (filters.name) {
       queryParams.push(`name=${encodeURIComponent(filters.name)}`);
     }
@@ -193,6 +218,24 @@ class ProductsServer extends Base {
         Authorization: token ? `Bearer ${token}` : undefined,
       },
       data: { is_approved: newStatus },
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
+  async updateProductType(
+    id: string,
+    productType: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `/products/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: { product_type: productType },
       withCredentials: withCredentials,
     });
     return rs;

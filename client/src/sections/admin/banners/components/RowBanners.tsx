@@ -17,16 +17,12 @@ type Props = {
   onToggleStatus: (id: string, status: boolean) => void;
 };
 
-export default function RowBanner({
-  banner,
-  onDelete,
-  onToggleStatus,
-}: Props) {
+export default function RowBanner({ banner, onDelete, onToggleStatus }: Props) {
   const router = useRouter();
   const [isStatus, setIsStatus] = useState(banner.status);
 
   const handleEdit = (id: string) => {
-    router.push(`/admin/banners/${id}`);
+    router.push(`/dashboard/admin/banners/${id}`);
   };
 
   const handleToggleStatus = () => {

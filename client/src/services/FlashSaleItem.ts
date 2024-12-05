@@ -24,7 +24,7 @@ class FlashSaleItemServer extends Base {
         "Content-Type": "application/json",
       },
     });
-    return rs;
+    return rs.data;
   }
   async getFlashSaleItems(
     id: string,

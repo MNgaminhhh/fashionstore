@@ -114,7 +114,7 @@ export default function SubCategoryView({ subcategories: initialSubs, token }: P
         <WrapperPage title="Quản Lý Danh Mục Con">
             <Box display="flex" justifyContent="flex-end" mb={2}>
                 <Button
-                    href="/admin/categories/sub-category/create"
+                    href="/dashboard/admin/categories/sub-category/create"
                     color="primary"
                     variant="contained"
                     startIcon={<Add />}

@@ -39,7 +39,6 @@ const FlashSaleItemSchema = Yup.object().shape({
   show: Yup.boolean().required("Trạng thái hiển thị là bắt buộc"),
 });
 
-// Initial form values
 const INITIAL_VALUES = (flashSaleItem?: FlashSaleItemModel) => ({
   id: flashSaleItem?.id || "",
   flash_sale_id: flashSaleItem?.flash_sale_id || "",
@@ -52,6 +51,7 @@ export default function FlashSaleItemForm({
   products,
   token,
 }: Props) {
+  console.log(flashSaleItem);
   const router = useRouter();
   const params = useParams();
   const { id } = params;
