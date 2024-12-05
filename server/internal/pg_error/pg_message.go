@@ -23,6 +23,9 @@ func GetMessageError(pqError *pq.Error) int {
 		if name == "unique_coupon_code" {
 			return response.ErrCodeCouponIsAlreadyExist
 		}
+		if name == "shipping_rules_min_order_cost_key" {
+			return response.ErrCodeUniqueMinOrderCost
+		}
 		return response.ErrCodeConflict
 	case string(ForeignKeyViolation):
 		if name == "child_categories_sub_category_id_fkey" || name == "sub_categories_category_id_fkey" {
