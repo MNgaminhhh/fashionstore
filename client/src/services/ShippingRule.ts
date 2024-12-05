@@ -65,7 +65,6 @@ class ShippingRuleServer extends Base {
     if (queryParams.length > 0) {
       url += `&${queryParams.join("&")}`;
     }
-    console.log(url);
     const rs = await this.execute({
       url,
       method: "get",
