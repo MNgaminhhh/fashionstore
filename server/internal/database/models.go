@@ -564,6 +564,16 @@ type ProductVariant struct {
 	UpdatedAt sql.NullTime
 }
 
+type ShippingRule struct {
+	ID           uuid.UUID
+	Name         string
+	MinOrderCost int64
+	Price        int32
+	Status       sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+}
+
 type Sku struct {
 	ID             uuid.UUID
 	ProductID      uuid.UUID
