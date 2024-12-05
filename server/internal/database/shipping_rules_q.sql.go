@@ -50,6 +50,7 @@ FROM shipping_rules
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
 AND (status = COALESCE($2, status) OR $2 IS NULL)
 AND (min_order_cost = $3 OR $3 = -1)
+AND (price = $4 OR $4 = -1)
 ORDER BY price ASC
 `
 
@@ -57,10 +58,16 @@ type GetAllShippingRulesParams struct {
 	Column1      sql.NullString
 	Status       sql.NullBool
 	MinOrderCost int64
+	Price        int32
 }
 
 func (q *Queries) GetAllShippingRules(ctx context.Context, arg GetAllShippingRulesParams) ([]ShippingRule, error) {
-	rows, err := q.db.QueryContext(ctx, getAllShippingRules, arg.Column1, arg.Status, arg.MinOrderCost)
+	rows, err := q.db.QueryContext(ctx, getAllShippingRules,
+		arg.Column1,
+		arg.Status,
+		arg.MinOrderCost,
+		arg.Price,
+	)
 	if err != nil {
 		return nil, err
 	}

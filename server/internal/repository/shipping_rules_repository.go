@@ -6,7 +6,6 @@ import (
 	"backend/internal/validator"
 	"database/sql"
 	"github.com/google/uuid"
-	"log"
 )
 
 type IShippingRulesRepository interface {
@@ -45,6 +44,7 @@ func (s ShippingRulesRepository) GetAllShippingRules(filterParam validator.Filte
 	param := database.GetAllShippingRulesParams{
 		Column1:      sql.NullString{},
 		Status:       sql.NullBool{},
+		Price:        -1,
 		MinOrderCost: -1,
 	}
 	if filterParam.Name != nil {
@@ -60,7 +60,9 @@ func (s ShippingRulesRepository) GetAllShippingRules(filterParam validator.Filte
 	if filterParam.MinOrderCost != nil {
 		param.MinOrderCost = int64(*filterParam.MinOrderCost)
 	}
-	log.Println(param)
+	if filterParam.Price != nil {
+		param.Price = int32(*filterParam.Price)
+	}
 	rules, err := s.sqlc.GetAllShippingRules(ctx, param)
 	if err != nil {
 		return nil, err
