@@ -1,8 +1,13 @@
 import Base from "./Base";
 
 interface Filters {
-  startDate?: string;
-  endDate?: string;
+  name?: string;
+  status?: string;
+  discount?: string;
+  max_price?: string;
+  quantity?: string;
+  code?: string;
+  type?: string;
 }
 interface cuCouponsModel {
   code: string;
@@ -45,11 +50,26 @@ class CouponsServer extends Base {
 
     const queryParams: string[] = [];
 
-    if (filters.startDate) {
-      queryParams.push(`startDate=${encodeURIComponent(filters.startDate)}`);
+    if (filters.name) {
+      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
     }
-    if (filters.endDate) {
-      queryParams.push(`endDate=${encodeURIComponent(filters.endDate)}`);
+    if (filters.code) {
+      queryParams.push(`code=${encodeURIComponent(filters.code)}`);
+    }
+    if (filters.type) {
+      queryParams.push(`type=${encodeURIComponent(filters.type)}`);
+    }
+    if (filters.quantity) {
+      queryParams.push(`quantity=${encodeURIComponent(filters.quantity)}`);
+    }
+    if (filters.discount) {
+      queryParams.push(`discount=${encodeURIComponent(filters.discount)}`);
+    }
+    if (filters.max_price) {
+      queryParams.push(`maxPrice=${encodeURIComponent(filters.max_price)}`);
+    }
+    if (filters.status) {
+      queryParams.push(`status=${encodeURIComponent(filters.status)}`);
     }
 
     if (queryParams.length > 0) {
@@ -104,7 +124,24 @@ class CouponsServer extends Base {
     });
     return rs;
   }
-
+  async updateStatus(
+    id: string,
+    newStatus: boolean,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `/coupons/status/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: { status: newStatus },
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
   async delete(
     id: string,
     token: string | undefined = undefined,

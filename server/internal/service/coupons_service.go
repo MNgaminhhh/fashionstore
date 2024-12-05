@@ -9,11 +9,12 @@ import (
 	"backend/pkg/response"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"github.com/lib/pq"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type CouponResponseData struct {

@@ -14,6 +14,10 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
+const mappingType: { [key: string]: string } = {
+  price: "Giá",
+  shipping_cost: "Phí vận chuyển",
+};
 export default function RowCoupon({ coupon, onDelete }: Props) {
   const router = useRouter();
 
@@ -28,7 +32,7 @@ export default function RowCoupon({ coupon, onDelete }: Props) {
   return (
     <StyledTableRow tabIndex={-1} role="checkbox">
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Field || "-"}
+        {mappingType[coupon.Field] || coupon.Field || "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
         {coupon.Operator || "-"}

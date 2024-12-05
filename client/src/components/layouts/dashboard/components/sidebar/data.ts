@@ -14,6 +14,16 @@ export const navigation = [
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/dashboard/admin" },
   { type: "label", label: "Ecommerce" },
   {
+    name: "Ecommerce",
+    icon: ProductsIcon,
+    children: [
+      { name: "Danh Sách ĐK Mã Giảm Giá", path: "/dashboard/admin/coupons" },
+      { name: "Thêm ĐK Mã Giảm Giá", path: "/dashboard/admin/coupons/create" },
+      { name: "Danh Sách Mã Giảm Giá", path: "/dashboard/admin/coupons-d" },
+      { name: "Thêm Mã Giảm Giá", path: "/dashboard/admin/coupons-d/create" },
+    ],
+  },
+  {
     name: "Quản lý Danh Mục",
     icon: MenuOpenIcon,
     children: [
@@ -56,8 +66,6 @@ export const navigation = [
       { name: "Thêm Flash Sale", path: "/dashboard/admin/flash-sale/create" },
       { name: "Danh Sách Banner", path: "/dashboard/admin/banners" },
       { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
-      { name: "Danh Sách Mã Giảm Giá", path: "/dashboard/admin/coupons" },
-      { name: "Thêm Mã Giảm Giá", path: "/dashboard/admin/coupons/create" },
       { name: "Cấu Hình Vận Chuyển", path: "/dashboard/admin/shipping-rule" },
     ],
   },

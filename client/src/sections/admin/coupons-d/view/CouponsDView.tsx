@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Formik } from "formik";
 import {
   Card,
@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import { Add, ArrowBack } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import Link from "next/link";
 import {
   notifyError,
@@ -29,31 +29,51 @@ import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
 import { useRouter } from "next/navigation";
+import Coupons from "../../../../services/Coupons";
+import CouponModel from "../../../../models/Coupon.model";
 import { tableHeading } from "../components/data";
-import RowCoupon from "../components/RowCoupons";
-import Conditions from "../../../../services/Conditions";
+import RowCouponsD from "../components/RowCouponsD";
+import DetailDialog from "../components/DetailDialog";
 
 type Props = {
-  conditionsData: any;
+  couponsData: any;
   token: string;
 };
-export default function CouponsView({ conditionsData, token }: Props) {
+const selectOptions: { [key: string]: { value: string; label: string }[] } = {
+  status: [
+    { value: "", label: "Tất cả" },
+    { value: "true", label: "Hiển thị" },
+    { value: "false", label: "Ẩn" },
+  ],
+  type: [
+    { value: "", label: "Tất cả" },
+    { value: "fixed", label: "Giá Cố Định" },
+    { value: "percentage", label: "Phí (%)" },
+    { value: "shipping_fixed", label: "Phí Vận Chuyển Cố Định" },
+    { value: "shipping_percentage", label: "Phí Vận Chuyển (%)" },
+  ],
+};
+export default function CouponsDView({ couponsData, token }: Props) {
   const router = useRouter();
-  const [coupons, setCoupons] = useState(conditionsData?.conditions || []);
+  const [coupons, setCoupons] = useState<CouponModel[]>(
+    couponsData.coupons || []
+  );
   const [totalPages, setTotalPages] = useState<number>(
-    conditionsData?.totalPages || 1
+    couponsData.totalPages || 1
   );
   const [searchValues, setSearchValues] = useState<{ [key: string]: string }>(
     {}
   );
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [selectedCoupon, setSelectedCoupon] = useState<CouponModel | null>(
+    null
+  );
   const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentLimit, setCurrentLimit] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(couponsData.page || 1);
+  const [currentLimit, setCurrentLimit] = useState<number>(
+    couponsData.limit || 10
+  );
   const pageSizes: number[] = [5, 10, 20, 50];
-
-  const selectOptions: { [key: string]: { value: string; label: string }[] } =
-    {};
 
   const handleSearchChange = (field: string, value: string) => {
     setSearchValues((prev) => ({
@@ -62,36 +82,14 @@ export default function CouponsView({ conditionsData, token }: Props) {
     }));
   };
 
-  const openDeleteDialog = (id: string) => {
-    setSelectedCouponId(id);
+  const handleViewDetail = (coupon: CouponModel) => {
+    setSelectedCoupon(coupon);
     setDialogOpen(true);
   };
 
-  const closeDeleteDialog = () => {
+  const handleCloseDetailDialog = () => {
+    setSelectedCoupon(null);
     setDialogOpen(false);
-    setSelectedCouponId(null);
-  };
-
-  const handleDelete = async () => {
-    if (selectedCouponId) {
-      try {
-        const response = await Conditions.delete(selectedCouponId, token);
-
-        if (response.data.success) {
-          notifySuccess("Coupon đã được xoá thành công.");
-          await applyFilters(currentPage, currentLimit);
-        } else {
-          notifyError(
-            "Xoá Coupon thất bại: " +
-              (response.data.message || "Vui lòng thử lại.")
-          );
-        }
-      } catch (error) {
-        notifyError("Có lỗi xảy ra khi xoá Coupon.");
-      } finally {
-        closeDeleteDialog();
-      }
-    }
   };
 
   const applyFilters = async (
@@ -100,7 +98,7 @@ export default function CouponsView({ conditionsData, token }: Props) {
     filters: { [key: string]: string } = searchValues
   ) => {
     try {
-      const response = await Conditions.getAllConditions(
+      const response = await Coupons.getAllCoupons(
         token,
         true,
         limit,
@@ -109,8 +107,10 @@ export default function CouponsView({ conditionsData, token }: Props) {
       );
 
       if (response.success) {
-        setCoupons(response.data?.conditions || []);
+        setCoupons(response.data.coupons || []);
         setTotalPages(response.data.totalPages || 1);
+        setCurrentPage(response.data.page || 1);
+        setCurrentLimit(response.data.limit || 10);
       } else {
         notifyError("Có lỗi xảy ra khi tải dữ liệu.");
       }
@@ -119,15 +119,32 @@ export default function CouponsView({ conditionsData, token }: Props) {
     }
   };
 
-  const handleBack = () => {
-    router.push("/dashboard/admin/coupons");
+  const handleToggleStatus = async (id: string, newStatus: boolean) => {
+    try {
+      const response = await Coupons.updateStatus(id, newStatus, token);
+
+      if (response?.success || response?.data?.success) {
+        setCoupons((prevCoupons) =>
+          prevCoupons.map((coupon) =>
+            coupon.id === id ? { ...coupon, status: newStatus } : coupon
+          )
+        );
+        notifySuccess("Trạng thái đã được cập nhật thành công.");
+      } else {
+        notifyError(
+          "Cập nhật trạng thái thất bại: " + (response.data?.message || "")
+        );
+      }
+    } catch (error: any) {
+      notifyError("Có lỗi xảy ra khi cập nhật trạng thái Coupon.");
+    }
   };
 
   return (
-    <WrapperPage title="Danh Sách Điều Kiện Mã Giảm Giá">
+    <WrapperPage title="Danh Sách Coupon">
       <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
         <Button
-          href={`/dashboard/admin/coupons/create`}
+          href={`/dashboard/admin/coupons-d/create`}
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -139,7 +156,7 @@ export default function CouponsView({ conditionsData, token }: Props) {
             px: 3,
           }}
         >
-          Thêm điều kiện mã giảm giá
+          Thêm Coupon
         </Button>
       </Box>
 
@@ -178,20 +195,51 @@ export default function CouponsView({ conditionsData, token }: Props) {
                           align={headCell.align}
                           width={headCell.width}
                         >
-                          {headCell.id === "description" ? (
-                            <TextField
-                              size="small"
-                              value={searchValues[headCell.id] || ""}
-                              onChange={(e) =>
-                                handleSearchChange(headCell.id, e.target.value)
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  handleSubmit();
+                          {headCell.id !== "action" &&
+                          headCell.id !== "code" &&
+                          headCell.id !== "date" ? (
+                            selectOptions[headCell.id] ? (
+                              <Select
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value as string;
+                                  handleSearchChange(headCell.id, value);
+                                  applyFilters(values.page, values.limit, {
+                                    ...searchValues,
+                                    [headCell.id]: value,
+                                  });
+                                }}
+                                displayEmpty
+                                sx={{ width: "100%" }}
+                              >
+                                {selectOptions[headCell.id].map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            ) : (
+                              <TextField
+                                size="small"
+                                value={searchValues[headCell.id] || ""}
+                                onChange={(e) =>
+                                  handleSearchChange(
+                                    headCell.id,
+                                    e.target.value
+                                  )
                                 }
-                              }}
-                              sx={{ width: "100%" }}
-                            />
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    handleSubmit();
+                                  }
+                                }}
+                                sx={{ width: "100%" }}
+                              />
+                            )
                           ) : null}
                         </StyledTableCell>
                       ))}
@@ -200,10 +248,11 @@ export default function CouponsView({ conditionsData, token }: Props) {
                   <TableBody>
                     {coupons.length > 0 ? (
                       coupons.map((coupon) => (
-                        <RowCoupon
-                          key={coupon.ID}
+                        <RowCouponsD
+                          key={coupon.id}
                           coupon={coupon}
-                          onDelete={openDeleteDialog}
+                          onToggleStatus={handleToggleStatus}
+                          onViewDetail={handleViewDetail}
                         />
                       ))
                     ) : (
@@ -257,12 +306,10 @@ export default function CouponsView({ conditionsData, token }: Props) {
           )}
         </Formik>
       </Card>
-      <DialogBox
+      <DetailDialog
         open={dialogOpen}
-        onClose={closeDeleteDialog}
-        onConfirm={handleDelete}
-        title="Xác nhận xoá"
-        content="Bạn có chắc chắn muốn xoá Coupon này?"
+        onClose={handleCloseDetailDialog}
+        coupon={selectedCoupon}
       />
     </WrapperPage>
   );

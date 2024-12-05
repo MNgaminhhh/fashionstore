@@ -3,7 +3,7 @@ export const tableHeading = [
     id: "Field",
     label: "Kiểu",
     align: "left",
-    width: "550px",
+    width: "150px",
   },
   {
     id: "Operator",
@@ -18,10 +18,10 @@ export const tableHeading = [
     width: "100px",
   },
   {
-    id: "Description",
+    id: "description",
     label: "Mô Tả",
     align: "left",
-    width: "100px",
+    width: "500px",
   },
   {
     id: "action",

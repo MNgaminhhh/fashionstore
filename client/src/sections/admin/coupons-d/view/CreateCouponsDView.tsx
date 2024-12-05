@@ -1,14 +1,20 @@
 import { cookies } from "next/headers";
 import WrapperPage from "../../../WrapperPage";
-import CouponsForm from "../components/CouponsForm";
+import CouponsDForm from "../components/CouponsDForm";
+import Conditions from "../../../../services/Conditions";
+import { get } from "lodash";
 
-export default async function CreateCouponsView() {
+export default async function CreateCouponsDView() {
   const cookieStore = cookies();
   const token = cookieStore.get("access_cookie")?.value;
+
+  const condition = await Conditions.getListConditions(token);
+  const infoCons = get(condition, "data.conditions", []);
+
   try {
     return (
       <WrapperPage title="Tạo Điều Kiện Mã Giảm Giá">
-        <CouponsForm token={token} />
+        <CouponsDForm cond={infoCons} token={token} />
       </WrapperPage>
     );
   } catch (error) {

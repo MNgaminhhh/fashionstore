@@ -1,8 +1,7 @@
 import Base from "./Base";
 
 interface Filters {
-  startDate?: string;
-  endDate?: string;
+  description?: string;
 }
 interface cuConditionModel {
   field: string;
@@ -39,17 +38,31 @@ class ConditionsServer extends Base {
     )}&page=${encodeURIComponent(page)}`;
 
     const queryParams: string[] = [];
-
-    if (filters.startDate) {
-      queryParams.push(`startDate=${encodeURIComponent(filters.startDate)}`);
+    if (filters.description) {
+      queryParams.push(
+        `description=${encodeURIComponent(filters.description)}`
+      );
     }
-    if (filters.endDate) {
-      queryParams.push(`endDate=${encodeURIComponent(filters.endDate)}`);
-    }
-
     if (queryParams.length > 0) {
       url += `&${queryParams.join("&")}`;
     }
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
+    return rs.data;
+  }
+  async getListConditions(
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    let url = `/conditions`;
     const rs = await this.execute({
       url,
       method: "get",
