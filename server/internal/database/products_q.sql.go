@@ -291,3 +291,62 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 	)
 	return err
 }
+
+const viewFullDetailOfProduct = `-- name: ViewFullDetailOfProduct :one
+SELECT p.id, p.name, p.long_description, p.images, p.vendor_id,
+       v.store_name, v.full_name AS vendor_full_name, v.phone_number, v.description AS vendor_description,
+       v.address AS vendor_address, v.banner AS vendor_banner, v.email,
+       JSON_AGG(DISTINCT pv.name) AS variants,
+
+       JSON_AGG(
+           JSON_BUILD_OBJECT(
+                pv.name, vo.name
+            )
+       ) AS options
+FROM products p
+INNER JOIN product_variants pv ON pv.product_id = p.id
+INNER JOIN variant_options vo ON vo.product_variant_id = pv.id
+INNER JOIN vendors v ON p.vendor_id = v.id
+WHERE p.id = $1
+GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id,
+v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email
+`
+
+type ViewFullDetailOfProductRow struct {
+	ID                uuid.UUID
+	Name              string
+	LongDescription   sql.NullString
+	Images            json.RawMessage
+	VendorID          uuid.UUID
+	StoreName         string
+	VendorFullName    string
+	PhoneNumber       string
+	VendorDescription sql.NullString
+	VendorAddress     string
+	VendorBanner      string
+	Email             string
+	Variants          json.RawMessage
+	Options           json.RawMessage
+}
+
+func (q *Queries) ViewFullDetailOfProduct(ctx context.Context, id uuid.UUID) (ViewFullDetailOfProductRow, error) {
+	row := q.db.QueryRowContext(ctx, viewFullDetailOfProduct, id)
+	var i ViewFullDetailOfProductRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.LongDescription,
+		&i.Images,
+		&i.VendorID,
+		&i.StoreName,
+		&i.VendorFullName,
+		&i.PhoneNumber,
+		&i.VendorDescription,
+		&i.VendorAddress,
+		&i.VendorBanner,
+		&i.Email,
+		&i.Variants,
+		&i.Options,
+	)
+	return i, err
+}

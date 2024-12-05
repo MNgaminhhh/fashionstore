@@ -135,8 +135,19 @@ func (c CouponsService) UpdateCondition(id string, customParam validator.UpdateC
 		condition.Description = *customParam.Description
 	}
 	if customParam.Value != nil {
-		mapValue := map[string]interface{}{
-			"value": *customParam.Value,
+		var mapValue map[string]interface{}
+		if condition.Field == database.ConditionFieldPrice || condition.Field == database.ConditionFieldShippingCost {
+			value, errParseInt := strconv.ParseInt(*customParam.Value, 10, 64)
+			if errParseInt != nil {
+				return response.ErrCodeInternal
+			}
+			mapValue = map[string]interface{}{
+				"value": value,
+			}
+		} else {
+			mapValue = map[string]interface{}{
+				"value": *customParam.Value,
+			}
 		}
 		value, _ := json.Marshal(mapValue)
 		condition.Value = value

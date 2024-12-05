@@ -6,6 +6,7 @@ import (
 	"backend/internal/validator"
 	"database/sql"
 	"github.com/google/uuid"
+	"log"
 	"time"
 )
 
@@ -97,10 +98,12 @@ func (sr *SkusRepository) DeleteSkuById(id uuid.UUID) error {
 }
 
 func (sr *SkusRepository) GetAllSkusByProductId(productId uuid.UUID) ([]database.GetAllSkuByProductIdRow, error) {
+	log.Println(productId)
 	results, err := sr.sqlc.GetAllSkuByProductId(ctx, productId)
 	if err != nil {
 		return nil, err
 	}
+	log.Println(len(results))
 	return results, nil
 }
 
