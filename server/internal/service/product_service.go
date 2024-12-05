@@ -302,8 +302,8 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 			return response.ErrCodeInternal, nil
 		}
 		if skus != nil && len(skus) > 0 {
-			resData.LowestPrice = int(skus[0].Price)
-			resData.HighestPrice = int(skus[len(skus)-1].Price)
+			resData.LowestPrice = int(skus[0].OfferPrice)
+			resData.HighestPrice = int(skus[len(skus)-1].OfferPrice)
 			if filter.LowPrice != nil && filter.HighPrice != nil {
 				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
 					continue
