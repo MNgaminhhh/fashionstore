@@ -16,26 +16,32 @@ import (
 )
 
 type ProductResponse struct {
-	ID               uuid.UUID              `json:"id"`
-	Name             string                 `json:"name"`
-	Slug             string                 `json:"slug,omitempty"`
-	Images           []string               `json:"images"`
-	VendorID         string                 `json:"vendor_id,omitempty"`
-	CategoryID       string                 `json:"category_id,omitempty"`
-	SubCategoryID    string                 `json:"sub_category_id,omitempty"`
-	ChildCategoryID  string                 `json:"child_category_id,omitempty"`
-	ShortDescription string                 `json:"short_description,omitempty"`
-	LongDescription  string                 `json:"long_description,omitempty"`
-	ProductType      string                 `json:"product_type,omitempty"`
-	Status           string                 `json:"status,omitempty"`
-	IsApproved       bool                   `json:"is_approved"`
-	StoreName        string                 `json:"store_name,omitempty"`
-	CategoryName     string                 `json:"category_name,omitempty"`
-	LowestPrice      int                    `json:"lowest_price,omitempty"`
-	HighestPrice     int                    `json:"highest_price,omitempty"`
-	Variants         json.RawMessage        `json:"variants,omitempty"`
-	Options          json.RawMessage        `json:"options,omitempty"`
-	Vendor           map[string]interface{} `json:"vendor,omitempty"`
+	ID               uuid.UUID                `json:"id"`
+	Name             string                   `json:"name"`
+	Slug             string                   `json:"slug,omitempty"`
+	Images           []string                 `json:"images"`
+	VendorID         string                   `json:"vendor_id,omitempty"`
+	CategoryID       string                   `json:"category_id,omitempty"`
+	SubCategoryID    string                   `json:"sub_category_id,omitempty"`
+	ChildCategoryID  string                   `json:"child_category_id,omitempty"`
+	ShortDescription string                   `json:"short_description,omitempty"`
+	LongDescription  string                   `json:"long_description,omitempty"`
+	ProductType      string                   `json:"product_type,omitempty"`
+	Status           string                   `json:"status,omitempty"`
+	IsApproved       bool                     `json:"is_approved"`
+	StoreName        string                   `json:"store_name,omitempty"`
+	CategoryName     string                   `json:"category_name,omitempty"`
+	LowestPrice      int                      `json:"lowest_price,omitempty"`
+	HighestPrice     int                      `json:"highest_price,omitempty"`
+	Variants         json.RawMessage          `json:"variants,omitempty"`
+	Options          json.RawMessage          `json:"options,omitempty"`
+	Vendor           map[string]interface{}   `json:"vendor,omitempty"`
+	Skus             []map[string]interface{} `json:"skus,omitempty"`
+}
+
+type ProductWithSkus struct {
+	Product *database.ViewFullDetailOfProductRow
+	Skus    []database.GetAllSkuByProductIdRow
 }
 
 type IProductService interface {
@@ -106,7 +112,20 @@ func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductRespo
 		}
 		return response.ErrCodeInternal, nil
 	}
-	resData, _ := mapProductToResponseData(product)
+	skusRepo := repository.NewSkusRepository()
+	skus, findSkusErr := skusRepo.GetAllSkusByProductId(productId)
+	if findSkusErr != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal, nil
+	}
+	productWithSkus := ProductWithSkus{
+		Product: product,
+		Skus:    skus,
+	}
+	resData, _ := mapProductToResponseData(&productWithSkus)
 	return response.SuccessCode, resData
 }
 
@@ -390,8 +409,8 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 	}, nil
 }
 
-func mapProductToResponseData[T any](product *T) (*ProductResponse, error) {
-	switch p := any(product).(type) {
+func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
+	switch p := any(data).(type) {
 	case *database.Product:
 		var images []string
 		err := json.Unmarshal(p.Images, &images)
@@ -413,30 +432,43 @@ func mapProductToResponseData[T any](product *T) (*ProductResponse, error) {
 			Status:           string(p.Status.ProductStatus),
 			IsApproved:       p.IsApproved.Bool,
 		}, nil
-	case *database.ViewFullDetailOfProductRow:
-
+	case *ProductWithSkus:
+		product := p.Product
+		skus := p.Skus
 		var images []string
-		err := json.Unmarshal(p.Images, &images)
+		err := json.Unmarshal(product.Images, &images)
 		if err != nil {
 			return nil, err
 		}
+		var skusRes []map[string]interface{}
+		for _, sku := range skus {
+			skusRes = append(skusRes, map[string]interface{}{
+				"sku":             sku.Sku,
+				"price":           sku.Price,
+				"offer":           sku.Offer.Int32,
+				"in_stock":        sku.InStock.Int16,
+				"offer_price":     sku.OfferPrice,
+				"variant_options": sku.VariantOptions,
+			})
+		}
 		return &ProductResponse{
-			ID:              p.ID,
-			Name:            p.Name,
+			ID:              product.ID,
+			Name:            product.Name,
 			Images:          images,
-			LongDescription: p.LongDescription.String,
-			Variants:        p.Variants,
-			Options:         p.Options,
+			LongDescription: product.LongDescription.String,
+			Variants:        product.Variants,
+			Options:         product.Options,
 			Vendor: map[string]interface{}{
-				"vendorId":     p.VendorID.String(),
-				"name":         p.VendorFullName,
-				"store_name":   p.StoreName,
-				"email":        p.Email,
-				"phone_number": p.PhoneNumber,
-				"description":  p.VendorDescription.String,
-				"address":      p.VendorAddress,
-				"banner":       p.VendorBanner,
+				"vendorId":     product.VendorID.String(),
+				"name":         product.VendorFullName,
+				"store_name":   product.StoreName,
+				"email":        product.Email,
+				"phone_number": product.PhoneNumber,
+				"description":  product.VendorDescription.String,
+				"address":      product.VendorAddress,
+				"banner":       product.VendorBanner,
 			},
+			Skus: skusRes,
 		}, nil
 	default:
 		return &ProductResponse{}, nil

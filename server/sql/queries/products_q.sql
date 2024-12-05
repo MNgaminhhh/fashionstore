@@ -94,9 +94,12 @@ SELECT p.id, p.name, p.long_description, p.images, p.vendor_id,
        v.store_name, v.full_name AS vendor_full_name, v.phone_number, v.description AS vendor_description,
        v.address AS vendor_address, v.banner AS vendor_banner, v.email,
        JSON_AGG(DISTINCT pv.name) AS variants,
-       JSON_AGG(JSON_BUILD_OBJECT(
-        pv.name, vo.name
-     )) AS options
+
+       JSON_AGG(
+           JSON_BUILD_OBJECT(
+                pv.name, vo.name
+            )
+       ) AS options
 FROM products p
 INNER JOIN product_variants pv ON pv.product_id = p.id
 INNER JOIN variant_options vo ON vo.product_variant_id = pv.id
