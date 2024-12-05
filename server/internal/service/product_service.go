@@ -10,36 +10,38 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"log"
 )
 
 type ProductResponse struct {
-	ID               uuid.UUID  `json:"id"`
-	Name             string     `json:"name"`
-	Slug             string     `json:"slug"`
-	Images           []string   `json:"images"`
-	VendorID         uuid.UUID  `json:"vendor_id"`
-	CategoryID       uuid.UUID  `json:"category_id"`
-	SubCategoryID    *uuid.UUID `json:"sub_category_id,omitempty"`
-	ChildCategoryID  *uuid.UUID `json:"child_category_id,omitempty"`
-	ShortDescription string     `json:"short_description,omitempty"`
-	LongDescription  string     `json:"long_description,omitempty"`
-	ProductType      string     `json:"product_type,omitempty"`
-	Status           string     `json:"status"`
-	IsApproved       bool       `json:"is_approved"`
-	StoreName        string     `json:"store_name,omitempty"`
-	CategoryName     string     `json:"category_name,omitempty"`
-	LowestPrice      int        `json:"lowest_price,omitempty"`
-	HighestPrice     int        `json:"highest_price,omitempty"`
+	ID               uuid.UUID              `json:"id"`
+	Name             string                 `json:"name"`
+	Slug             string                 `json:"slug,omitempty"`
+	Images           []string               `json:"images"`
+	VendorID         string                 `json:"vendor_id,omitempty"`
+	CategoryID       string                 `json:"category_id,omitempty"`
+	SubCategoryID    string                 `json:"sub_category_id,omitempty"`
+	ChildCategoryID  string                 `json:"child_category_id,omitempty"`
+	ShortDescription string                 `json:"short_description,omitempty"`
+	LongDescription  string                 `json:"long_description,omitempty"`
+	ProductType      string                 `json:"product_type,omitempty"`
+	Status           string                 `json:"status,omitempty"`
+	IsApproved       bool                   `json:"is_approved"`
+	StoreName        string                 `json:"store_name,omitempty"`
+	CategoryName     string                 `json:"category_name,omitempty"`
+	LowestPrice      int                    `json:"lowest_price,omitempty"`
+	HighestPrice     int                    `json:"highest_price,omitempty"`
+	Variants         json.RawMessage        `json:"variants,omitempty"`
+	Options          json.RawMessage        `json:"options,omitempty"`
+	Vendor           map[string]interface{} `json:"vendor,omitempty"`
 }
 
 type IProductService interface {
 	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) int
 	GetProductByID(id string) (int, *ProductResponse)
+	ViewFullDetailOfProduct(id string) (int, *ProductResponse)
 	UpdateProduct(id string, customParam validator.UpdateProductRequest) int
 	DeleteProductByID(id string) int
 	ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{})
@@ -92,6 +94,20 @@ func (ps *ProductService) GetProductByID(id string) (int, *ProductResponse) {
 	}
 
 	return response.SuccessCode, responseData
+}
+
+func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductResponse) {
+	productId, _ := uuid.Parse(id)
+	product, err := ps.productRepo.ViewFullDetailOfProduct(productId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal, nil
+	}
+	resData, _ := mapProductToResponseData(product)
+	return response.SuccessCode, resData
 }
 
 func (ps *ProductService) UpdateProduct(id string, customParam validator.UpdateProductRequest) int {
@@ -360,10 +376,10 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 		Name:             row.Name,
 		Slug:             row.Slug,
 		Images:           images,
-		VendorID:         row.VendorID,
-		CategoryID:       row.CategoryID,
-		SubCategoryID:    getNullableUUID(row.SubCategoryID),
-		ChildCategoryID:  getNullableUUID(row.ChildCategoryID),
+		VendorID:         row.VendorID.String(),
+		CategoryID:       row.CategoryID.String(),
+		SubCategoryID:    row.SubCategoryID.UUID.String(),
+		ChildCategoryID:  row.ChildCategoryID.UUID.String(),
 		ShortDescription: row.ShortDescription.String,
 		LongDescription:  row.LongDescription.String,
 		ProductType:      row.ProductType.String,
@@ -374,47 +390,55 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 	}, nil
 }
 
-func mapProductToResponseData(product *database.Product) (*ProductResponse, error) {
-	var images []string
-	err := json.Unmarshal(product.Images, &images)
-	if err != nil {
-		return nil, err
-	}
+func mapProductToResponseData[T any](product *T) (*ProductResponse, error) {
+	switch p := any(product).(type) {
+	case *database.Product:
+		var images []string
+		err := json.Unmarshal(p.Images, &images)
+		if err != nil {
+			return nil, err
+		}
+		return &ProductResponse{
+			ID:               p.ID,
+			Name:             p.Name,
+			Slug:             p.Slug,
+			Images:           images,
+			VendorID:         p.VendorID.String(),
+			CategoryID:       p.CategoryID.String(),
+			SubCategoryID:    p.SubCategoryID.UUID.String(),
+			ChildCategoryID:  p.ChildCategoryID.UUID.String(),
+			ShortDescription: p.ShortDescription.String,
+			LongDescription:  p.LongDescription.String,
+			ProductType:      p.ProductType.String,
+			Status:           string(p.Status.ProductStatus),
+			IsApproved:       p.IsApproved.Bool,
+		}, nil
+	case *database.ViewFullDetailOfProductRow:
 
-	return &ProductResponse{
-		ID:               product.ID,
-		Name:             product.Name,
-		Slug:             product.Slug,
-		Images:           images,
-		VendorID:         product.VendorID,
-		CategoryID:       product.CategoryID,
-		SubCategoryID:    getNullableUUID(product.SubCategoryID),
-		ChildCategoryID:  getNullableUUID(product.ChildCategoryID),
-		ShortDescription: product.ShortDescription.String,
-		LongDescription:  product.LongDescription.String,
-		ProductType:      product.ProductType.String,
-		Status:           string(product.Status.ProductStatus),
-		IsApproved:       product.IsApproved.Bool,
-	}, nil
-}
-
-func getNullableInt64(i sql.NullInt64) *int64 {
-	if i.Valid {
-		return &i.Int64
+		var images []string
+		err := json.Unmarshal(p.Images, &images)
+		if err != nil {
+			return nil, err
+		}
+		return &ProductResponse{
+			ID:              p.ID,
+			Name:            p.Name,
+			Images:          images,
+			LongDescription: p.LongDescription.String,
+			Variants:        p.Variants,
+			Options:         p.Options,
+			Vendor: map[string]interface{}{
+				"vendorId":     p.VendorID.String(),
+				"name":         p.VendorFullName,
+				"store_name":   p.StoreName,
+				"email":        p.Email,
+				"phone_number": p.PhoneNumber,
+				"description":  p.VendorDescription.String,
+				"address":      p.VendorAddress,
+				"banner":       p.VendorBanner,
+			},
+		}, nil
+	default:
+		return &ProductResponse{}, nil
 	}
-	return nil
-}
-
-func getNullableUUID(u uuid.NullUUID) *uuid.UUID {
-	if u.Valid {
-		return &u.UUID
-	}
-	return nil
-}
-
-func getNullableTime(t sql.NullTime) *time.Time {
-	if t.Valid {
-		return &t.Time
-	}
-	return nil
 }

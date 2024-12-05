@@ -88,3 +88,19 @@ WHERE
     (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL ) AND
     (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL)
 ORDER BY p.updated_at DESC;
+
+-- name: ViewFullDetailOfProduct :one
+SELECT p.id, p.name, p.long_description, p.images, p.vendor_id,
+       v.store_name, v.full_name AS vendor_full_name, v.phone_number, v.description AS vendor_description,
+       v.address AS vendor_address, v.banner AS vendor_banner, v.email,
+       JSON_AGG(DISTINCT pv.name) AS variants,
+       JSON_AGG(JSON_BUILD_OBJECT(
+        pv.name, vo.name
+     )) AS options
+FROM products p
+INNER JOIN product_variants pv ON pv.product_id = p.id
+INNER JOIN variant_options vo ON vo.product_variant_id = pv.id
+INNER JOIN vendors v ON p.vendor_id = v.id
+WHERE p.id = $1
+GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id,
+v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email;

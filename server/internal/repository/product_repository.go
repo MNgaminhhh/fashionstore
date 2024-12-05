@@ -16,6 +16,7 @@ import (
 type IProductRepository interface {
 	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) error
 	GetProductByID(id uuid.UUID) (*database.Product, error)
+	ViewFullDetailOfProduct(id uuid.UUID) (*database.ViewFullDetailOfProductRow, error)
 	UpdateProduct(customParam *database.Product) error
 	DeleteProductByID(id uuid.UUID) error
 	ListProducts(filter database.ListProductsParams) ([]database.ListProductsRow, error)
@@ -80,7 +81,15 @@ func (pr *ProductRepository) GetProductByID(id uuid.UUID) (*database.Product, er
 	return &product, err
 }
 
-func (ps *ProductRepository) UpdateProduct(customParam *database.Product) error {
+func (pr *ProductRepository) ViewFullDetailOfProduct(id uuid.UUID) (*database.ViewFullDetailOfProductRow, error) {
+	product, err := pr.sqlc.ViewFullDetailOfProduct(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func (pr *ProductRepository) UpdateProduct(customParam *database.Product) error {
 	params := database.UpdateProductParams{
 		ID:               customParam.ID,
 		Name:             customParam.Name,
@@ -97,7 +106,7 @@ func (ps *ProductRepository) UpdateProduct(customParam *database.Product) error 
 		IsApproved:       customParam.IsApproved,
 	}
 
-	err := ps.sqlc.UpdateProduct(ctx, params)
+	err := pr.sqlc.UpdateProduct(ctx, params)
 	if err != nil {
 		return err
 	}

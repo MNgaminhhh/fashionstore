@@ -57,6 +57,15 @@ func (pc *ProductController) GetProductByID(c echo.Context) error {
 	return response.SuccessResponse(c, code, data)
 }
 
+func (pc *ProductController) ViewFullDetailOfProduct(c echo.Context) error {
+	id := c.Param("id")
+	code, data := pc.productService.ViewFullDetailOfProduct(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, data)
+}
+
 // put ::::/products/:id
 func (pc *ProductController) UpdateProduct(c echo.Context) error {
 	id := c.Param("id")
