@@ -458,6 +458,8 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			LongDescription: product.LongDescription.String,
 			Variants:        product.Variants,
 			Options:         product.Options,
+			LowestPrice:     int(skus[0].OfferPrice),
+			HighestPrice:    int(skus[len(skus)-1].OfferPrice),
 			Vendor: map[string]interface{}{
 				"vendorId":     product.VendorID.String(),
 				"name":         product.VendorFullName,
