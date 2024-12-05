@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal"
 	"backend/internal/database"
 	"backend/internal/pg_error"
 	"backend/internal/repository"
@@ -32,12 +33,13 @@ type CouponResponseData struct {
 
 type ICouponsService interface {
 	CreateCondition(customParam validator.CreateConditionValidator) int
-	GetAllCondition(filterDescription *string) (int, []database.Condition)
+	GetAllCondition(filterParam validator.FilterConditionValidator) (int, map[string]interface{})
 	GetConditionById(id string) (int, *database.Condition)
 	UpdateCondition(id string, customParam validator.UpdateConditionValidator) int
 	DeleteCondition(id string) int
 
 	CreateCoupon(customParam validator.CreateCouponValidator) int
+	GetAllCoupon(filterParam validator.FilterCouponsValidator) (int, map[string]interface{})
 	GetCouponById(id string) (int, *CouponResponseData)
 	UpdateCouponStatus(id string, status bool) int
 	UpdateCouponById(id string, couponValidator validator.CreateCouponValidator) int
@@ -76,8 +78,8 @@ func (c CouponsService) CreateCondition(customParam validator.CreateConditionVal
 	return response.SuccessCode
 }
 
-func (c CouponsService) GetAllCondition(filterDescription *string) (int, []database.Condition) {
-	results, err := c.couponsRepo.GetAllCondition(filterDescription)
+func (c CouponsService) GetAllCondition(filterParam validator.FilterConditionValidator) (int, map[string]interface{}) {
+	results, err := c.couponsRepo.GetAllCondition(filterParam.Description)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -85,7 +87,25 @@ func (c CouponsService) GetAllCondition(filterDescription *string) (int, []datab
 		}
 		return response.ErrCodeInternal, nil
 	}
-	return response.SuccessCode, results
+	totalResults := len(results)
+	limit := totalResults
+	page := 1
+	if filterParam.Limit != nil {
+		limit = *filterParam.Limit
+	}
+	if filterParam.Page != nil {
+		page = *filterParam.Page
+	}
+	pagination := internal.Paginate(results, page, limit)
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	resData := map[string]interface{}{
+		"totalResults": totalResults,
+		"totalPages":   totalPages,
+		"page":         page,
+		"limit":        limit,
+		"conditions":   pagination,
+	}
+	return response.SuccessCode, resData
 }
 
 func (c CouponsService) GetConditionById(id string) (int, *database.Condition) {
@@ -195,6 +215,41 @@ func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator
 	return response.SuccessCode
 }
 
+func (c CouponsService) GetAllCoupon(filterParam validator.FilterCouponsValidator) (int, map[string]interface{}) {
+	results, err := c.couponsRepo.GetAllCoupon(filterParam)
+	if err != nil {
+		log.Println(err)
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	totalResults := len(results)
+	page := 1
+	limit := totalResults
+	if filterParam.Limit != nil {
+		limit = *filterParam.Limit
+	}
+	if filterParam.Page != nil {
+		page = *filterParam.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(results, page, limit)
+	var coupons []CouponResponseData
+	for _, coupon := range pagination {
+		coupons = append(coupons, *mapCouponToResponseData(&coupon))
+	}
+	resData := map[string]interface{}{
+		"totalResults": totalResults,
+		"totalPages":   totalPages,
+		"limit":        limit,
+		"page":         page,
+		"coupons":      coupons,
+	}
+	return response.SuccessCode, resData
+}
+
 func (c CouponsService) GetCouponById(id string) (int, *CouponResponseData) {
 	couponId, _ := uuid.Parse(id)
 	result, err := c.couponsRepo.GetCouponById(couponId)
@@ -299,6 +354,21 @@ func (c CouponsService) UpdateCouponById(id string, couponValidator validator.Cr
 func mapCouponToResponseData[T any](data *T) *CouponResponseData {
 	switch c := any(data).(type) {
 	case *database.GetCouponByIdRow:
+		return &CouponResponseData{
+			ID:        c.ID.String(),
+			Name:      c.Name,
+			Code:      c.Code,
+			Quantity:  int(c.Quantity),
+			StartDate: c.StartDate.Format("02-01-2006"),
+			EndDate:   c.EndDate.Format("02-01-2006"),
+			Type:      string(c.Type),
+			Discount:  c.Discount,
+			TotalUsed: int(c.TotalUsed.Int32),
+			Status:    c.Status.Bool,
+			Condition: c.Conditions,
+			MaxPrice:  int(c.MaxPrice),
+		}
+	case *database.GetAllCouponRow:
 		return &CouponResponseData{
 			ID:        c.ID.String(),
 			Name:      c.Name,

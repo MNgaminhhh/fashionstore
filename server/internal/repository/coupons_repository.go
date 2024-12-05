@@ -20,6 +20,7 @@ type ICouponsRepository interface {
 
 	CreateCoupon(id uuid.UUID, customParam validator.CreateCouponValidator, startDate time.Time, endDate time.Time) error
 	GetCouponById(id uuid.UUID) (*database.GetCouponByIdRow, error)
+	GetAllCoupon(filterParam validator.FilterCouponsValidator) ([]database.GetAllCouponRow, error)
 	UpdateCouponById(coupon database.GetCouponByIdRow) error
 	UpdateCouponStatus(id uuid.UUID, status bool) error
 	DeleteCoupon(couponId uuid.UUID) error
@@ -116,6 +117,53 @@ func (c CouponRepository) CreateCoupon(id uuid.UUID, customParam validator.Creat
 	}
 	err := c.sqlc.CreateCoupon(ctx, param)
 	return err
+}
+
+func (c CouponRepository) GetAllCoupon(filterParam validator.FilterCouponsValidator) ([]database.GetAllCouponRow, error) {
+	param := database.GetAllCouponParams{
+		Column1:   sql.NullString{},
+		Column2:   "",
+		Quantity:  -1,
+		TotalUsed: sql.NullInt32{},
+		Discount:  -1,
+		MaxPrice:  -1,
+		Status:    sql.NullBool{},
+	}
+	if filterParam.Name != nil {
+		param.Column1 = sql.NullString{
+			String: *filterParam.Name,
+			Valid:  true,
+		}
+	}
+	if filterParam.Type != nil {
+		param.Column2 = *filterParam.Type
+	}
+	if filterParam.Quantity != nil {
+		param.Quantity = int32(*filterParam.Quantity)
+	}
+	if filterParam.TotalUsed != nil {
+		param.TotalUsed = sql.NullInt32{
+			Int32: int32(*filterParam.TotalUsed),
+			Valid: true,
+		}
+	}
+	if filterParam.Discount != nil {
+		param.Discount = int32(*filterParam.Discount)
+	}
+	if filterParam.MaxPrice != nil {
+		param.MaxPrice = int32(*filterParam.MaxPrice)
+	}
+	if filterParam.Status != nil {
+		param.Status = sql.NullBool{
+			Bool:  *filterParam.Status,
+			Valid: true,
+		}
+	}
+	results, err := c.sqlc.GetAllCoupon(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func (c CouponRepository) GetCouponById(id uuid.UUID) (*database.GetCouponByIdRow, error) {

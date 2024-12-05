@@ -16,6 +16,12 @@ type UpdateConditionValidator struct {
 	Description *string `json:"description" validate:"min=10"`
 }
 
+type FilterConditionValidator struct {
+	Description *string `json:"description"`
+	Page        *int    `json:"page"`
+	Limit       *int    `json:"limit"`
+}
+
 type CreateCouponValidator struct {
 	Code       string                     `json:"code" validate:"required"`
 	Quantity   int                        `json:"quantity" validate:"required"`
@@ -27,6 +33,18 @@ type CreateCouponValidator struct {
 	Name       string                     `json:"name" validate:"required"`
 	Status     *bool                      `json:"status"`
 	Conditions []ConditionCouponValidator `json:"condition" validate:"required,dive,required"`
+}
+
+type FilterCouponsValidator struct {
+	Quantity  *int    `json:"quantity"`
+	Type      *string `json:"type" validate:"oneof=shipping_fixed shipping_percentage fixed percentage"`
+	Discount  *int    `json:"discount"`
+	MaxPrice  *int    `json:"max_price"`
+	TotalUsed *int    `json:"total_used"`
+	Name      *string `json:"name"`
+	Status    *bool   `json:"status"`
+	Limit     *int    `json:"limit"`
+	Page      *int    `json:"page"`
 }
 
 type UpdateCouponValidator struct {

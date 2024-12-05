@@ -92,6 +92,102 @@ func (q *Queries) DeleteCoupon(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAllCoupon = `-- name: GetAllCoupon :many
+SELECT
+    c.id, c.name, c.code, c.quantity, c.start_date, c.end_date, c.type, c.discount, c.total_used, c.max_price, c.status, c.created_at, c.updated_at,
+    JSON_AGG(
+            JSON_BUILD_OBJECT(
+                    'condition_id', con.id,
+                    'condition_description', con.description
+            )
+    ) AS conditions
+FROM coupons c
+         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         LEFT JOIN conditions con ON cc.condition_id = con.id
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+AND (type = COALESCE(NULLIF($2, '')::discount_type, type) OR $2 = '' )
+AND (quantity = $3 OR $3 = -1)
+AND (total_used = $4 OR $4 IS NULL)
+AND (discount = $5 OR $5 = -1)
+AND (max_price = $6 OR $6 = -1)
+AND (status = $7 OR $7 IS NULL)
+GROUP BY c.id
+ORDER BY updated_at DESC
+`
+
+type GetAllCouponParams struct {
+	Column1   sql.NullString
+	Column2   interface{}
+	Quantity  int32
+	TotalUsed sql.NullInt32
+	Discount  int32
+	MaxPrice  int32
+	Status    sql.NullBool
+}
+
+type GetAllCouponRow struct {
+	ID         uuid.UUID
+	Name       string
+	Code       string
+	Quantity   int32
+	StartDate  time.Time
+	EndDate    time.Time
+	Type       DiscountType
+	Discount   int32
+	TotalUsed  sql.NullInt32
+	MaxPrice   int32
+	Status     sql.NullBool
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+	Conditions json.RawMessage
+}
+
+func (q *Queries) GetAllCoupon(ctx context.Context, arg GetAllCouponParams) ([]GetAllCouponRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllCoupon,
+		arg.Column1,
+		arg.Column2,
+		arg.Quantity,
+		arg.TotalUsed,
+		arg.Discount,
+		arg.MaxPrice,
+		arg.Status,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllCouponRow
+	for rows.Next() {
+		var i GetAllCouponRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Code,
+			&i.Quantity,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Type,
+			&i.Discount,
+			&i.TotalUsed,
+			&i.MaxPrice,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Conditions,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCouponById = `-- name: GetCouponById :one
 SELECT
     c.id, c.name, c.code, c.quantity, c.start_date, c.end_date, c.type, c.discount, c.total_used, c.max_price, c.status, c.created_at, c.updated_at,
