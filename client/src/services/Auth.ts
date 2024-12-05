@@ -1,7 +1,5 @@
 import Base from "./Base";
-import { set, get as getFromLocalStorage } from "../hooks/useLocalStorage";
-import { jwtDecode } from "jwt-decode";
-import { get } from "lodash";
+import Cookies from "js-cookie";
 
 class Auth extends Base {
   constructor() {

@@ -272,8 +272,6 @@ export default function SkuView({
         open={dialogOpen}
         onClose={closeDeleteDialog}
         onConfirm={handleDelete}
-        title="Xác nhận xóa"
-        content="Bạn có chắc chắn muốn xóa SKU này không?"
       />
     </WrapperPage>
   );

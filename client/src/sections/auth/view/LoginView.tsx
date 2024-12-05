@@ -9,9 +9,8 @@ import { useFormik } from "formik";
 import Auth from "../../../services/Auth";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import { useRouter } from "next/navigation";
-import { get } from "lodash";
-import { set } from "../../../hooks/useLocalStorage";
 import { useAppContext } from "../../../context/AppContext";
+import Cookies from "js-cookie";
 interface LoginViewProps {
   closeDialog?: () => void;
 }
@@ -64,9 +63,8 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
         const response = await Auth.login(values.email, values.password);
         if (response.data.success) {
           notifySuccess("Đăng nhập thành công!");
-          // const token = get(response, "data.data.access_token", true);
-          // set("token", token || "");
-          // setSessionToken(token)
+          const token = Cookies.get("access_cookie");
+          setSessionToken(token);
           formik.resetForm();
           await router.push("/");
         } else {

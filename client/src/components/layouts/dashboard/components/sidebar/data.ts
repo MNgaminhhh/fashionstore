@@ -58,6 +58,7 @@ export const navigation = [
       { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
       { name: "Danh Sách Mã Giảm Giá", path: "/dashboard/admin/coupons" },
       { name: "Thêm Mã Giảm Giá", path: "/dashboard/admin/coupons/create" },
+      { name: "Cấu Hình Vận Chuyển", path: "/dashboard/admin/shipping-rule" },
     ],
   },
   {

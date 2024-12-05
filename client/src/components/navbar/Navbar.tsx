@@ -5,6 +5,7 @@ import { FlexBox } from "../flexbox";
 import LoginRegisterButton from "./components/loginregisterbutton/LoginRegisterButton";
 import Auth from "../../services/Auth";
 import { useAppContext } from "../../context/AppContext";
+import Profile from "../profile/Profile";
 interface Props {
   border?: number;
   elevation?: number;
@@ -22,6 +23,7 @@ export default function Navbar({
       {hideCategories ? (
         <InnerContainer sx={{ justifyContent: "center" }}>
           <NavigationList />
+          <Profile />
         </InnerContainer>
       ) : (
         <InnerContainer>
@@ -29,7 +31,7 @@ export default function Navbar({
             <Categories />
             <NavigationList />
           </FlexBox>
-          {!sessionToken && <LoginRegisterButton />}
+          {!sessionToken ? <LoginRegisterButton /> : <Profile />}
         </InnerContainer>
       )}
     </NavBarWrapper>

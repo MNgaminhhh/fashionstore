@@ -5,52 +5,81 @@ import {
   StyledIconButton,
   StyledTableCell,
   StyledTableRow,
-} from "../../../styles";
+} from "../../../styles"; // Adjust the import path as necessary
 import { useRouter } from "next/navigation";
-import { Tooltip } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
+import MTSwitch from "../../../../components/MTSwitch";
+import ShippingRuleModel from "../../../../models/ShippingRule.model";
 
 type Props = {
-  coupon: any;
+  shippingRule: ShippingRuleModel;
   onDelete: (id: string) => void;
+  onToggleStatus: (id: string, status: boolean) => void;
 };
 
-export default function RowCoupon({ coupon, onDelete }: Props) {
+const RowShippingRule: React.FC<Props> = ({
+  shippingRule,
+  onDelete,
+  onToggleStatus,
+}) => {
   const router = useRouter();
 
   const handleEdit = (id: string) => {
-    router.push(`/dashboard/admin/coupons/${id}`);
+    router.push(`/dashboard/admin/shipping-rule/${id}`);
   };
 
   const handleDelete = (id: string) => {
     onDelete(id);
   };
 
+  const handleToggleStatus = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    onToggleStatus(shippingRule.id, checked);
+  };
+
   return (
     <StyledTableRow tabIndex={-1} role="checkbox">
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Field || "-"}
+        {shippingRule.name || "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Operator || "-"}
+        {shippingRule.min_order_cost || "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Value.price !== undefined ? coupon.Value.price : "-"}
+        {shippingRule.price || "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Description || "-"}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <MTSwitch
+            color="info"
+            checked={shippingRule.status}
+            onChange={handleToggleStatus}
+          />
+        </Box>
       </StyledTableCell>
       <StyledTableCell align="center" sx={{ minWidth: 150 }}>
         <Tooltip title="Chỉnh sửa" arrow>
-          <StyledIconButton onClick={() => handleEdit(coupon.ID)}>
+          <StyledIconButton onClick={() => handleEdit(shippingRule.id)}>
             <EditIcon sx={{ color: "#1976d2" }} />
           </StyledIconButton>
         </Tooltip>
         <Tooltip title="Xoá" arrow>
-          <StyledIconButton onClick={() => handleDelete(coupon.ID)}>
+          <StyledIconButton onClick={() => handleDelete(shippingRule.id)}>
             <DeleteIcon sx={{ color: "#d32f2f" }} />
           </StyledIconButton>
         </Tooltip>
       </StyledTableCell>
     </StyledTableRow>
   );
-}
+};
+
+export default RowShippingRule;

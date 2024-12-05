@@ -128,9 +128,11 @@ export default function RowProductTypeAdmin({
           </Box>
         </StyledTableCell>
         <StyledTableCell align="center" sx={{ minWidth: 110 }}>
-          <StyledIconButton onClick={handleViewDetailProduct}>
-            <VisibilityIcon />
-          </StyledIconButton>
+          <Tooltip title="Xem chi tiết" arrow>
+            <StyledIconButton onClick={handleViewDetailProduct}>
+              <VisibilityIcon />
+            </StyledIconButton>
+          </Tooltip>
         </StyledTableCell>
       </StyledTableRow>
       <DetailDialog

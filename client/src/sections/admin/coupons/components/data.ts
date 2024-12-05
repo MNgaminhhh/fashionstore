@@ -1,13 +1,25 @@
 export const tableHeading = [
   {
-    id: "product_name",
-    label: "Tên Sản Phẩm",
+    id: "Field",
+    label: "Kiểu",
     align: "left",
     width: "550px",
   },
   {
-    id: "show",
-    label: "Hiển Thị",
+    id: "Operator",
+    label: "Toán Tử",
+    align: "left",
+    width: "100px",
+  },
+  {
+    id: "Value",
+    label: "Giá Trị",
+    align: "left",
+    width: "100px",
+  },
+  {
+    id: "Description",
+    label: "Mô Tả",
     align: "left",
     width: "100px",
   },

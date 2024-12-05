@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Autocomplete,
   TextField,
+  Card,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SliderShow from "../../../../components/slider/SliderShow";
@@ -101,28 +102,30 @@ export default function DetailDialog(props: Props) {
 
         <Grid container spacing={3}>
           <Grid item md={6} xs={12}>
-            <SliderShow
-              slidesToShow={1}
-              arrowStyles={{
-                boxShadow: 0,
-                color: "primary.main",
-                backgroundColor: "transparent",
-              }}
-            >
-              {product.images.map((imgUrl: string, index: number) => (
-                <MTImage
-                  key={index}
-                  src={imgUrl}
-                  alt={`${product.name} Image ${index + 1}`}
-                  sx={{
-                    mx: "auto",
-                    width: "100%",
-                    objectFit: "contain",
-                    height: { sm: 400, xs: 250 },
-                  }}
-                />
-              ))}
-            </SliderShow>
+            <Card sx={{ boxShadow: 3 }}>
+              <SliderShow
+                slidesToShow={1}
+                arrowStyles={{
+                  boxShadow: 0,
+                  color: "primary.main",
+                  backgroundColor: "transparent",
+                }}
+              >
+                {product.images.map((imgUrl: string, index: number) => (
+                  <MTImage
+                    key={index}
+                    src={imgUrl}
+                    alt={`${product.name} Image ${index + 1}`}
+                    sx={{
+                      mx: "auto",
+                      width: "100%",
+                      objectFit: "contain",
+                      height: { sm: 400, xs: 250 },
+                    }}
+                  />
+                ))}
+              </SliderShow>
+            </Card>
           </Grid>
 
           <Grid item md={6} xs={12}>
