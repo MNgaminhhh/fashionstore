@@ -17,6 +17,7 @@ export const navigation = [
     name: "Ecommerce",
     icon: ProductsIcon,
     children: [
+      { name: "Cấu Hình Vận Chuyển", path: "/dashboard/admin/shipping-rule" },
       { name: "Danh Sách ĐK Mã Giảm Giá", path: "/dashboard/admin/coupons" },
       { name: "Thêm ĐK Mã Giảm Giá", path: "/dashboard/admin/coupons/create" },
       { name: "Danh Sách Mã Giảm Giá", path: "/dashboard/admin/coupons-d" },
@@ -66,7 +67,6 @@ export const navigation = [
       { name: "Thêm Flash Sale", path: "/dashboard/admin/flash-sale/create" },
       { name: "Danh Sách Banner", path: "/dashboard/admin/banners" },
       { name: "Thêm Banner", path: "/dashboard/admin/banners/create" },
-      { name: "Cấu Hình Vận Chuyển", path: "/dashboard/admin/shipping-rule" },
     ],
   },
   {

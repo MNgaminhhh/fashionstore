@@ -38,7 +38,7 @@ export default function RowCoupon({ coupon, onDelete }: Props) {
         {coupon.Operator || "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
-        {coupon.Value.price !== undefined ? coupon.Value.price : "-"}
+        {coupon.Value.value !== undefined ? coupon.Value.value : "-"}
       </StyledTableCell>
       <StyledTableCell align="left" sx={{ fontWeight: 400, color: "#333" }}>
         {coupon.Description || "-"}

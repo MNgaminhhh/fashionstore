@@ -10,7 +10,7 @@ import Auth from "../../../services/Auth";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../../../context/AppContext";
-import Cookies from "js-cookie";
+import { get } from "lodash";
 interface LoginViewProps {
   closeDialog?: () => void;
 }
@@ -63,7 +63,7 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
         const response = await Auth.login(values.email, values.password);
         if (response.data.success) {
           notifySuccess("Đăng nhập thành công!");
-          const token = Cookies.get("access_cookie");
+          const token = get(response, "data.data.access_token", true);
           setSessionToken(token);
           formik.resetForm();
           await router.push("/");
