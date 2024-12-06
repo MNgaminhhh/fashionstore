@@ -443,6 +443,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		var skusRes []map[string]interface{}
 		for _, sku := range skus {
 			skusRes = append(skusRes, map[string]interface{}{
+				"id":              sku.ID,
 				"sku":             sku.Sku,
 				"price":           sku.Price,
 				"offer":           sku.Offer.Int32,
