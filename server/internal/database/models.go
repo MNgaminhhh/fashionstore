@@ -468,6 +468,14 @@ type Brand struct {
 	UpdatedAt sql.NullTime
 }
 
+type Cart struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	SkuID     uuid.UUID
+	Quantity  int32
+	UpdatedAt sql.NullTime
+}
+
 type Category struct {
 	ID        uuid.UUID
 	Name      string

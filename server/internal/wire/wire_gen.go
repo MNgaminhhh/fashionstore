@@ -30,6 +30,15 @@ func InitBrandRouterHandlerr() (*controller.BrandsController, error) {
 	return brandsController, nil
 }
 
+// Injectors from cart_wire.go:
+
+func InitCartRouterHandlerr() (*controller.CartController, error) {
+	iCartRepository := repository.NewCartRepository()
+	iCartService := service.NewCartService(iCartRepository)
+	cartController := controller.NewCartController(iCartService)
+	return cartController, nil
+}
+
 // Injectors from categories_wire.go:
 
 func InitCategoriesRouterHandlerr() (*controller.CategoryController, error) {

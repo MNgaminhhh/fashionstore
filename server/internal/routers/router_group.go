@@ -3,6 +3,7 @@ package routers
 import (
 	"backend/internal/routers/banner"
 	"backend/internal/routers/brand"
+	"backend/internal/routers/cart"
 	"backend/internal/routers/categories"
 	"backend/internal/routers/coupons"
 	"backend/internal/routers/delivery_info"
@@ -30,6 +31,7 @@ type RouterGroup struct {
 	Coupons         *coupons.CouponRouter
 	ShippingRules   *shipping_rules.ShippingRuleRouter
 	DeliveryInfo    *delivery_info.DeliveryInfoRouter
+	Cart            *cart.CartRouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -46,4 +48,5 @@ var AllRouterGroup = &RouterGroup{
 	Coupons:         &coupons.CouponRouter{},
 	ShippingRules:   &shipping_rules.ShippingRuleRouter{},
 	DeliveryInfo:    &delivery_info.DeliveryInfoRouter{},
+	Cart:            &cart.CartRouter{},
 }

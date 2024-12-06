@@ -40,6 +40,7 @@ ORDER BY s.updated_at DESC;
 SELECT
     p.name AS product_name,
     p.vendor_id,
+    s.id,
     s.price,
     s.sku,
     s.offer,
@@ -55,7 +56,7 @@ FROM skus s
          LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.product_id = $1
-GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id
 ORDER BY s.price ASC;
 
 -- name: GetSkuById :one
