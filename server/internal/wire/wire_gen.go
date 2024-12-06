@@ -93,6 +93,15 @@ func InitProductRouterHandlerr() (*controller.ProductController, error) {
 	return productController, nil
 }
 
+// Injectors from review_wire.go:
+
+func InitReviewsRouterHandlerr() (*controller.ReviewsController, error) {
+	iReviewsRepository := repository.NewReviewsRepository()
+	iReviewsService := service.NewReviewsService(iReviewsRepository)
+	reviewsController := controller.NewReviewsController(iReviewsService)
+	return reviewsController, nil
+}
+
 // Injectors from shipping_rules_wire.go:
 
 func InitShippingRulesRouterHandlerr() (*controller.ShippingRulesController, error) {

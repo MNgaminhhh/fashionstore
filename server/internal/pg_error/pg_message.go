@@ -12,6 +12,7 @@ func GetMessageError(pqError *pq.Error) int {
 	name := err.Constraint
 	log.Println("code", code)
 	log.Println("constraint", name)
+	log.Println(*err)
 	switch string(code) {
 	case string(UniqueViolation):
 		if name == "unique_child_name_per_sub_cate" || name == "unique_sub_name_per_category" || name == "categories_name_key" {
@@ -22,6 +23,9 @@ func GetMessageError(pqError *pq.Error) int {
 		}
 		if name == "unique_coupon_code" {
 			return response.ErrCodeCouponIsAlreadyExist
+		}
+		if name == "reviews_sku_id_user_id_key" {
+			return response.ErrCodeAlreadyReviewed
 		}
 		if name == "shipping_rules_min_order_cost_key" {
 			return response.ErrCodeUniqueMinOrderCost

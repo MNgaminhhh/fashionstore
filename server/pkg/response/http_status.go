@@ -51,6 +51,9 @@ const (
 	ErrCodeCouponsAreUsing              = 50037
 	ErrCodeShippingCost                 = 50038
 	ErrCodeUniqueMinOrderCost           = 50039
+	ErrCodeNoPermissionReview           = 50040
+	ErrCodeAlreadyReviewed              = 50041
+	ErrCodeInvalidRatingPoint           = 50042
 	ErrCodeForbidden                    = 403
 )
 
@@ -106,4 +109,7 @@ var msg = map[int]string{
 	ErrCodeCouponsAreUsing:              "Không thể cập nhật mã giảm trong thời gian sử dụng!",
 	ErrCodeShippingCost:                 "Giá tiền mà giá trị đơn nhỏ nhất phải là bôi số của 100",
 	ErrCodeUniqueMinOrderCost:           "Giá trị tối thiểu đơn hàng này đã tồn tại!",
+	ErrCodeNoPermissionReview:           "Bạn không có quyền đánh giá sản phẩm này",
+	ErrCodeAlreadyReviewed:              "Bạn đã đánh giá cho sản phẩm này rồi!",
+	ErrCodeInvalidRatingPoint:           "Điểm đánh giá phải nằm trong khoảng từ 0 đến 5 và là bội số của 0.5",
 }

@@ -499,6 +499,15 @@ type ChildCategory struct {
 	UpdatedAt     sql.NullTime
 }
 
+type Comment struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	ReviewID  uuid.UUID
+	Comment   json.RawMessage
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
 type Condition struct {
 	ID          uuid.UUID
 	Field       ConditionField
@@ -579,6 +588,16 @@ type ProductVariant struct {
 	Name      string
 	Status    NullVariantsStatus
 	ProductID uuid.UUID
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type Review struct {
+	ID        uuid.UUID
+	SkuID     uuid.UUID
+	UserID    uuid.UUID
+	Rating    float64
+	Comment   json.RawMessage
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }

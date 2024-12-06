@@ -37,11 +37,13 @@ type ProductResponse struct {
 	Options          json.RawMessage          `json:"options,omitempty"`
 	Vendor           map[string]interface{}   `json:"vendor,omitempty"`
 	Skus             []map[string]interface{} `json:"skus,omitempty"`
+	Reviews          []map[string]interface{} `json:"reviews"`
 }
 
 type ProductWithSkus struct {
 	Product *database.ViewFullDetailOfProductRow
 	Skus    []database.GetAllSkuByProductIdRow
+	Reviews []database.Review
 }
 
 type IProductService interface {
@@ -121,9 +123,12 @@ func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductRespo
 		}
 		return response.ErrCodeInternal, nil
 	}
+	reviewsRepo := repository.NewReviewsRepository()
+	reviews, _ := reviewsRepo.GetAllReviewsByProductId(productId)
 	productWithSkus := ProductWithSkus{
 		Product: product,
 		Skus:    skus,
+		Reviews: reviews,
 	}
 	resData, _ := mapProductToResponseData(&productWithSkus)
 	return response.SuccessCode, resData
@@ -435,6 +440,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	case *ProductWithSkus:
 		product := p.Product
 		skus := p.Skus
+		reviews := p.Reviews
 		var images []string
 		err := json.Unmarshal(product.Images, &images)
 		if err != nil {
@@ -450,6 +456,16 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 				"in_stock":        sku.InStock.Int16,
 				"offer_price":     sku.OfferPrice,
 				"variant_options": sku.VariantOptions,
+			})
+		}
+		var reviewsRes []map[string]interface{}
+		for _, review := range reviews {
+			reviewsRes = append(reviewsRes, map[string]interface{}{
+				"id":      review.ID,
+				"sku_id":  review.SkuID,
+				"user_id": review.UserID,
+				"comment": review.Comment,
+				"rating":  review.Rating,
 			})
 		}
 		return &ProductResponse{
@@ -471,7 +487,8 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 				"address":      product.VendorAddress,
 				"banner":       product.VendorBanner,
 			},
-			Skus: skusRes,
+			Skus:    skusRes,
+			Reviews: reviewsRes,
 		}, nil
 	default:
 		return &ProductResponse{}, nil
