@@ -46,7 +46,7 @@ func (sr *SkusRepository) CreateSku(id uuid.UUID, customParam validator.CreateSk
 			Valid: true,
 		},
 	}
-	if offerStartDate != nil && offerEndDate != nil {
+	if offerStartDate != nil && !offerStartDate.IsZero() && offerEndDate != nil && !offerEndDate.IsZero() {
 		param.OfferStartDate = sql.NullTime{
 			Time:  *offerStartDate,
 			Valid: true,
@@ -109,11 +109,13 @@ func (sr *SkusRepository) GetAllSkusByProductId(productId uuid.UUID) ([]database
 
 func (sr *SkusRepository) UpdateSkuById(sku database.GetSkuByIdRow) error {
 	param := database.UpdateSkuByIdParams{
-		Sku:     sku.Sku,
-		Offer:   sku.Offer,
-		InStock: sku.InStock,
-		Price:   sku.Price,
-		ID:      sku.ID,
+		Sku:            sku.Sku,
+		Offer:          sku.Offer,
+		InStock:        sku.InStock,
+		Price:          sku.Price,
+		ID:             sku.ID,
+		OfferStartDate: sku.OfferStartDate,
+		OfferEndDate:   sku.OfferEndDate,
 	}
 	err := sr.sqlc.UpdateSkuById(ctx, param)
 	return err

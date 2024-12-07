@@ -21,7 +21,7 @@ CREATE TABLE skus (
     status sku_status NOT NULL DEFAULT 'inactive',
     offer INT DEFAULT 0 CHECK (offer >= 0 AND offer <= 100),
     offer_start_date TIMESTAMP,
-    offer_end_date TIMESTAMP check ( offer_end_date > skus.offer_start_date ),
+    offer_end_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE

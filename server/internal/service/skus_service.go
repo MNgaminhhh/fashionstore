@@ -52,11 +52,16 @@ func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 	newSkuId := uuid.New()
 	var startDate time.Time
 	var endDate time.Time
+	if customParam.Offer != 0 {
+		if customParam.OfferStartDate == nil || customParam.OfferEndDate == nil {
+			return response.ErrCodeDateIsRequired
+		}
+	}
 	if customParam.OfferStartDate != nil {
 		var parseErr error
-		startDate, parseErr = time.Parse("02-01-2006", *customParam.OfferStartDate)
+		startDate, parseErr = time.Parse("02-01-2006 15:04", *customParam.OfferStartDate)
 		if parseErr != nil {
-			return response.ErrCodeIncorrectDateFormat
+			return response.ErrCodeInvalidDateTimeFormat
 		}
 		if time.Now().After(startDate) {
 			return response.ErrCodeInvalidFlashSaleStartDate
@@ -64,9 +69,9 @@ func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 		if customParam.OfferEndDate == nil {
 			return response.ErrCodeEndDateEmpty
 		}
-		endDate, parseErr = time.Parse("02-01-2006", *customParam.OfferEndDate)
+		endDate, parseErr = time.Parse("02-01-2006 15:04", *customParam.OfferEndDate)
 		if parseErr != nil {
-			return response.ErrCodeIncorrectDateFormat
+			return response.ErrCodeInvalidDateTimeFormat
 		}
 	}
 	err := sv.skusRepo.CreateSku(newSkuId, customParam, &startDate, &endDate)
@@ -172,6 +177,35 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 			Valid: true,
 		}
 	}
+	if customParam.OfferStartDate != nil {
+		if customParam.OfferEndDate != nil {
+			return response.ErrCodeEndDateEmpty
+		}
+		startDateStr := *customParam.OfferStartDate
+		startDate, parseErr := time.Parse("02-01-2006 15:04", startDateStr)
+		if parseErr != nil {
+			return response.ErrCodeInvalidDateTimeFormat
+		}
+		endDateStr := *customParam.OfferEndDate
+		endDate, parseErr := time.Parse("02-01-2006 15:04", endDateStr)
+		if parseErr != nil {
+			return response.ErrCodeInvalidDateTimeFormat
+		}
+		if time.Now().After(startDate) {
+			return response.ErrCodeInvalidFlashSaleStartDate
+		}
+		if endDate.After(startDate) {
+			return response.ErrCodeInvalidEndDate
+		}
+		sku.OfferStartDate = sql.NullTime{
+			Time:  startDate,
+			Valid: true,
+		}
+		sku.OfferEndDate = sql.NullTime{
+			Time:  endDate,
+			Valid: true,
+		}
+	}
 	err = sv.skusRepo.UpdateSkuById(*sku)
 	if err != nil {
 		var pqErr *pq.Error
@@ -226,21 +260,23 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 			Variants:       s.VariantOptions,
 			InStock:        int(s.InStock.Int16),
 			Offer:          int(s.Offer.Int32),
-			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006"),
-			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006"),
+			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006 15:04"),
+			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006 15:04"),
 			OfferPrice:     int(s.OfferPrice),
 		}, nil
 	case *database.GetSkuByIdRow:
 		return &SkuResponse{
-			Id:          s.ID.String(),
-			ProductName: s.ProductName.String,
-			ProductId:   s.ProductID.String(),
-			Sku:         s.Sku,
-			Price:       int(s.Price),
-			OfferPrice:  int(s.OfferPrice),
-			Offer:       int(s.Offer.Int32),
-			Variants:    s.VariantOptions,
-			InStock:     int(s.InStock.Int16),
+			Id:             s.ID.String(),
+			ProductName:    s.ProductName.String,
+			ProductId:      s.ProductID.String(),
+			Sku:            s.Sku,
+			Price:          int(s.Price),
+			OfferPrice:     int(s.OfferPrice),
+			Offer:          int(s.Offer.Int32),
+			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006 15:04"),
+			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006 15:04"),
+			Variants:       s.VariantOptions,
+			InStock:        int(s.InStock.Int16),
 		}, nil
 	default:
 		log.Println("Unhandled data type:", data)

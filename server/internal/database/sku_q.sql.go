@@ -288,16 +288,18 @@ func (q *Queries) GetSkuById(ctx context.Context, id uuid.UUID) (GetSkuByIdRow, 
 
 const updateSkuById = `-- name: UpdateSkuById :exec
 UPDATE skus
-SET sku = $1, offer = $2, in_stock = $3, price = $4
-WHERE id = $5
+SET sku = $1, offer = $2, in_stock = $3, price = $4, offer_start_date = $5, offer_end_date = $6
+WHERE id = $7
 `
 
 type UpdateSkuByIdParams struct {
-	Sku     string
-	Offer   sql.NullInt32
-	InStock sql.NullInt16
-	Price   int64
-	ID      uuid.UUID
+	Sku            string
+	Offer          sql.NullInt32
+	InStock        sql.NullInt16
+	Price          int64
+	OfferStartDate sql.NullTime
+	OfferEndDate   sql.NullTime
+	ID             uuid.UUID
 }
 
 func (q *Queries) UpdateSkuById(ctx context.Context, arg UpdateSkuByIdParams) error {
@@ -306,6 +308,8 @@ func (q *Queries) UpdateSkuById(ctx context.Context, arg UpdateSkuByIdParams) er
 		arg.Offer,
 		arg.InStock,
 		arg.Price,
+		arg.OfferStartDate,
+		arg.OfferEndDate,
 		arg.ID,
 	)
 	return err

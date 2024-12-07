@@ -54,6 +54,7 @@ const (
 	ErrCodeNoPermissionReview           = 50040
 	ErrCodeAlreadyReviewed              = 50041
 	ErrCodeInvalidRatingPoint           = 50042
+	ErrCodeDateIsRequired               = 50043
 	ErrCodeForbidden                    = 403
 )
 
@@ -112,4 +113,5 @@ var msg = map[int]string{
 	ErrCodeNoPermissionReview:           "Bạn không có quyền đánh giá sản phẩm này",
 	ErrCodeAlreadyReviewed:              "Bạn đã đánh giá cho sản phẩm này rồi!",
 	ErrCodeInvalidRatingPoint:           "Điểm đánh giá phải nằm trong khoảng từ 0 đến 5 và là bội số của 0.5",
+	ErrCodeDateIsRequired:               "Ngày bắt đầu và ngày kết thúc không được để trống!",
 }

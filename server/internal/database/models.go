@@ -187,6 +187,50 @@ func (ns NullDiscountType) Value() (driver.Value, error) {
 	return string(ns.DiscountType), nil
 }
 
+type OrderStatus string
+
+const (
+	OrderStatusPending   OrderStatus = "pending"
+	OrderStatusShipping  OrderStatus = "shipping"
+	OrderStatusDelivered OrderStatus = "delivered"
+	OrderStatusCanceled  OrderStatus = "canceled"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus
+	Valid       bool // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
 type ProductStatus string
 
 const (
@@ -565,6 +609,16 @@ type FlashSalesItem struct {
 	UpdatedAt    sql.NullTime
 }
 
+type OrderBill struct {
+	ID           uuid.UUID
+	OrderCode    string
+	ProductTotal int64
+	ShippingFee  int64
+	TotalBill    int64
+	OrderStatus  NullOrderStatus
+	UpdatedAt    sql.NullTime
+}
+
 type Product struct {
 	ID               uuid.UUID
 	Name             string
@@ -624,6 +678,14 @@ type Sku struct {
 	OfferEndDate   sql.NullTime
 	CreatedAt      sql.NullTime
 	UpdatedAt      sql.NullTime
+}
+
+type SkusOrderBill struct {
+	SkuID      uuid.UUID
+	Quantity   int32
+	OrderID    uuid.UUID
+	Price      int64
+	OfferPrice int64
 }
 
 type SkusVariantOption struct {
