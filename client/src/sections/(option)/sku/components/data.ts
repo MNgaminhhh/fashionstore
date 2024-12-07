@@ -13,5 +13,6 @@ export const tableHeading = [
     width: "200px",
   },
   { id: "offer", label: "Giảm Giá (%)", align: "left", width: "150px" },
+  { id: "status", label: "Trạng thái", align: "left", width: "100px" },
   { id: "action", label: "Hành động", align: "center", width: "100px" },
 ];

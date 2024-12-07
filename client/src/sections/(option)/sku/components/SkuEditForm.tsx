@@ -103,8 +103,6 @@ export default function SkuEditForm({
     offer: initialData.offer || 0,
     in_stock: initialData.in_stock || 0,
     status: "active",
-    // Giả sử initialData chưa có offer_start_date và offer_end_date, để trống.
-    // Nếu có, formatDateTimeLocal(initialData.offer_start_date)
     offer_start_date: "",
     offer_end_date: "",
   };

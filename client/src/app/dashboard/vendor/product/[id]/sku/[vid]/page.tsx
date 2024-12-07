@@ -12,7 +12,7 @@ export default async function EditSkuPage({ params }: IdParams) {
     const token = cookieStore.get("access_cookie")?.value;
     const skus = await Skus.findOne(params.vid);
     const infoSkus = get(skus, "data.data", {});
-    return <EditSkuView sku={infoSkus} />;
+    return <EditSkuView sku={infoSkus} token={token} />;
   } catch (error) {
     notFound();
   }

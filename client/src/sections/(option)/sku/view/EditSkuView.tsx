@@ -1,11 +1,10 @@
 import WrapperPage from "../../../WrapperPage";
-import VariantModel from "../../../../models/Variant.model";
 import SkuModel from "../../../../models/Sku.model";
 import SkuEditForm from "../components/SkuEditForm";
 
-type Props = { sku: SkuModel; varOp: VariantModel; token: string };
+type Props = { sku: SkuModel; token: string };
 
-export default async function EditSkuView({ sku }: Props) {
+export default async function EditSkuView({ sku, token }: Props) {
   try {
     return (
       <WrapperPage title="Sửa Biến Thể Sản Phẩm">

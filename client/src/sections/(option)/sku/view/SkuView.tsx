@@ -121,7 +121,31 @@ export default function SkuView({
   const handleBack = () => {
     router.push(`/dashboard/vendor/product`);
   };
+  const handleToggleStatus = async (
+    id: string,
+    newStatus: "active" | "inactive"
+  ) => {
+    try {
+      const response = await Skus.updateStatus(id, newStatus, token, true);
 
+      if (response?.data?.success || response?.success) {
+        setSkus((prevVariants) =>
+          prevVariants.map((optionVariant) =>
+            optionVariant.id === id
+              ? { ...optionVariant, status: newStatus }
+              : optionVariant
+          )
+        );
+        notifySuccess("Trạng thái SKU đã được cập nhật thành công.");
+      } else {
+        notifyError(
+          "Cập nhật trạng thái thất bại: " + (response.data.message || "")
+        );
+      }
+    } catch (error: any) {
+      notifyError("Có lỗi xảy ra khi cập nhật trạng thái SKU");
+    }
+  };
   return (
     <WrapperPage title="Quản Lý SKU" title2={`Sản phẩm: ${nameProduct}`}>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -246,6 +270,7 @@ export default function SkuView({
                         key={index}
                         sku={sku}
                         onDelete={openDeleteDialog}
+                        onToggleStatus={handleToggleStatus}
                       />
                     ))}
                   </TableBody>
