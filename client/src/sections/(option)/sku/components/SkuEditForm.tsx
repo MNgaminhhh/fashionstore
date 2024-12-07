@@ -15,6 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import SkuModel from "../../../../models/Sku.model";
+import { useParams, useRouter } from "next/navigation";
 
 type SkuData = {
   id: string;
@@ -79,8 +80,11 @@ export default function SkuEditForm({
 }) {
   const [loading, setLoading] = useState(false);
   const [isFormChanged, setIsFormChanged] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const { id } = params;
+  const productId = Array.isArray(id) ? id[0] : id;
 
-  // Chuyển đổi Date -> string yyyy-MM-ddTHH:mm nếu cần
   const formatDateTimeLocal = (date?: string | Date): string => {
     if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
@@ -349,6 +353,17 @@ export default function SkuEditForm({
               mt={4}
               alignItems="center"
             >
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() =>
+                  router.push(`/dashboard/vendor/product/${productId}/sku`)
+                }
+                sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
+                disabled={loading}
+              >
+                Trở về
+              </Button>
               <Button
                 variant="contained"
                 color="primary"

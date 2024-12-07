@@ -112,7 +112,6 @@ const INITIAL_VALUES = (sku?: SkuModel, variOp?: VariantModel[]) => ({
 });
 
 export default function SkuForm({ sku, variOp, token }: Props) {
-  console.log(sku);
   const router = useRouter();
   const params = useParams();
   const { id } = params;

@@ -43,6 +43,7 @@ export default function SkuView({
   pro: initialProduct,
   token,
 }: Props) {
+  console.log(initialSkus);
   const router = useRouter();
   const params = useParams();
   const { id } = params;
