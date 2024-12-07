@@ -28,6 +28,7 @@ type SkuResponse struct {
 	OfferEndDate   string          `json:"offer_end_date,omitempty"`
 	Variants       json.RawMessage `json:"variants,omitempty"`
 	InStock        int             `json:"in_stock,omitempty"`
+	Status         string          `json:"status"`
 }
 
 type ISkusService interface {
@@ -170,6 +171,9 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 			Int32: int32(*customParam.Offer),
 			Valid: true,
 		}
+		if *customParam.Offer != 0 && (customParam.OfferStartDate == nil || customParam.OfferEndDate == nil) {
+			return response.ErrCodeDateIsRequired
+		}
 	}
 	if customParam.InStock != nil {
 		sku.InStock = sql.NullInt16{
@@ -178,7 +182,7 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 		}
 	}
 	if customParam.OfferStartDate != nil {
-		if customParam.OfferEndDate != nil {
+		if customParam.OfferEndDate == nil {
 			return response.ErrCodeEndDateEmpty
 		}
 		startDateStr := *customParam.OfferStartDate
@@ -194,7 +198,7 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 		if time.Now().After(startDate) {
 			return response.ErrCodeInvalidFlashSaleStartDate
 		}
-		if endDate.After(startDate) {
+		if endDate.Before(startDate) {
 			return response.ErrCodeInvalidEndDate
 		}
 		sku.OfferStartDate = sql.NullTime{
@@ -205,6 +209,15 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 			Time:  endDate,
 			Valid: true,
 		}
+		if startDate.IsZero() || sku.Offer.Int32 == 0 {
+			sku.OfferStartDate.Valid = false
+		}
+		if endDate.IsZero() || sku.Offer.Int32 == 0 {
+			sku.OfferStartDate.Valid = false
+		}
+	}
+	if customParam.Status != nil {
+		sku.Status = database.SkuStatus(*customParam.Status)
 	}
 	err = sv.skusRepo.UpdateSkuById(*sku)
 	if err != nil {
@@ -263,6 +276,7 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006 15:04"),
 			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006 15:04"),
 			OfferPrice:     int(s.OfferPrice),
+			Status:         string(s.Status.SkuStatus),
 		}, nil
 	case *database.GetSkuByIdRow:
 		return &SkuResponse{
@@ -276,6 +290,7 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 			OfferStartDate: s.OfferStartDate.Time.Format("02-01-2006 15:04"),
 			OfferEndDate:   s.OfferEndDate.Time.Format("02-01-2006 15:04"),
 			Variants:       s.VariantOptions,
+			Status:         string(s.Status),
 			InStock:        int(s.InStock.Int16),
 		}, nil
 	default:
