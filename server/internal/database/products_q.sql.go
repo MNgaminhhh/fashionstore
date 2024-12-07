@@ -145,10 +145,14 @@ SELECT
     p.created_at,
     p.updated_at,
     v.store_name,
-    c.name AS category_name
+    c.name AS category_name,
+    sc.name AS sub_category_name,
+    cc.name AS child_category_name
 FROM products p
     LEFT JOIN vendors v ON p.vendor_id = v.id
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN sub_categories sc ON sc.id = p.sub_category_id
+    LEFT JOIN child_categories cc ON cc.id = p.child_category_id
 WHERE
     (v.store_name ILIKE '%' || COALESCE($1, '') || '%' OR $1 IS NULL) AND
     (p.name ILIKE '%' || COALESCE($2, '') || '%' OR $2 IS NULL) AND
@@ -156,7 +160,9 @@ WHERE
     (p.status = COALESCE($4, p.status) OR $4 IS NULL) AND
     (p.vendor_id = COALESCE(NULLIF($5::text, '')::UUID, p.vendor_id) OR $5 IS NULL) AND
     (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL ) AND
-    (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL)
+    (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL) AND
+    (sc.name ILIKE '%' || COALESCE($8, '') || '%' OR $8 IS NULL) AND
+    (cc.name ILIKE '%' || COALESCE($9, '') || '%' OR $9 IS NULL)
 ORDER BY p.updated_at DESC
 `
 
@@ -168,26 +174,30 @@ type ListProductsParams struct {
 	Column5    string
 	Column6    sql.NullString
 	IsApproved sql.NullBool
+	Column8    sql.NullString
+	Column9    sql.NullString
 }
 
 type ListProductsRow struct {
-	ID               uuid.UUID
-	Name             string
-	Slug             string
-	Images           json.RawMessage
-	VendorID         uuid.UUID
-	CategoryID       uuid.UUID
-	SubCategoryID    uuid.NullUUID
-	ChildCategoryID  uuid.NullUUID
-	ShortDescription sql.NullString
-	LongDescription  sql.NullString
-	ProductType      sql.NullString
-	Status           NullProductStatus
-	IsApproved       sql.NullBool
-	CreatedAt        sql.NullTime
-	UpdatedAt        sql.NullTime
-	StoreName        sql.NullString
-	CategoryName     sql.NullString
+	ID                uuid.UUID
+	Name              string
+	Slug              string
+	Images            json.RawMessage
+	VendorID          uuid.UUID
+	CategoryID        uuid.UUID
+	SubCategoryID     uuid.NullUUID
+	ChildCategoryID   uuid.NullUUID
+	ShortDescription  sql.NullString
+	LongDescription   sql.NullString
+	ProductType       sql.NullString
+	Status            NullProductStatus
+	IsApproved        sql.NullBool
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	StoreName         sql.NullString
+	CategoryName      sql.NullString
+	SubCategoryName   sql.NullString
+	ChildCategoryName sql.NullString
 }
 
 func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]ListProductsRow, error) {
@@ -199,6 +209,8 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 		arg.Column5,
 		arg.Column6,
 		arg.IsApproved,
+		arg.Column8,
+		arg.Column9,
 	)
 	if err != nil {
 		return nil, err
@@ -225,6 +237,8 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 			&i.UpdatedAt,
 			&i.StoreName,
 			&i.CategoryName,
+			&i.SubCategoryName,
+			&i.ChildCategoryName,
 		); err != nil {
 			return nil, err
 		}
