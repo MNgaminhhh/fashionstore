@@ -133,7 +133,7 @@ func (sv *SkusService) GetAllSkusOfVendor(id string, filterParam validator.Filte
 	}
 	totalResults := len(skus)
 	pagination := internal.Paginate(skus, page, limit)
-	totalPages := internal.CalculateTotalPages(totalResults, page)
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
 	var allResponseData []SkuResponse
 	for _, sku := range pagination {
 		resData, maErr := mapResponseData(&sku)
