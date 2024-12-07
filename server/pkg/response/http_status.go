@@ -55,6 +55,10 @@ const (
 	ErrCodeAlreadyReviewed              = 50041
 	ErrCodeInvalidRatingPoint           = 50042
 	ErrCodeDateIsRequired               = 50043
+	ErrCodeInvalidSku                   = 50044
+	ErrCodeInvalidCoupon                = 50045
+	ErrCodeInvalidCouponType            = 50046
+	ErrCodeInvalidSkuStatus             = 50047
 	ErrCodeForbidden                    = 403
 )
 
@@ -114,4 +118,8 @@ var msg = map[int]string{
 	ErrCodeAlreadyReviewed:              "Bạn đã đánh giá cho sản phẩm này rồi!",
 	ErrCodeInvalidRatingPoint:           "Điểm đánh giá phải nằm trong khoảng từ 0 đến 5 và là bội số của 0.5",
 	ErrCodeDateIsRequired:               "Ngày bắt đầu và ngày kết thúc không được để trống!",
+	ErrCodeInvalidSku:                   "Sản phẩm bạn mua có thể đã hết số lượng hoặc đã ngưng bán!",
+	ErrCodeInvalidCoupon:                "Mã giảm giá đã hết lượt sử dụng hoặc hết hạn!",
+	ErrCodeInvalidCouponType:            "Áp dụng sai loại mã giảm giá!",
+	ErrCodeInvalidSkuStatus:             "Status phải là active hoặc inactive",
 }
