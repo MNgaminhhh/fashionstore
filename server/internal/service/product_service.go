@@ -31,6 +31,8 @@ type ProductResponse struct {
 	IsApproved       bool                     `json:"is_approved"`
 	StoreName        string                   `json:"store_name,omitempty"`
 	CategoryName     string                   `json:"category_name,omitempty"`
+	SubCateName      string                   `json:"sub_cate_name,omitempty"`
+	ChildCateName    string                   `json:"child_cate_name,omitempty"`
 	LowestPrice      int                      `json:"lowest_price,omitempty"`
 	HighestPrice     int                      `json:"highest_price,omitempty"`
 	Variants         json.RawMessage          `json:"variants,omitempty"`
@@ -262,11 +264,41 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	} else {
 		status = database.NullProductStatus{Valid: false}
 	}
+
 	params := database.ListProductsParams{
-		Column1: storeName,
-		Column2: name,
-		Column3: productType,
-		Status:  status,
+		Column1:    storeName,
+		Column2:    name,
+		Column3:    productType,
+		Status:     status,
+		Column5:    "",
+		Column6:    sql.NullString{},
+		IsApproved: sql.NullBool{},
+		Column8:    sql.NullString{},
+		Column9:    sql.NullString{},
+	}
+	if filter.VendorId != nil {
+		params.Column5 = *filter.VendorId
+	}
+	if filter.CateName != nil && len(*filter.CateName) > 0 {
+		params.Column6 = sql.NullString{
+			String: *filter.CateName,
+			Valid:  true,
+		}
+	}
+	if filter.IsApproved != nil && *filter.IsApproved {
+		params.IsApproved = sql.NullBool{Bool: true, Valid: true}
+	}
+	if filter.SubCateName != nil && len(*filter.SubCateName) > 0 {
+		params.Column8 = sql.NullString{
+			String: *filter.SubCateName,
+			Valid:  true,
+		}
+	}
+	if filter.ChildCateName != nil && len(*filter.ChildCateName) > 0 {
+		params.Column9 = sql.NullString{
+			String: *filter.ChildCateName,
+			Valid:  true,
+		}
 	}
 	products, err := ps.productRepo.ListProducts(params)
 	if err != nil {
@@ -411,6 +443,8 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 		IsApproved:       row.IsApproved.Bool,
 		StoreName:        row.StoreName.String,
 		CategoryName:     row.CategoryName.String,
+		SubCateName:      row.SubCategoryName.String,
+		ChildCateName:    row.ChildCategoryName.String,
 	}, nil
 }
 

@@ -102,8 +102,8 @@ SELECT
             )
     ) AS conditions
 FROM coupons c
-         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
-         LEFT JOIN conditions con ON cc.condition_id = con.id
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
 AND (type = COALESCE(NULLIF($2, '')::discount_type, type) OR $2 = '' )
 AND (quantity = $3 OR $3 = -1)
@@ -188,18 +188,98 @@ func (q *Queries) GetAllCoupon(ctx context.Context, arg GetAllCouponParams) ([]G
 	return items, nil
 }
 
+const getAllCouponCanUse = `-- name: GetAllCouponCanUse :many
+SELECT
+    c.id, c.name, c.code, c.quantity, c.start_date, c.end_date, c.type, c.discount, c.total_used, c.max_price, c.status, c.created_at, c.updated_at,
+    JSON_AGG(
+            JSON_BUILD_OBJECT(
+                'condition_id', con.id,
+                'condition_description', con.description,
+                'operator', con.operator,
+                'value', con.value
+            )
+    ) AS conditions
+FROM coupons c
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
+WHERE (c.status = true)
+AND (c.start_date <= CURRENT_TIMESTAMP)
+AND (c.end_date >= CURRENT_TIMESTAMP)
+AND (c.total_used != c.quantity)
+GROUP BY c.id
+ORDER BY updated_at DESC
+`
+
+type GetAllCouponCanUseRow struct {
+	ID         uuid.UUID
+	Name       string
+	Code       string
+	Quantity   int32
+	StartDate  time.Time
+	EndDate    time.Time
+	Type       DiscountType
+	Discount   int32
+	TotalUsed  sql.NullInt32
+	MaxPrice   int32
+	Status     sql.NullBool
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+	Conditions json.RawMessage
+}
+
+func (q *Queries) GetAllCouponCanUse(ctx context.Context) ([]GetAllCouponCanUseRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllCouponCanUse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllCouponCanUseRow
+	for rows.Next() {
+		var i GetAllCouponCanUseRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Code,
+			&i.Quantity,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Type,
+			&i.Discount,
+			&i.TotalUsed,
+			&i.MaxPrice,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Conditions,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCouponById = `-- name: GetCouponById :one
 SELECT
     c.id, c.name, c.code, c.quantity, c.start_date, c.end_date, c.type, c.discount, c.total_used, c.max_price, c.status, c.created_at, c.updated_at,
     JSON_AGG(
             JSON_BUILD_OBJECT(
-                    'condition_id', con.id,
-                    'condition_description', con.description
+                'condition_id', con.id,
+                'condition_description', con.description,
+                'field', con.field,
+                'operator', con.operator,
+                'value', con.value
             )
     ) AS conditions
 FROM coupons c
-         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
-         LEFT JOIN conditions con ON cc.condition_id = con.id
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
 WHERE c.id = $1
 GROUP BY c.id
 `
@@ -291,5 +371,16 @@ type UpdateCouponStatusParams struct {
 
 func (q *Queries) UpdateCouponStatus(ctx context.Context, arg UpdateCouponStatusParams) error {
 	_, err := q.db.ExecContext(ctx, updateCouponStatus, arg.Status, arg.ID)
+	return err
+}
+
+const updateCouponTotalUsed = `-- name: UpdateCouponTotalUsed :exec
+UPDATE coupons
+SET total_used = total_used + 1
+WHERE id = $1
+`
+
+func (q *Queries) UpdateCouponTotalUsed(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, updateCouponTotalUsed, id)
 	return err
 }

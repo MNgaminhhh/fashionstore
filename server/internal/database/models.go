@@ -190,6 +190,7 @@ func (ns NullDiscountType) Value() (driver.Value, error) {
 type OrderStatus string
 
 const (
+	OrderStatusPaying    OrderStatus = "paying"
 	OrderStatusPending   OrderStatus = "pending"
 	OrderStatusShipping  OrderStatus = "shipping"
 	OrderStatusDelivered OrderStatus = "delivered"
@@ -581,6 +582,13 @@ type Coupon struct {
 	UpdatedAt sql.NullTime
 }
 
+type CouponsUser struct {
+	CouponID  uuid.UUID
+	UserID    uuid.UUID
+	OrderID   uuid.UUID
+	CreatedAt sql.NullTime
+}
+
 type DeliveryInfo struct {
 	ID           uuid.UUID
 	UserID       uuid.UUID
@@ -610,13 +618,17 @@ type FlashSalesItem struct {
 }
 
 type OrderBill struct {
-	ID           uuid.UUID
-	OrderCode    string
-	ProductTotal int64
-	ShippingFee  int64
-	TotalBill    int64
-	OrderStatus  NullOrderStatus
-	UpdatedAt    sql.NullTime
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	DeliveryInfoID   uuid.UUID
+	OrderCode        string
+	ProductTotal     int64
+	ShippingFee      int64
+	ProductDiscount  sql.NullInt64
+	ShippingDiscount sql.NullInt64
+	TotalBill        int64
+	OrderStatus      NullOrderStatus
+	UpdatedAt        sql.NullTime
 }
 
 type Product struct {

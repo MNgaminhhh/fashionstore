@@ -30,15 +30,17 @@ type UpdateProductRequest struct {
 }
 
 type FilterProductRequest struct {
-	StoreName   *string `query:"store_name"`
-	Status      *string `query:"status"`
-	Name        *string `query:"name"`
-	ProductType *string `query:"product_type"`
-	Limit       *int    `query:"limit"`
-	Page        *int    `query:"page"`
-	LowPrice    *int    `query:"low_price"`
-	HighPrice   *int    `query:"high_price"`
-	CateName    *string `query:"cate_name"`
-	IsApproved  *bool   `query:"is_approved"`
-	VendorId    *string
+	StoreName     *string `query:"store_name"`
+	Status        *string `query:"status"`
+	Name          *string `query:"name"`
+	ProductType   *string `query:"product_type"`
+	Limit         *int    `query:"limit"`
+	Page          *int    `query:"page"`
+	LowPrice      *int    `query:"low_price"`
+	HighPrice     *int    `query:"high_price"`
+	CateName      *string `query:"cate_name"`
+	SubCateName   *string `query:"sub_cate_name"`
+	ChildCateName *string `query:"child_cate_name"`
+	IsApproved    *bool   `query:"is_approved"`
+	VendorId      *string
 }

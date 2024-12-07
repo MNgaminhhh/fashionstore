@@ -21,12 +21,17 @@ type ICouponsRepository interface {
 	CreateCoupon(id uuid.UUID, customParam validator.CreateCouponValidator, startDate time.Time, endDate time.Time) error
 	GetCouponById(id uuid.UUID) (*database.GetCouponByIdRow, error)
 	GetAllCoupon(filterParam validator.FilterCouponsValidator) ([]database.GetAllCouponRow, error)
+	GetAllCouponsCanUse() ([]database.GetAllCouponCanUseRow, error)
 	UpdateCouponById(coupon database.GetCouponByIdRow) error
 	UpdateCouponStatus(id uuid.UUID, status bool) error
+	UpdateCouponQuantity(id uuid.UUID) error
 	DeleteCoupon(couponId uuid.UUID) error
 
 	CreateConditionCoupon(couponId uuid.UUID, conditionId uuid.UUID) error
 	DeleteConditionCouponByCouponId(couponId uuid.UUID) error
+
+	CreateCouponUser(couponId uuid.UUID, userId uuid.UUID, orderId uuid.UUID) error
+	GetCouponUserByCouponIdAndUserId(couponId uuid.UUID, userId uuid.UUID) (*database.CouponsUser, error)
 }
 
 type CouponRepository struct {
@@ -166,6 +171,14 @@ func (c CouponRepository) GetAllCoupon(filterParam validator.FilterCouponsValida
 	return results, nil
 }
 
+func (c CouponRepository) GetAllCouponsCanUse() ([]database.GetAllCouponCanUseRow, error) {
+	results, err := c.sqlc.GetAllCouponCanUse(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
 func (c CouponRepository) GetCouponById(id uuid.UUID) (*database.GetCouponByIdRow, error) {
 	coupon, err := c.sqlc.GetCouponById(ctx, id)
 	if err != nil {
@@ -203,6 +216,11 @@ func (c CouponRepository) UpdateCouponStatus(id uuid.UUID, status bool) error {
 	return err
 }
 
+func (c CouponRepository) UpdateCouponQuantity(id uuid.UUID) error {
+	err := c.sqlc.UpdateCouponTotalUsed(ctx, id)
+	return err
+}
+
 func (c CouponRepository) CreateConditionCoupon(couponId uuid.UUID, conditionId uuid.UUID) error {
 	param := database.CreateConditionCouponParams{
 		CouponID:    couponId,
@@ -220,4 +238,26 @@ func (c CouponRepository) DeleteConditionCouponByCouponId(couponId uuid.UUID) er
 func (c CouponRepository) DeleteCondition(id uuid.UUID) error {
 	err := c.sqlc.DeleteCondition(ctx, id)
 	return err
+}
+
+func (c CouponRepository) CreateCouponUser(couponId uuid.UUID, userId uuid.UUID, orderId uuid.UUID) error {
+	param := database.CreateCouponUserParams{
+		CouponID: couponId,
+		UserID:   userId,
+		OrderID:  orderId,
+	}
+	err := c.sqlc.CreateCouponUser(ctx, param)
+	return err
+}
+
+func (c CouponRepository) GetCouponUserByCouponIdAndUserId(couponId uuid.UUID, userId uuid.UUID) (*database.CouponsUser, error) {
+	param := database.GetCouponUserByCouponIdAndUserIdParams{
+		CouponID: couponId,
+		UserID:   userId,
+	}
+	result, err := c.sqlc.GetCouponUserByCouponIdAndUserId(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return &result, err
 }

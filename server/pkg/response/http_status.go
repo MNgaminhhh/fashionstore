@@ -59,6 +59,10 @@ const (
 	ErrCodeInvalidCoupon                = 50045
 	ErrCodeInvalidCouponType            = 50046
 	ErrCodeInvalidSkuStatus             = 50047
+	ErrCodeCouponAlreadyUsed            = 50048
+	ErrCodeOrderBillNotEqualMinCost     = 50049
+	ErrCodeShippingFeeIsRequired        = 50050
+	ErrCodeMinOrderCostIsRequired       = 50051
 	ErrCodeForbidden                    = 403
 )
 
@@ -122,4 +126,8 @@ var msg = map[int]string{
 	ErrCodeInvalidCoupon:                "Mã giảm giá đã hết lượt sử dụng hoặc hết hạn!",
 	ErrCodeInvalidCouponType:            "Áp dụng sai loại mã giảm giá!",
 	ErrCodeInvalidSkuStatus:             "Status phải là active hoặc inactive",
+	ErrCodeCouponAlreadyUsed:            "Mã giảm giá đã được sử dụng",
+	ErrCodeOrderBillNotEqualMinCost:     "Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã giảm gía",
+	ErrCodeShippingFeeIsRequired:        "Price là bắt buộc!",
+	ErrCodeMinOrderCostIsRequired:       "MinOrderCost là bắt buộc!",
 }
