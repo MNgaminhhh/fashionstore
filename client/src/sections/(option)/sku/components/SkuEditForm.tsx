@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -9,35 +10,18 @@ import {
   Card,
   MenuItem,
   Typography,
-  Divider,
   Grid,
   Paper,
   CircularProgress,
 } from "@mui/material";
 import SkuModel from "../../../../models/Sku.model";
 import { useParams, useRouter } from "next/navigation";
-
-type SkuData = {
-  id: string;
-  product_name: string;
-  product_id: string;
-  sku: string;
-  price: number;
-  offer_price: number;
-  offer: number;
-  variants: { [key: string]: string };
-  in_stock: number;
-};
-
-type SkuModelUpdate = {
-  sku: string;
-  price: number;
-  offer: number;
-  in_stock: number;
-  status: string;
-  offer_start_date?: Date;
-  offer_end_date?: Date;
-};
+import Skus from "../../../../services/Skus";
+import { useAppContext } from "../../../../context/AppContext";
+import {
+  notifyError,
+  notifySuccess,
+} from "../../../../utils/ToastNotification";
 
 const SkuSchema = Yup.object().shape({
   sku: Yup.string().required("Mã SKU là bắt buộc"),
@@ -66,11 +50,12 @@ const SkuSchema = Yup.object().shape({
   }),
 });
 
-// Giả lập SkuUpdate API call
-async function SkuUpdate(id: string, data: SkuModelUpdate) {
-  // Call API thực tế ở đây
-  // return await fetch(...);
-  return { success: true };
+function convertToDateTimeLocalFormat(dateStr: string): string {
+  if (!dateStr) return "";
+  // dateStr dạng "DD-MM-YYYY HH:mm"
+  const [datePart, timePart] = dateStr.split(" ");
+  const [day, month, year] = datePart.split("-");
+  return `${year}-${month}-${day}T${timePart}`;
 }
 
 export default function SkuEditForm({
@@ -84,74 +69,57 @@ export default function SkuEditForm({
   const params = useParams();
   const { id } = params;
   const productId = Array.isArray(id) ? id[0] : id;
-
-  const formatDateTimeLocal = (date?: string | Date): string => {
-    if (!date) return "";
-    const d = typeof date === "string" ? new Date(date) : date;
-    if (isNaN(d.getTime())) return "";
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const hours = String(d.getHours()).padStart(2, "0");
-    const minutes = String(d.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+  const { sessionToken } = useAppContext();
 
   const initialValues = {
     sku: initialData.sku || "",
     price: initialData.price || 0,
     offer: initialData.offer || 0,
     in_stock: initialData.in_stock || 0,
-    status: "active",
-    offer_start_date: "",
-    offer_end_date: "",
+    status: initialData.status || "active",
+    offer_start_date: initialData.offer_start_date
+      ? convertToDateTimeLocalFormat(initialData.offer_start_date)
+      : "",
+    offer_end_date: initialData.offer_end_date
+      ? convertToDateTimeLocalFormat(initialData.offer_end_date)
+      : "",
+  };
+
+  const formatDate = (dateStr: string): string => {
+    // Đổi ngược lại về format "DD-MM-YYYY HH:mm" trước khi gửi đi
+    // vì trong payload cần đúng format ban đầu.
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
 
   const handleSubmit = async (values: typeof initialValues) => {
     setLoading(true);
     try {
-      let startDate: Date | undefined;
-      let endDate: Date | undefined;
-
-      if (values.offer > 0) {
-        if (values.offer_start_date) {
-          startDate = new Date(values.offer_start_date);
-        }
-        if (values.offer_end_date) {
-          endDate = new Date(values.offer_end_date);
-        }
-
-        if (
-          !startDate ||
-          !endDate ||
-          isNaN(startDate.getTime()) ||
-          isNaN(endDate.getTime())
-        ) {
-          alert("Ngày khuyến mãi không hợp lệ!");
-          setLoading(false);
-          return;
-        }
-      }
-
-      const payload: SkuModelUpdate = {
+      const payload: any = {
         sku: values.sku,
         price: values.price,
         offer: values.offer,
         in_stock: values.in_stock,
         status: values.status,
-        offer_start_date: values.offer > 0 ? startDate : undefined,
-        offer_end_date: values.offer > 0 ? endDate : undefined,
+        offer_start_date:
+          values.offer > 0 ? formatDate(values.offer_start_date) : undefined,
+        offer_end_date:
+          values.offer > 0 ? formatDate(values.offer_end_date) : undefined,
       };
 
-      const res = await SkuUpdate(initialData.id, payload);
-      if (res.success) {
-        alert("Cập nhật SKU thành công!");
+      const res = await Skus.update(initialData.id, payload, sessionToken);
+      if (res?.success || res?.data?.success) {
+        notifySuccess("Cập nhật SKU thành công!");
       } else {
-        alert("Cập nhật SKU thất bại!");
+        notifyError("Cập nhật SKU thất bại!");
       }
     } catch (error) {
-      console.error(error);
-      alert("Có lỗi xảy ra khi cập nhật SKU");
+      notifyError("Có lỗi xảy ra khi cập nhật SKU");
     } finally {
       setLoading(false);
       setIsFormChanged(false);

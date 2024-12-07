@@ -3,7 +3,6 @@ import Categories from "./components/Categories";
 import NavigationList from "./components/navlist/NavList";
 import { FlexBox } from "../flexbox";
 import LoginRegisterButton from "./components/loginregisterbutton/LoginRegisterButton";
-import Auth from "../../services/Auth";
 import { useAppContext } from "../../context/AppContext";
 import Profile from "../profile/Profile";
 interface Props {

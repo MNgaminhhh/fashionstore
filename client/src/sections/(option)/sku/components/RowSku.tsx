@@ -45,6 +45,9 @@ export default function RowSku({ sku, onDelete, onToggleStatus }: Props) {
         </Box>
       </StyledTableCell>
       <StyledTableCell align="left">
+        <Typography variant="body2">{sku.sku || "-"}</Typography>
+      </StyledTableCell>
+      <StyledTableCell align="left">
         <Typography variant="body2">{sku.price || "-"}</Typography>
       </StyledTableCell>
       <StyledTableCell align="left">

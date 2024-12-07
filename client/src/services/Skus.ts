@@ -1,10 +1,12 @@
 import Base from "./Base";
 
 interface Filters {
-  name?: string;
-  cate_name?: string;
+  sku?: string;
+  offer?: string;
+  offerPrice?: string;
   status?: string;
-  product_type?: string;
+  price?: string;
+  productName?: string;
 }
 interface cuSkuModel {
   in_stock: string;
@@ -45,21 +47,26 @@ class SkusServer extends Base {
 
     const queryParams: string[] = [];
 
-    if (filters.name) {
-      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
+    if (filters.sku) {
+      queryParams.push(`sku=${encodeURIComponent(filters.sku)}`);
     }
-    if (filters.cate_name) {
-      queryParams.push(`cate_name=${encodeURIComponent(filters.cate_name)}`);
+    if (filters.offer) {
+      queryParams.push(`offer=${encodeURIComponent(filters.offer)}`);
     }
-    if (filters.product_type) {
-      queryParams.push(
-        `product_type=${encodeURIComponent(filters.product_type)}`
-      );
+    if (filters.offerPrice) {
+      queryParams.push(`offerPrice=${encodeURIComponent(filters.offerPrice)}`);
     }
     if (filters.status) {
       queryParams.push(`status=${encodeURIComponent(filters.status)}`);
     }
-
+    if (filters.price) {
+      queryParams.push(`price=${encodeURIComponent(filters.price)}`);
+    }
+    if (filters.productName) {
+      queryParams.push(
+        `productName=${encodeURIComponent(filters.productName)}`
+      );
+    }
     if (queryParams.length > 0) {
       url += `&${queryParams.join("&")}`;
     }

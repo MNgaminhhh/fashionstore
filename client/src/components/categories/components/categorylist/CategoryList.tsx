@@ -3,7 +3,7 @@ import { CategoryListProps } from "./utils/types";
 import CategoryItem from "../categoryitem";
 import MegaMenu1 from "../megamenu/MegaMenu1";
 import MegaMenu2 from "../megamenu/MegaMenu2";
-import {useAppContext} from "../../../../context/AppContext";
+import { useAppContext } from "../../../../context/AppContext";
 
 export default function CategoryList({
   open,

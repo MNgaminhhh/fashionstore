@@ -6,7 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import { alpha, styled } from "@mui/material/styles";
 
 interface StyledTableCellProps {
-  align: "left" | "center" | "right" | "inherit" | "justify";
+  align: any;
   width?: string | number;
 }
 

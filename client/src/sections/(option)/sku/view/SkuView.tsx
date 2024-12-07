@@ -43,7 +43,6 @@ export default function SkuView({
   pro: initialProduct,
   token,
 }: Props) {
-  console.log(initialSkus);
   const router = useRouter();
   const params = useParams();
   const { id } = params;
@@ -216,6 +215,7 @@ export default function SkuView({
                           width={headCell.width}
                         >
                           {headCell.id !== "action" &&
+                          headCell.id !== "status" &&
                           headCell.id !== "variants" ? (
                             selectOptions[headCell.id] ? (
                               <Select

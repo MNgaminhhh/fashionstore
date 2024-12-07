@@ -15,7 +15,7 @@ type Props = {
 };
 
 const mappingType: { [key: string]: string } = {
-  price: "Giá",
+  price: "Giá trị đơn hàng",
   shipping_cost: "Phí vận chuyển",
 };
 export default function RowCoupon({ coupon, onDelete }: Props) {

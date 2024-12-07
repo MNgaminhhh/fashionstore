@@ -8,7 +8,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import LanguageIcon from "@mui/icons-material/Language";
-
+import StoreIcon from "@mui/icons-material/Store";
 export const navigation = [
   { type: "label", label: "Admin" },
   { name: "Bảng Điều Khiển", icon: DashboardIcon, path: "/dashboard/admin" },
@@ -101,6 +101,11 @@ export const navigation = [
     name: "Quản lý sản phẩm cửa hàng",
     icon: Inventory2Icon,
     path: "/dashboard/vendor/product",
+  },
+  {
+    name: "Thông tin cửa hàng",
+    icon: StoreIcon,
+    path: "/dashboard/vendor/profile",
   },
   {
     name: "Đăng Xuất",

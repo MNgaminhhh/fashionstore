@@ -5,9 +5,15 @@ export const tableHeading = [
     align: "left",
     width: "250px",
   },
+  {
+    id: "sku",
+    label: "Mã Sản Phẩm",
+    align: "left",
+    width: "250px",
+  },
   { id: "price", label: "Giá (VNĐ)", align: "left", width: "150px" },
   {
-    id: "offer_price",
+    id: "offerPrice",
     label: "Giá Sau Giảm Giá (VNĐ)",
     align: "left",
     width: "200px",

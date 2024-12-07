@@ -8,6 +8,7 @@ interface SkuModel {
   offer: string;
   offer_start_date: string;
   offer_end_date: string;
+  status: string;
 }
 
 export default SkuModel;
