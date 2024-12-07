@@ -79,8 +79,8 @@ GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_p
 
 -- name: UpdateSkuById :exec
 UPDATE skus
-SET sku = $1, offer = $2, in_stock = $3, price = $4
-WHERE id = $5;
+SET sku = $1, offer = $2, in_stock = $3, price = $4, offer_start_date = $5, offer_end_date = $6
+WHERE id = $7;
 
 -- name: DeleteSkuById :exec
 DELETE FROM skus WHERE id = $1;

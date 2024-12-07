@@ -41,6 +41,7 @@ func InitRouter() *echo.Echo {
 	shippingRulesRouter := routers.AllRouterGroup.ShippingRules
 	deliveryInfoRouter := routers.AllRouterGroup.DeliveryInfo
 	cartRouter := routers.AllRouterGroup.Cart
+	reviewRouter := routers.AllRouterGroup.Review
 	MainGroup := e.Group("/api/v1")
 	{
 		userRouter.InitUserRouter(MainGroup)
@@ -57,6 +58,7 @@ func InitRouter() *echo.Echo {
 		shippingRulesRouter.InitShippingRuleRouter(MainGroup)
 		deliveryInfoRouter.InitDeliveryInfoRouter(MainGroup)
 		cartRouter.InitCartRouter(MainGroup)
+		reviewRouter.InitReviewRouter(MainGroup)
 	}
 	MainGroup.GET("/ok", func(c echo.Context) error {
 		return c.JSON(200, map[string]string{"status": "OK"})
