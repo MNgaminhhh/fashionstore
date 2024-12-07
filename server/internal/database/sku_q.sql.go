@@ -63,6 +63,7 @@ SELECT
     s.sku,
     s.offer,
     s.in_stock,
+    s.status,
     (s.price*(100-s.offer)/100) AS offer_price,
     jsonb_object_agg(
         COALESCE(pv.name, ''),
@@ -74,7 +75,7 @@ FROM skus s
          LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.product_id = $1
-GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, s.status
 ORDER BY s.price ASC
 `
 
@@ -86,6 +87,7 @@ type GetAllSkuByProductIdRow struct {
 	Sku            string
 	Offer          sql.NullInt32
 	InStock        sql.NullInt16
+	Status         SkuStatus
 	OfferPrice     int32
 	VariantOptions json.RawMessage
 }
@@ -107,6 +109,7 @@ func (q *Queries) GetAllSkuByProductId(ctx context.Context, productID uuid.UUID)
 			&i.Sku,
 			&i.Offer,
 			&i.InStock,
+			&i.Status,
 			&i.OfferPrice,
 			&i.VariantOptions,
 		); err != nil {
@@ -132,6 +135,7 @@ SELECT
     s.price,
     s.sku,
     s.offer,
+    s.status,
     s.offer_start_date,
     s.offer_end_date,
     (s.price*(100-s.offer)/100) AS offer_price,
@@ -153,7 +157,7 @@ AND (s.price = $5 OR $5 = -1)
 AND (s.offer = $6 OR $6 IS NULL)
 AND ((s.price*(100-s.offer)/100) = $7 OR $7 = -1)
 GROUP BY p.name, p.vendor_id, p.id, s.id, s.price, s.sku, s.offer, s.in_stock, s.updated_at, s.offer_start_date,
-         s.offer_end_date
+         s.offer_end_date, s.status
 ORDER BY s.updated_at DESC
 `
 
@@ -175,6 +179,7 @@ type GetAllSkuOfVendorRow struct {
 	Price          sql.NullInt64
 	Sku            sql.NullString
 	Offer          sql.NullInt32
+	Status         NullSkuStatus
 	OfferStartDate sql.NullTime
 	OfferEndDate   sql.NullTime
 	OfferPrice     int32
@@ -207,6 +212,7 @@ func (q *Queries) GetAllSkuOfVendor(ctx context.Context, arg GetAllSkuOfVendorPa
 			&i.Price,
 			&i.Sku,
 			&i.Offer,
+			&i.Status,
 			&i.OfferStartDate,
 			&i.OfferEndDate,
 			&i.OfferPrice,
@@ -242,7 +248,7 @@ FROM skus s
          LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.id = $1
-GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price,s.status
 `
 
 type GetSkuByIdRow struct {
@@ -288,8 +294,8 @@ func (q *Queries) GetSkuById(ctx context.Context, id uuid.UUID) (GetSkuByIdRow, 
 
 const updateSkuById = `-- name: UpdateSkuById :exec
 UPDATE skus
-SET sku = $1, offer = $2, in_stock = $3, price = $4, offer_start_date = $5, offer_end_date = $6
-WHERE id = $7
+SET sku = $1, offer = $2, in_stock = $3, price = $4, offer_start_date = $5, offer_end_date = $6, status = $7
+WHERE id = $8
 `
 
 type UpdateSkuByIdParams struct {
@@ -299,6 +305,7 @@ type UpdateSkuByIdParams struct {
 	Price          int64
 	OfferStartDate sql.NullTime
 	OfferEndDate   sql.NullTime
+	Status         SkuStatus
 	ID             uuid.UUID
 }
 
@@ -310,6 +317,7 @@ func (q *Queries) UpdateSkuById(ctx context.Context, arg UpdateSkuByIdParams) er
 		arg.Price,
 		arg.OfferStartDate,
 		arg.OfferEndDate,
+		arg.Status,
 		arg.ID,
 	)
 	return err

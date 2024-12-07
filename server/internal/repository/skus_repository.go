@@ -116,6 +116,7 @@ func (sr *SkusRepository) UpdateSkuById(sku database.GetSkuByIdRow) error {
 		ID:             sku.ID,
 		OfferStartDate: sku.OfferStartDate,
 		OfferEndDate:   sku.OfferEndDate,
+		Status:         sku.Status,
 	}
 	err := sr.sqlc.UpdateSkuById(ctx, param)
 	return err
