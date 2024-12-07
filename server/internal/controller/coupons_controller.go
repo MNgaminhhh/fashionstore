@@ -138,6 +138,14 @@ func (cc *CouponsController) GetCouponById(c echo.Context) error {
 	return response.SuccessResponse(c, code, result)
 }
 
+func (cc *CouponsController) GetAllCouponsCanUse(c echo.Context) error {
+	userId := c.Get("uuid").(string)
+	code, results := cc.couponsService.GetAllCouponCanUseOfUser(userId)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
 func (cc *CouponsController) UpdateCouponStatus(c echo.Context) error {
 	id := c.Param("id")
 	reqParam := validator.UpdateCouponValidator{}

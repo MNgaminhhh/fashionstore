@@ -22,8 +22,8 @@ SELECT
             )
     ) AS conditions
 FROM coupons c
-         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
-         LEFT JOIN conditions con ON cc.condition_id = con.id
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
 AND (type = COALESCE(NULLIF($2, '')::discount_type, type) OR $2 = '' )
 AND (quantity = $3 OR $3 = -1)
@@ -34,21 +34,44 @@ AND (status = $7 OR $7 IS NULL)
 GROUP BY c.id
 ORDER BY updated_at DESC;
 
+-- name: GetAllCouponCanUse :many
+SELECT
+    c.*,
+    JSON_AGG(
+            JSON_BUILD_OBJECT(
+                'condition_id', con.id,
+                'condition_description', con.description,
+                'operator', con.operator,
+                'value', con.value
+            )
+    ) AS conditions
+FROM coupons c
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
+WHERE (c.status = true)
+AND (c.start_date <= CURRENT_TIMESTAMP)
+AND (c.end_date >= CURRENT_TIMESTAMP)
+AND (c.total_used != c.quantity)
+GROUP BY c.id
+ORDER BY updated_at DESC;
+
 -- name: GetCouponById :one
 SELECT
     c.*,
     JSON_AGG(
             JSON_BUILD_OBJECT(
-                    'condition_id', con.id,
-                    'condition_description', con.description
+                'condition_id', con.id,
+                'condition_description', con.description,
+                'field', con.field,
+                'operator', con.operator,
+                'value', con.value
             )
     ) AS conditions
 FROM coupons c
-         LEFT JOIN conditions_coupons cc ON c.id = cc.coupon_id
-         LEFT JOIN conditions con ON cc.condition_id = con.id
+         INNER JOIN conditions_coupons cc ON c.id = cc.coupon_id
+         INNER JOIN conditions con ON cc.condition_id = con.id
 WHERE c.id = $1
 GROUP BY c.id;
-
 
 -- name: UpdateCouponByCouponId :exec
 UPDATE coupons
@@ -59,6 +82,11 @@ WHERE id = $10;
 UPDATE coupons
 SET status = $1
 WHERE id = $2;
+
+-- name: UpdateCouponTotalUsed :exec
+UPDATE coupons
+SET total_used = total_used + 1
+WHERE id = $1;
 
 -- name: DeleteCoupon :exec
 DELETE FROM coupons

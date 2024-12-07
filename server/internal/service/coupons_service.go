@@ -40,6 +40,7 @@ type ICouponsService interface {
 
 	CreateCoupon(customParam validator.CreateCouponValidator) int
 	GetAllCoupon(filterParam validator.FilterCouponsValidator) (int, map[string]interface{})
+	GetAllCouponCanUseOfUser(userId string) (int, []CouponResponseData)
 	GetCouponById(id string) (int, *CouponResponseData)
 	UpdateCouponStatus(id string, status bool) int
 	UpdateCouponById(id string, couponValidator validator.CreateCouponValidator) int
@@ -106,6 +107,26 @@ func (c CouponsService) GetAllCondition(filterParam validator.FilterConditionVal
 		"conditions":   pagination,
 	}
 	return response.SuccessCode, resData
+}
+
+func (c CouponsService) GetAllCouponCanUseOfUser(userId string) (int, []CouponResponseData) {
+	userUUID, _ := uuid.Parse(userId)
+	allCoupons, err := c.couponsRepo.GetAllCouponsCanUse()
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	var couponsCanUse []CouponResponseData
+	for _, coupon := range allCoupons {
+		isUsed, _ := c.couponsRepo.GetCouponUserByCouponIdAndUserId(coupon.ID, userUUID)
+		if isUsed == nil {
+			couponsCanUse = append(couponsCanUse, *mapCouponToResponseData(&coupon))
+		}
+	}
+	return response.SuccessCode, couponsCanUse
 }
 
 func (c CouponsService) GetConditionById(id string) (int, *database.Condition) {
@@ -380,6 +401,21 @@ func mapCouponToResponseData[T any](data *T) *CouponResponseData {
 			MaxPrice:  int(c.MaxPrice),
 		}
 	case *database.GetAllCouponRow:
+		return &CouponResponseData{
+			ID:        c.ID.String(),
+			Name:      c.Name,
+			Code:      c.Code,
+			Quantity:  int(c.Quantity),
+			StartDate: c.StartDate.Format("02-01-2006"),
+			EndDate:   c.EndDate.Format("02-01-2006"),
+			Type:      string(c.Type),
+			Discount:  c.Discount,
+			TotalUsed: int(c.TotalUsed.Int32),
+			Status:    c.Status.Bool,
+			Condition: c.Conditions,
+			MaxPrice:  int(c.MaxPrice),
+		}
+	case *database.GetAllCouponCanUseRow:
 		return &CouponResponseData{
 			ID:        c.ID.String(),
 			Name:      c.Name,

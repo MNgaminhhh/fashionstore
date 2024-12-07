@@ -8,6 +8,7 @@ import (
 	"backend/internal/routers/coupons"
 	"backend/internal/routers/delivery_info"
 	"backend/internal/routers/flash_sales"
+	"backend/internal/routers/order_bill"
 	"backend/internal/routers/product"
 	"backend/internal/routers/product_variant"
 	"backend/internal/routers/review"
@@ -34,6 +35,7 @@ type RouterGroup struct {
 	DeliveryInfo    *delivery_info.DeliveryInfoRouter
 	Cart            *cart.CartRouter
 	Review          *review.ReviewsRouter
+	OrderBill       *order_bill.OrderBillRouter
 }
 
 var AllRouterGroup = &RouterGroup{
@@ -52,4 +54,5 @@ var AllRouterGroup = &RouterGroup{
 	DeliveryInfo:    &delivery_info.DeliveryInfoRouter{},
 	Cart:            &cart.CartRouter{},
 	Review:          &review.ReviewsRouter{},
+	OrderBill:       &order_bill.OrderBillRouter{},
 }

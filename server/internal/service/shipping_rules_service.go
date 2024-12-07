@@ -16,9 +16,9 @@ import (
 
 type ShippingRuleResponse struct {
 	ID           string `json:"id"`
-	Name         string `json:"name,omitempty"`
-	MinOrderCost int    `json:"min_order_cost,omitempty"`
-	Price        int    `json:"price,omitempty"`
+	Name         string `json:"name"`
+	MinOrderCost int    `json:"min_order_cost"`
+	Price        int    `json:"price"`
 	Status       bool   `json:"status"`
 	CreatedAt    string `json:"created_at,omitempty"`
 	UpdatedAt    string `json:"updated_at,omitempty"`
@@ -37,8 +37,14 @@ type ShippingRulesService struct {
 }
 
 func (s ShippingRulesService) CreateShippingRule(customParam validator.CreateShippingRuleValidator) int {
-	price := customParam.Price
-	minOrderCost := customParam.MinOrderCost
+	if customParam.Price == nil {
+		return response.ErrCodeShippingFeeIsRequired
+	}
+	price := *customParam.Price
+	if customParam.MinOrderCost == nil {
+		return response.ErrCodeMinOrderCostIsRequired
+	}
+	minOrderCost := *customParam.MinOrderCost
 	if price%100 != 0 || minOrderCost%100 != 0 {
 		return response.ErrCodeShippingCost
 	}

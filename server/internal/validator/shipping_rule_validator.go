@@ -2,8 +2,8 @@ package validator
 
 type CreateShippingRuleValidator struct {
 	Name         string `json:"name" validate:"required"`
-	Price        int    `json:"price" validate:"required"`
-	MinOrderCost int    `json:"minOrderCost" validate:"required"`
+	Price        *int   `json:"price"`
+	MinOrderCost *int   `json:"minOrderCost"`
 	Status       *bool  `json:"status"`
 }
 

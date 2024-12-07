@@ -23,8 +23,8 @@ type ShippingRulesRepository struct {
 func (s ShippingRulesRepository) CreateShippingRule(customParam validator.CreateShippingRuleValidator) error {
 	param := database.CreateShippingRuleParams{
 		Name:         customParam.Name,
-		MinOrderCost: int64(customParam.MinOrderCost),
-		Price:        int32(customParam.Price),
+		MinOrderCost: int64(*customParam.MinOrderCost),
+		Price:        int32(*customParam.Price),
 		Status: sql.NullBool{
 			Bool:  false,
 			Valid: true,
