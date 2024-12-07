@@ -32,5 +32,5 @@ type UpdateSkuValidator struct {
 	Offer          *int    `json:"offer" validate:"min=0,max=100"`
 	OfferStartDate *string `json:"offer_start_date"`
 	OfferEndDate   *string `json:"offer_end_date"`
-	Status         *string `json:"status" validate:"oneof=active inactive out_of_stock"`
+	Status         *string `json:"status"`
 }

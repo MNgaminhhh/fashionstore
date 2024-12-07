@@ -217,6 +217,9 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 		}
 	}
 	if customParam.Status != nil {
+		if *customParam.Status != "inactive" && *customParam.Status != "active" {
+			return response.ErrCodeInvalidSkuStatus
+		}
 		sku.Status = database.SkuStatus(*customParam.Status)
 	}
 	err = sv.skusRepo.UpdateSkuById(*sku)
