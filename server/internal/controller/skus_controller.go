@@ -62,11 +62,6 @@ func (sc *SkusController) UpdateSku(c echo.Context) error {
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
 	}
-	if reqParam.Status != nil {
-		if err := c.Validate(&reqParam); err != nil {
-			return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
-		}
-	}
 	code := sc.skusService.UpdateSku(id, reqParam)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "update fail")
