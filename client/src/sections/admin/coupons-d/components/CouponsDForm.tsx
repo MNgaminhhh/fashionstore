@@ -165,14 +165,14 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
         if (response.data.success) {
           notifySuccess("Cập nhật Coupon thành công!");
         } else {
-          throw new Error(response.data.message || "Cập nhật Coupon thất bại.");
+          notifyError(response.data.message || "Cập nhật Coupon thất bại.");
         }
       } else {
         response = await Coupons.create(formattedData, token);
         if (response.data.success) {
           notifySuccess("Tạo Coupon mới thành công!");
         } else {
-          throw new Error(response.data.message || "Tạo Coupon mới thất bại.");
+          notifyError(response.data.message || "Tạo Coupon mới thất bại.");
         }
       }
 

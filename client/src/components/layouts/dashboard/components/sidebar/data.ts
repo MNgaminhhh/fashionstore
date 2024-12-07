@@ -89,17 +89,17 @@ export const navigation = [
     name: "Doanh Thu",
     icon: SellerIcon,
     children: [
-      { name: "Lịch Sử Doanh Thu", path: "/vendor/earning-history" },
-      { name: "Chi trả", path: "/vendor/payouts" },
-      { name: "Yêu Cầu Chi trả", path: "/vendor/payout-requests" },
-      { name: "Cài Đặt Chi trả", path: "/vendor/payout-settings" },
+      { name: "Lịch Sử Doanh Thu", path: "/dashboard/vendor/earning-history" },
+      { name: "Chi trả", path: "/dashboard/vendor/payouts" },
+      { name: "Yêu Cầu Chi trả", path: "/dashboard/vendor/payout-requests" },
+      { name: "Cài Đặt Chi trả", path: "/dashboard/vendor/payout-settings" },
     ],
   },
   { type: "label", label: "Người Bán" },
   { name: "Tổng quan", icon: DashboardIcon, path: "/dashboard/vendor" },
   {
-    name: "Quản lý sản phẩm",
-    icon: DashboardIcon,
+    name: "Quản lý sản phẩm cửa hàng",
+    icon: Inventory2Icon,
     path: "/dashboard/vendor/product",
   },
   {

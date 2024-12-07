@@ -4,37 +4,47 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import { ArrowButton } from "../styles";
 interface ArrowProps extends CustomArrowProps {
-    sx?: SxProps<Theme>;
+  sx?: SxProps<Theme>;
 }
 function NextArrow({ onClick, sx, className }: ArrowProps) {
-    const updatedClassName = className
-        .split(" ")
-        .filter((item) => item !== "slick-next")
-        .join(" ");
+  const updatedClassName = className
+    .split(" ")
+    .filter((item) => item !== "slick-next")
+    .join(" ");
 
-    return (
-        <ArrowButton right={0} onClick={onClick} className={`next ${updatedClassName}`} sx={{ ...sx }}>
-            <ArrowForward fontSize="small" color="inherit" className="forward-icon" />
-        </ArrowButton>
-    );
+  return (
+    <ArrowButton
+      right={0}
+      onClick={onClick}
+      className={`next ${updatedClassName}`}
+      sx={{ ...sx }}
+    >
+      <ArrowForward fontSize="small" color="inherit" className="forward-icon" />
+    </ArrowButton>
+  );
 }
 
 function PrevArrow({ onClick, sx, className }: ArrowProps) {
-    const updatedClassName = className
-        .split(" ")
-        .filter((item) => item !== "slick-prev")
-        .join(" ");
+  const updatedClassName = className
+    .split(" ")
+    .filter((item) => item !== "slick-prev")
+    .join(" ");
 
-    return (
-        <ArrowButton left={0} onClick={onClick} className={`prev ${updatedClassName}`} sx={{ ...sx }}>
-            <ArrowBack fontSize="small" color="inherit" className="back-icon" />
-        </ArrowButton>
-    );
+  return (
+    <ArrowButton
+      left={0}
+      onClick={onClick}
+      className={`prev ${updatedClassName}`}
+      sx={{ ...sx }}
+    >
+      <ArrowBack fontSize="small" color="inherit" className="back-icon" />
+    </ArrowButton>
+  );
 }
 
 export default function Arrows(sx?: SxProps<Theme>) {
-    return {
-        nextArrow: <NextArrow sx={sx} />,
-        prevArrow: <PrevArrow sx={sx} />
-    };
+  return {
+    nextArrow: <NextArrow sx={sx} />,
+    prevArrow: <PrevArrow sx={sx} />,
+  };
 }

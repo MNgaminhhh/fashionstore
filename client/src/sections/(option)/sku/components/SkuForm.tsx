@@ -17,6 +17,7 @@ import {
   IconButton,
   Paper,
   Divider,
+  MenuItem,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -43,10 +44,13 @@ const SkuSchema = Yup.object().shape({
     .positive("Giá phải lớn hơn 0")
     .required("Giá là bắt buộc"),
   in_stock: Yup.string().required("Số lượng là bắt buộc"),
+  status: Yup.string()
+    .oneOf(["active", "inactive"], "Trạng thái không hợp lệ")
+    .required("Trạng thái là bắt buộc"),
   variants: Yup.array()
     .of(
       Yup.object().shape({
-        variant: Yup.object().nullable().required("Biển thể là bắt buộc"),
+        variant: Yup.object().nullable().required("Biến thể là bắt buộc"),
         variant_option: Yup.object()
           .nullable()
           .required("Chi tiết biến thể là bắt buộc"),
@@ -83,6 +87,7 @@ const INITIAL_VALUES = (sku?: SkuModel, variOp?: VariantModel[]) => ({
   sku: sku?.sku || "",
   price: sku?.price || 0,
   in_stock: sku?.in_stock || "",
+  status: sku?.status || "inactive",
   variants: sku
     ? sku.variant_options.map((variantOptionId) => {
         const variantOption = variOp?.find((op) => op.id === variantOptionId);
@@ -107,6 +112,7 @@ const INITIAL_VALUES = (sku?: SkuModel, variOp?: VariantModel[]) => ({
 });
 
 export default function SkuForm({ sku, variOp, token }: Props) {
+  console.log(sku);
   const router = useRouter();
   const params = useParams();
   const { id } = params;
@@ -122,8 +128,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
     if (sku && sku.variant_options.length > 0 && variOp) {
       sku.variant_options.forEach(async (variantOptionId, index) => {
         try {
-          // Giả sử bạn có phương thức để lấy variant và variant_option từ ID
-          // Cần phải điều chỉnh theo API thực tế của bạn
           const response = await OptionVariant.getVariantByOptionId(
             variantOptionId,
             token
@@ -131,7 +135,7 @@ export default function SkuForm({ sku, variOp, token }: Props) {
           if (response.success && response.data.variant_option) {
             setVariantOptions((prev) => ({
               ...prev,
-              [index]: [response.data.variant_option], // Giả sử chỉ có một option cho mỗi variant
+              [index]: [response.data.variant_option],
             }));
           } else {
             notifyError(
@@ -152,21 +156,31 @@ export default function SkuForm({ sku, variOp, token }: Props) {
   ) => {
     setLoading(true);
     try {
-      // Thu thập danh sách UUID từ variants
       const variantOptionIds = values.variants
         .map((variant) => variant.variant_option?.id)
         .filter((id): id is string => !!id);
+      const formatDate = (dateStr: string): string => {
+        const date = new Date(dateStr);
 
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${day}-${month}-${year} ${hours}:${minutes}`;
+      };
       const skuData: Partial<SkuModel> = {
         sku: values.sku,
         price: values.price,
         in_stock: values.in_stock,
         offer: values.offer,
         variant_options: variantOptionIds,
+        status: values.status,
         offer_start_date:
-          values.offer > 0 ? new Date(values.offer_start_date) : undefined,
+          values.offer > 0 ? formatDate(values.offer_start_date) : undefined,
         offer_end_date:
-          values.offer > 0 ? new Date(values.offer_end_date) : undefined,
+          values.offer > 0 ? formatDate(values.offer_end_date) : undefined,
         product_id: productId,
       };
 
@@ -184,7 +198,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
           return;
         }
       } else {
-        console.log(skuData);
         response = await Skus.create(skuData, token, true);
         if (response.data.success) {
           notifySuccess("Tạo mới SKU thành công!");
@@ -333,6 +346,29 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                         inputProps={{ min: 0, step: 1 }}
                       />
                     </Grid>
+
+                    <Grid item sm={6} xs={12}>
+                      <TextField
+                        select
+                        fullWidth
+                        name="status"
+                        label="Trạng thái"
+                        color="info"
+                        size="medium"
+                        value={values.status}
+                        onBlur={handleBlur}
+                        onChange={(e) => {
+                          handleChange(e);
+                          setIsFormChanged(true);
+                        }}
+                        helperText={touched.status && errors.status}
+                        error={Boolean(touched.status && errors.status)}
+                        disabled={loading}
+                      >
+                        <MenuItem value="active">Hiển Thị</MenuItem>
+                        <MenuItem value="inactive">Ẩn</MenuItem>
+                      </TextField>
+                    </Grid>
                   </Grid>
                 </Paper>
               </Grid>
@@ -352,7 +388,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                   <Divider sx={{ mb: 3 }} />
 
                   <Grid container spacing={3}>
-                    {/* Giảm giá (Slider) */}
                     <Grid item sm={12} xs={12}>
                       <Typography gutterBottom>
                         Giảm giá: {values.offer}%
@@ -553,7 +588,6 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                               />
                             </Grid>
 
-                            {/* Nút Xóa Variant */}
                             <Grid item sm={2} xs={12}>
                               <IconButton
                                 color="error"

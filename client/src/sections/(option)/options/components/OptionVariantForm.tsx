@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import {
   TextField,
@@ -23,19 +23,37 @@ import {
   notifySuccess,
 } from "../../../../utils/ToastNotification";
 
+interface OptionVariantFormValues {
+  name: string;
+  status: "active" | "inactive";
+}
+
+interface OpVariantCreate {
+  name: string;
+  status: "active" | "inactive";
+  product_variant: string;
+}
+
+interface OpVariantUpdate {
+  name: string;
+  status: "active" | "inactive";
+}
+
 type Props = {
   optionVariant?: OptionVariantModel;
   token: string;
 };
 
-const OptionVariantSchema = Yup.object().shape({
+const OptionVariantSchema = Yup.object({
   name: Yup.string().required("Tên tùy chọn là bắt buộc"),
   status: Yup.string()
     .oneOf(["active", "inactive"], "Trạng thái không hợp lệ")
     .required("Trạng thái là bắt buộc"),
 });
 
-const INITIAL_VALUES = (optionVariant?: OptionVariantModel) => ({
+const INITIAL_VALUES = (
+  optionVariant?: OptionVariantModel
+): OptionVariantFormValues => ({
   name: optionVariant?.name || "",
   status: optionVariant?.status || "active",
 });
@@ -50,25 +68,26 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
   const productVariantId = Array.isArray(vid) ? vid[0] : vid;
 
   const handleSubmit = async (
-    values: typeof INITIAL_VALUES,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+    values: OptionVariantFormValues,
+    { setSubmitting }: FormikHelpers<OptionVariantFormValues>
   ) => {
     setLoading(true);
     try {
-      const optionVariantData: Partial<OptionVariantModel> = {
-        name: values.name,
-        status: values.status,
-      };
-
       let response;
 
       if (optionVariant) {
+        const optionVariantData: OpVariantUpdate = {
+          name: values.name,
+          status: values.status,
+        };
+
         response = await OptionVariant.update(
           optionVariant.id,
           optionVariantData,
           token,
           true
         );
+
         if (response.data.success) {
           notifySuccess("Cập nhật tùy chọn biến thể thành công!");
         } else {
@@ -79,8 +98,14 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
           return;
         }
       } else {
-        optionVariantData.product_variant = productVariantId;
+        const optionVariantData: OpVariantCreate = {
+          name: values.name,
+          status: values.status,
+          product_variant: productVariantId,
+        };
+
         response = await OptionVariant.create(optionVariantData, token, true);
+
         if (response.success) {
           notifySuccess("Tạo mới tùy chọn biến thể thành công!");
         } else {
@@ -126,7 +151,7 @@ export default function OptionVariantForm({ optionVariant, token }: Props) {
 
   return (
     <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
-      <Formik
+      <Formik<OptionVariantFormValues>
         initialValues={INITIAL_VALUES(optionVariant)}
         validationSchema={OptionVariantSchema}
         onSubmit={handleSubmit}

@@ -5,7 +5,14 @@ import TableCell from "@mui/material/TableCell";
 import IconButton from "@mui/material/IconButton";
 import { alpha, styled } from "@mui/material/styles";
 
-const StyledTableCell = styled(TableCell)(({ theme, width }) => ({
+interface StyledTableCellProps {
+  align: "left" | "center" | "right" | "inherit" | "justify";
+  width?: string | number;
+}
+
+const StyledTableCell = styled(TableCell, {
+  shouldForwardProp: (prop) => prop !== "width",
+})<StyledTableCellProps>(({ theme, width }) => ({
   fontSize: 13.5,
   paddingTop: 10,
   fontWeight: 600,

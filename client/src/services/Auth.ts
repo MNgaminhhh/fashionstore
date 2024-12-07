@@ -1,7 +1,6 @@
 import Base from "./Base";
-import Cookies from "js-cookie";
 
-class Auth extends Base {
+class AuthServer extends Base {
   constructor() {
     super({
       url: "auth",
@@ -100,4 +99,5 @@ class Auth extends Base {
   }
 }
 
-export default new Auth();
+const Auth = new AuthServer();
+export default Auth;

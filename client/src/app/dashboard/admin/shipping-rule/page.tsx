@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { get } from "lodash";
 import ShippingRuleView from "../../../../sections/admin/shipping-rule/view/ShippingRuleView";
-import ShippingRule from "../../../../services/shippingRule";
+import ShippingRule from "../../../../services/ShippingRule";
 
 export default async function ShippingRulePage() {
   const cookieStore = cookies();

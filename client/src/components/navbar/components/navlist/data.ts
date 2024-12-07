@@ -38,15 +38,18 @@ const megaMenus = [
       title: "Vendor Services",
       child: [
         { title: "Dashboard", url: "/dashboard" },
-        { title: "Product Management", url: "/vendor/products" },
-        { title: "Order Management", url: "/vendor/orders" },
+        { title: "Product Management", url: "/dashboard/vendor/products" },
+        { title: "Order Management", url: "/dashboard/vendor/orders" },
       ],
     },
     {
       title: "Reports",
       child: [
-        { title: "Sales Reports", url: "/vendor/reports/sales" },
-        { title: "Inventory Reports", url: "/vendor/reports/inventory" },
+        { title: "Sales Reports", url: "/dashboard/vendor/reports/sales" },
+        {
+          title: "Inventory Reports",
+          url: "/dashboard/vendor/reports/inventory",
+        },
       ],
     },
     {
@@ -128,16 +131,19 @@ const navbarNavigation = [
         {
           title: "Vendor Services",
           child: [
-            { title: "Dashboard", url: "/vendor/dashboard" },
-            { title: "Product Management", url: "/vendor/products" },
-            { title: "Order Management", url: "/vendor/orders" },
+            { title: "Dashboard", url: "/dashboard/vendor" },
+            { title: "Product Management", url: "/dashboard/vendor/products" },
+            { title: "Order Management", url: "/dashboard/vendor/orders" },
           ],
         },
         {
           title: "Reports",
           child: [
-            { title: "Sales Reports", url: "/vendor/reports/sales" },
-            { title: "Inventory Reports", url: "/vendor/reports/inventory" },
+            { title: "Sales Reports", url: "/dashboard/vendor/reports/sales" },
+            {
+              title: "Inventory Reports",
+              url: "/dashboard/vendor/reports/inventory",
+            },
           ],
         },
         {
@@ -182,7 +188,8 @@ const navbarNavigation = [
     megaMenuWithSub: false,
     title: "Các Cửa Hàng",
     url: "public/vendor",
-  },{
+  },
+  {
     megaMenu: false,
     megaMenuWithSub: false,
     title: "Trờ Thành Nhà Bán Hàng",
@@ -202,22 +209,22 @@ const navbarNavigation = [
     megaMenuWithSub: false,
     title: "Vendor Account",
     child: [
-      { title: "Dashboard", url: "/vendor/dashboard" },
+      { title: "Dashboard", url: "/dashboard/vendor" },
       {
         title: "Products",
         child: [
-          { title: "Product List", url: "/vendor/products" },
-          { title: "Add Product", url: "/vendor/products/add" },
+          { title: "Product List", url: "/dashboard/vendor/products" },
+          { title: "Add Product", url: "/dashboard/vendor/products/add" },
         ],
       },
       {
         title: "Orders",
         child: [
-          { title: "Order List", url: "/vendor/orders" },
-          { title: "Order Details", url: "/vendor/orders/order-123" },
+          { title: "Order List", url: "/dashboard/vendor/orders" },
+          { title: "Order Details", url: "/dashboard/vendor/orders/order-123" },
         ],
       },
-      { title: "Settings", url: "/vendor/settings" },
+      { title: "Settings", url: "/dashboard/vendor/settings" },
     ],
   },
 ];

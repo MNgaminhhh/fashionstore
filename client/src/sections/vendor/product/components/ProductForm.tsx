@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -108,33 +108,39 @@ export default function ProductForm({ product, token, cat }: Props) {
     }
   }, [product?.sub_category_id]);
 
-  const fetchSubCategories = async (categoryId: string) => {
-    try {
-      const res = await SubCategory.getList(token, true, categoryId);
-      if (res.data && Array.isArray(res.data.sub_categories)) {
-        setSubCategories(res.data.sub_categories);
-      } else {
+  const fetchSubCategories = useCallback(
+    async (categoryId: string) => {
+      try {
+        const res = await SubCategory.getList(token, true, categoryId);
+        if (res.data && Array.isArray(res.data.sub_categories)) {
+          setSubCategories(res.data.sub_categories);
+        } else {
+          setSubCategories([]);
+        }
+      } catch (error) {
+        console.error("Error fetching sub categories:", error);
         setSubCategories([]);
       }
-    } catch (error) {
-      console.error("Error fetching sub categories:", error);
-      setSubCategories([]);
-    }
-  };
+    },
+    [token]
+  );
 
-  const fetchChildCategories = async (subCategoryId: string) => {
-    try {
-      const res = await ChildCategory.getList(token, true, subCategoryId);
-      if (res.data && Array.isArray(res.data.child_categories)) {
-        setChildCategories(res.data.child_categories);
-      } else {
+  const fetchChildCategories = useCallback(
+    async (subCategoryId: string) => {
+      try {
+        const res = await ChildCategory.getList(token, true, subCategoryId);
+        if (res.data && Array.isArray(res.data.child_categories)) {
+          setChildCategories(res.data.child_categories);
+        } else {
+          setChildCategories([]);
+        }
+      } catch (error) {
+        console.error("Error fetching child categories:", error);
         setChildCategories([]);
       }
-    } catch (error) {
-      console.error("Error fetching child categories:", error);
-      setChildCategories([]);
-    }
-  };
+    },
+    [token]
+  );
 
   const INITIAL_VALUES: ProductModel = {
     name: product?.name || "",

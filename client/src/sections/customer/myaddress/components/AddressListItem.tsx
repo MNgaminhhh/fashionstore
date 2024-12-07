@@ -1,46 +1,49 @@
 import Link from "next/link";
 import IconButton from "@mui/material/IconButton";
-// MUI ICON COMPONENTS
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
-// GLOBAL CUSTOM COMPONENTS
-import { Paragraph } from "components/Typography";
-// LOCAL CUSTOM COMPONENT
-import TableRow from "../table-row";
-// CUSTOM DATA MODEL
-import Address from "models/Address.model";
+import AddressModel from "../../../../models/Address.model";
+import { TableRow } from "../../styles";
+import { Paragraph } from "../../../../components/Typography";
+import { useRouter } from "next/navigation";
 
-// ==============================================================
 interface Props {
-  address: Address;
+  addressData: AddressModel;
   handleDelete: (id: string) => void;
 }
-// ==============================================================
 
-export default function AddressListItem({ address, handleDelete }: Props) {
-  const { title, street, city, phone, id } = address || {};
-
+export default function AddressListItem({ addressData, handleDelete }: Props) {
+  const router = useRouter();
+  const { address, email, phone_number, receiver_name, id } = addressData || {};
+  const handleEdit = (id: string) => {
+    router.push(`/dashboard/admin/coupons/${id}`);
+  };
   return (
-    <Link href={`/address/${id}`}>
-      <TableRow>
-        <Paragraph ellipsis>{title}</Paragraph>
-        <Paragraph ellipsis>{`${street}, ${city}`}</Paragraph>
-        <Paragraph ellipsis>{phone}</Paragraph>
-        <Paragraph color="grey.600">
-          <IconButton>
-            <Edit fontSize="small" color="inherit" />
-          </IconButton>
+    <TableRow>
+      <Paragraph ellipsis>{address}</Paragraph>
+      <Paragraph ellipsis>{receiver_name}</Paragraph>
+      <Paragraph ellipsis>
+        {phone_number} - {email}
+      </Paragraph>
+      <Paragraph color="grey.600">
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(id);
+          }}
+        >
+          <Edit fontSize="small" color="inherit" />
+        </IconButton>
 
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(id);
-            }}
-          >
-            <Delete fontSize="small" color="inherit" />
-          </IconButton>
-        </Paragraph>
-      </TableRow>
-    </Link>
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(id);
+          }}
+        >
+          <Delete fontSize="small" color="inherit" />
+        </IconButton>
+      </Paragraph>
+    </TableRow>
   );
 }

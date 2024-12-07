@@ -1,5 +1,3 @@
-import { SvgIconComponent } from "@mui/icons-material";
-
 export interface CategoryItemOffer {
   url: string;
   href: string;
@@ -10,7 +8,7 @@ export interface CategoryItem {
   href: string;
   title: string;
   component?: string;
-  icon?: SvgIconComponent;
+  icon?: string;
   children?: CategoryItem[];
   offer?: CategoryItemOffer;
 }

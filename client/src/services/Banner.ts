@@ -19,7 +19,7 @@ interface BannerUpdateData {
   status: boolean;
 }
 
-class Banner extends Base {
+class BannerServer extends Base {
   constructor() {
     super({
       url: "banners",
@@ -155,4 +155,5 @@ class Banner extends Base {
   }
 }
 
-export default new Banner();
+const Banner = new BannerServer();
+export default Banner;

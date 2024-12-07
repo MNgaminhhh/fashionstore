@@ -7,6 +7,7 @@ import {
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import { Box, Tooltip, Typography } from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
 
 type Props = {
   sku: any;
@@ -14,8 +15,11 @@ type Props = {
 };
 
 export default function RowSku({ sku, onDelete }: Props) {
-  const handleEdit = (id: string) => {
-    window.location.href = `/dashboard/vendor/sku/${id}/edit`;
+  const router = useRouter();
+  const params = useParams();
+  const { id } = params;
+  const handleEdit = (ssid: string) => {
+    router.push(`/dashboard/vendor/product/${id}/sku/${ssid}`);
   };
 
   return (
@@ -25,7 +29,7 @@ export default function RowSku({ sku, onDelete }: Props) {
           {sku.variants
             ? Object.entries(sku.variants).map(([key, value]) => (
                 <Typography key={key} variant="body2">
-                  <strong>{key}:</strong> {value}
+                  <strong>{key}:</strong> {value as React.ReactNode}
                 </Typography>
               ))
             : "-"}

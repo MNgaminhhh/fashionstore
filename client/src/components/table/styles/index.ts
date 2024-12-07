@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
-import { Pagination, Select, TableCell } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { Pagination, TableCell } from "@mui/material";
 
 export const StyledTableCell = styled(TableCell)(({ theme }) => ({
   fontWeight: 500,

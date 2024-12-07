@@ -8,7 +8,7 @@ interface Filters {
   parentName?: string;
 }
 
-class ChildCategory extends Base {
+class ChildCategoryServer extends Base {
   constructor() {
     super({
       url: "/categories/child",
@@ -147,4 +147,5 @@ class ChildCategory extends Base {
   }
 }
 
-export default new ChildCategory();
+const ChildCategory = new ChildCategoryServer();
+export default ChildCategory;

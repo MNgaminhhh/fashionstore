@@ -45,7 +45,6 @@ export default function CouponsForm({ coupon, token }: Props) {
   const router = useRouter();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [uploading, setUploading] = useState(false);
-  console.log(coupon);
   const INITIAL_VALUES = {
     field: coupon ? coupon.Field : "",
     operator: coupon ? coupon.Operator : "",
@@ -129,7 +128,6 @@ export default function CouponsForm({ coupon, token }: Props) {
         }) => (
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              {/* Field */}
               <Grid item sm={6} xs={12}>
                 <FormControl
                   fullWidth
@@ -155,7 +153,6 @@ export default function CouponsForm({ coupon, token }: Props) {
                 </FormControl>
               </Grid>
 
-              {/* Operator */}
               <Grid item sm={6} xs={12}>
                 <FormControl
                   fullWidth
@@ -182,7 +179,6 @@ export default function CouponsForm({ coupon, token }: Props) {
                 </FormControl>
               </Grid>
 
-              {/* Value */}
               <Grid item sm={6} xs={12}>
                 <TextField
                   fullWidth
@@ -202,7 +198,6 @@ export default function CouponsForm({ coupon, token }: Props) {
                 />
               </Grid>
 
-              {/* Description */}
               <Grid item sm={6} xs={12}>
                 <TextField
                   fullWidth
@@ -217,8 +212,6 @@ export default function CouponsForm({ coupon, token }: Props) {
                   error={Boolean(touched.description && errors.description)}
                 />
               </Grid>
-
-              {/* Buttons */}
               <Grid item xs={12} mt={3} textAlign="center">
                 <Button
                   variant="outlined"

@@ -37,5 +37,11 @@ export default function useEleOverflow() {
     };
   }, [checkOverflow]);
 
-  return { elementRef, isOverflowing, checkOverflow };
+  return {
+    elementRef,
+    checkOverflow,
+    isLeftOverflowing: isOverflowing.left,
+    isRightOverflowing: isOverflowing.right,
+    overflowRightAmount: isOverflowing.overflowRightAmount,
+  };
 }

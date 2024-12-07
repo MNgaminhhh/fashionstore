@@ -7,9 +7,11 @@ import { NavList } from "../../utils/types";
 import { MTCard } from "../../../MTCard";
 import { Span } from "../../../Typography";
 import useEleOverflow from "../../../../hooks/useEleOverflow";
+
 interface NavItemChildProps extends PropsWithChildren {
   nav: NavList;
 }
+
 export default function NavItem({ nav, children }: NavItemChildProps) {
   const pathname = usePathname();
   const { checkOverflow, elementRef, isLeftOverflowing, isRightOverflowing } =

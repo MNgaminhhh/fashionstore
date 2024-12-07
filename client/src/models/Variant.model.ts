@@ -3,6 +3,7 @@ interface VariantModel {
   name: string;
   status: "active" | "inactive";
   product_id: string;
+  variant: any;
   productId?: string;
 }
 

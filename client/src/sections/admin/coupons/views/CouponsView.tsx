@@ -261,8 +261,6 @@ export default function CouponsView({ conditionsData, token }: Props) {
         open={dialogOpen}
         onClose={closeDeleteDialog}
         onConfirm={handleDelete}
-        title="Xác nhận xoá"
-        content="Bạn có chắc chắn muốn xoá Coupon này?"
       />
     </WrapperPage>
   );

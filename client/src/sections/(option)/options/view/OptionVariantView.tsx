@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import { Add } from "@mui/icons-material";
+import { Add, ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
 import {
   notifyError,
@@ -30,7 +30,7 @@ import { StyledPagination } from "../../../../components/table/styles";
 import DialogBox from "../../../../components/dialog/DialogBox";
 import OptionVariantModel from "../../../../models/OptionVariant.model";
 import OptionVariant from "../../../../services/OptionVariant";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { tableHeading } from "../components/data";
 import RowOptionVariant from "../components/RowOptionVariant";
 
@@ -48,6 +48,7 @@ export default function OptionVariantView({
   opvariant: initialVariants,
   token,
 }: Props) {
+  const router = useRouter();
   const params = useParams();
   const { id, vid } = params;
   const [optionVariants, setOptionVariants] = useState<OptionVariantModel[]>(
@@ -66,6 +67,8 @@ export default function OptionVariantView({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentLimit, setCurrentLimit] = useState<number>(10);
   const pageSizes = [5, 10, 20, 50];
+  const productId = Array.isArray(id) ? id[0] : id;
+  const productVariantId = Array.isArray(vid) ? vid[0] : vid;
 
   const handleSearchChange = (field: string, value: string) => {
     setSearchValues((prev) => ({
@@ -117,7 +120,7 @@ export default function OptionVariantView({
   ) => {
     try {
       const response = await OptionVariant.getOpVariant(
-        vid,
+        productVariantId,
         token,
         true,
         limit,
@@ -163,12 +166,28 @@ export default function OptionVariantView({
       notifyError("Có lỗi xảy ra khi cập nhật trạng thái tùy chọn biến thể.");
     }
   };
-
+  const handleBack = () => {
+    router.push(`/dashboard/vendor/product/${productId}/variant`);
+  };
   return (
     <WrapperPage title="Quản Lý Tùy Chọn Biến Thể">
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
         <Button
-          href={`/dashboard/vendor/product/${id}/variant/${vid}/option-variant/create`}
+          onClick={handleBack}
+          color="secondary"
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          sx={{
+            minHeight: 44,
+            textTransform: "none",
+            borderRadius: 1,
+            px: 3,
+          }}
+        >
+          Quay lại
+        </Button>
+        <Button
+          href={`/dashboard/vendor/product/${productId}/variant/${productVariantId}/option-variant/create`}
           color="primary"
           variant="contained"
           startIcon={<Add />}
@@ -205,7 +224,14 @@ export default function OptionVariantView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "inherit"
+                              | "justify"
+                          }
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -216,7 +242,14 @@ export default function OptionVariantView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "inherit"
+                              | "justify"
+                          }
                           width={headCell.width}
                         >
                           {headCell.id !== "action" ? (
@@ -268,14 +301,25 @@ export default function OptionVariantView({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {optionVariants.map((optionVariant) => (
-                      <RowOptionVariant
-                        key={optionVariant.id}
-                        optionVariant={optionVariant}
-                        onDelete={openDeleteDialog}
-                        onToggleStatus={handleToggleStatus}
-                      />
-                    ))}
+                    {optionVariants.length > 0 ? (
+                      optionVariants.map((optionVariant) => (
+                        <RowOptionVariant
+                          key={optionVariant.id}
+                          optionVariant={optionVariant}
+                          onDelete={openDeleteDialog}
+                          onToggleStatus={handleToggleStatus}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <StyledTableCell
+                          colSpan={tableHeading.length}
+                          align="center"
+                        >
+                          Không có dữ liệu
+                        </StyledTableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

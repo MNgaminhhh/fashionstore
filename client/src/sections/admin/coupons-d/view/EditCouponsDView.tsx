@@ -7,7 +7,7 @@ import CouponModel from "../../../../models/Coupon.model";
 type Props = {
   coupon: CouponModel;
 };
-export default async function ({ coupon }: Props) {
+export default async function EditCouponsDView({ coupon }: Props) {
   const cookieStore = cookies();
   const token = cookieStore.get("access_cookie")?.value;
 

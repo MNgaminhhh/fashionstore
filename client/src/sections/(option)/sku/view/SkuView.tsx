@@ -15,7 +15,7 @@ import TableHead from "@mui/material/TableHead";
 import { StyledTableCell } from "../../../styles";
 import { StyledPagination } from "../../../../components/table/styles";
 import { Box, Button, Divider, MenuItem, Select } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
 import {
   notifyError,
@@ -117,10 +117,27 @@ export default function SkuView({
       notifyError("Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
+  const handleBack = () => {
+    router.push(`/dashboard/vendor/product`);
+  };
 
   return (
     <WrapperPage title="Quản Lý SKU" title2={`Sản phẩm: ${nameProduct}`}>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Button
+          onClick={handleBack}
+          color="secondary"
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          sx={{
+            minHeight: 44,
+            textTransform: "none",
+            borderRadius: 1,
+            px: 3,
+          }}
+        >
+          Quay lại
+        </Button>
         <Button
           href={`/dashboard/vendor/product/${productId}/sku/create`}
           color="primary"

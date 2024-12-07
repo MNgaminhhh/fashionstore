@@ -66,7 +66,7 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
           const token = get(response, "data.data.access_token", true);
           setSessionToken(token);
           formik.resetForm();
-          await router.push("/");
+          router.push("/");
         } else {
           notifyError(response.data.message);
         }

@@ -1,4 +1,4 @@
-import Button from "@mui/material/Button";
+import Button, { ButtonProps } from "@mui/material/Button";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import styled from "@mui/material/styles/styled";
@@ -36,7 +36,7 @@ export const ToggleWrapper = styled(FlexCenterRow)(({ theme }) => ({
   },
 }));
 
-export const CustomButton = styled(Button)(({ theme }) => ({
+export const CustomButton = styled(Button)<ButtonProps>(({ theme }) => ({
   minHeight: "2.5rem",
   flexShrink: 0,
   marginLeft: theme.spacing(2),

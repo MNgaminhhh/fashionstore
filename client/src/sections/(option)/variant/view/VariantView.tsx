@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import TableHead from "@mui/material/TableHead";
-import { Add } from "@mui/icons-material";
+import { Add, ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
 import { tableHeading } from "../components/data";
 import RowVariant from "../components/RowVariant";
@@ -34,6 +34,7 @@ import DialogBox from "../../../../components/dialog/DialogBox";
 import Variant from "../../../../services/Variant";
 import { useParams } from "next/navigation";
 import ProductModel from "../../../../models/Product.model";
+import { useRouter } from "next/navigation";
 
 type Props = { variants: any; pro: ProductModel; token: string };
 
@@ -50,6 +51,7 @@ export default function VariantView({
   pro: initialProduct,
   token,
 }: Props) {
+  const router = useRouter();
   const params = useParams();
   const { id } = params;
   const [variants, setVariants] = useState(
@@ -152,9 +154,26 @@ export default function VariantView({
       notifyError("Có lỗi xảy ra khi cập nhật trạng thái biến thể.");
     }
   };
+  const handleBack = () => {
+    router.push(`/dashboard/vendor/product`);
+  };
   return (
     <WrapperPage title="Quản Lý Biến Thể" title2={`Sản Phẩm: ${nameProduct}`}>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Button
+          onClick={handleBack}
+          color="secondary"
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          sx={{
+            minHeight: 44,
+            textTransform: "none",
+            borderRadius: 1,
+            px: 3,
+          }}
+        >
+          Quay lại
+        </Button>
         <Button
           href={`/dashboard/vendor/product/${id}/variant/create`}
           color="primary"

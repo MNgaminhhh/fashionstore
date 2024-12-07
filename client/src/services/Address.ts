@@ -1,99 +1,53 @@
 import Base from "./Base";
 
-interface Filters {
-  visible?: string;
-  name?: string;
+interface cuAddressModel {
+  address: string;
+  email: string;
+  phone_number: string;
+  receiver_name: string;
 }
-interface BrandUpdateData {
-  name: string;
-  sequence: number;
-  image: string;
-  visible: boolean;
-}
-class BrandsServer extends Base {
+
+class AddressServer extends Base {
   constructor() {
     super({
-      url: "brands",
+      url: "delivery_info",
     });
   }
-
-  async findAll(
-    token: string | undefined = undefined,
-    withCredentials: boolean = true,
-    limit: number = 10,
-    page: number = 1,
-    filters: Filters = {}
-  ) {
-    let url = `brands/?limit=${limit}&page=${page}`;
-    if (filters.visible) {
-      url += `&visible=${encodeURIComponent(filters.visible)}`;
-    }
-    if (filters.name) {
-      url += `&name=${encodeURIComponent(filters.name)}`;
-    }
-
+  async findOne(id: string, token) {
     const rs = await this.execute({
-      url,
+      url: `/delivery_info/${id}`,
       method: "get",
       headers: {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
-      withCredentials: withCredentials,
-    });
-
-    return rs;
-  }
-
-  async getAllBrands() {
-    const rs = await this.execute({
-      url: `brands/?visible=true`,
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return rs;
-  }
-
-  async findOne(id: string) {
-    const rs = await this.execute({
-      url: `brands/${id}`,
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
     return rs;
   }
-
-  async update(
-    id: string,
-    data: BrandUpdateData,
+  async getListAddress(
     token: string | undefined = undefined,
     withCredentials: boolean = true
-  ): Promise<any> {
+  ) {
     const rs = await this.execute({
-      url: `/brands/${id}`,
-      method: "put",
+      url: `/delivery_info`,
+      method: "get",
       headers: {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
-      data: data,
       withCredentials: withCredentials,
     });
-    return rs;
+
+    return rs.data;
   }
 
   async create(
-    data: BrandUpdateData,
+    data: cuAddressModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
-  ): Promise<any> {
+  ) {
     const rs = await this.execute({
-      url: `/brands/`,
+      url: `/delivery_info`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
@@ -105,13 +59,32 @@ class BrandsServer extends Base {
     return rs;
   }
 
-  async delete(
+  async update(
+    id: string,
+    data: cuAddressModel,
     token: string | undefined = undefined,
-    withCredentials: boolean = true,
-    id: string
+    withCredentials: boolean = true
+  ): Promise<any> {
+    const rs = await this.execute({
+      url: `/delivery_info/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: data,
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
+
+  async delete(
+    id: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/brands/${id}`,
+      url: `/delivery_info/${id}`,
       method: "delete",
       headers: {
         "Content-Type": "application/json",
@@ -124,5 +97,5 @@ class BrandsServer extends Base {
   }
 }
 
-const Brands = new BrandsServer();
-export default Brands;
+const Address = new AddressServer();
+export default Address;

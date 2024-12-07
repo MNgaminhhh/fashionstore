@@ -1,8 +1,9 @@
 import { StyledRoot } from "./styles";
-import CategoryItem from "../categoryitem";
 import ColumnList2 from "./ColumnList2";
+import { CategoryItem as CategoryItemType } from "../../utils/types";
+import CategoryItem from "../categoryitem";
 interface Props {
-  data: CategoryItem[];
+  data: CategoryItemType[];
 }
 
 const MegaMenu2 = ({ data = [] }: Props) => {

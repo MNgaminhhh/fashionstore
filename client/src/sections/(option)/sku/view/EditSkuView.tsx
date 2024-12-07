@@ -1,17 +1,15 @@
-import { cookies } from "next/headers";
 import WrapperPage from "../../../WrapperPage";
 import VariantModel from "../../../../models/Variant.model";
-import SkuForm from "../components/SkuForm";
+import SkuModel from "../../../../models/Sku.model";
+import SkuEditForm from "../components/SkuEditForm";
 
-type Props = { variant: VariantModel };
+type Props = { sku: SkuModel; varOp: VariantModel; token: string };
 
 export default async function EditSkuView({ sku }: Props) {
-  const cookieStore = cookies();
-  const token = cookieStore.get("access_cookie")?.value;
   try {
     return (
       <WrapperPage title="Sửa Biến Thể Sản Phẩm">
-        <SkuForm sku={sku} token={token} />
+        <SkuEditForm initialData={sku} />
       </WrapperPage>
     );
   } catch (error) {

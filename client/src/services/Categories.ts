@@ -11,7 +11,7 @@ interface CategoryUpdateData {
   icon: string;
   status: 0 | 1;
 }
-class Categories extends Base {
+class CategoriesServer extends Base {
   constructor() {
     super({
       url: "categories",
@@ -29,8 +29,8 @@ class Categories extends Base {
     return rs.data;
   }
   async getList(
-      token: string | undefined = undefined,
-      withCredentials: boolean = true,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
   ) {
     let url = `/categories/all?status=1`;
     const rs = await this.execute({
@@ -47,11 +47,11 @@ class Categories extends Base {
   }
 
   async findAll(
-      token?: string,
-      withCredentials: boolean = true,
-      limit: number = 10,
-      page: number = 1,
-      filters: Filters = {}
+    token?: string,
+    withCredentials: boolean = true,
+    limit: number = 10,
+    page: number = 1,
+    filters: Filters = {}
   ): Promise<any> {
     let url = `/categories/all?limit=${limit}&page=${page}`;
 
@@ -90,10 +90,10 @@ class Categories extends Base {
   }
 
   async update(
-      id: string,
-      data: CategoryUpdateData,
-      token: string | undefined = undefined,
-      withCredentials: boolean = true
+    id: string,
+    data: CategoryUpdateData,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
       url: `/categories/${id}`,
@@ -109,9 +109,9 @@ class Categories extends Base {
   }
 
   async create(
-      data: CategoryUpdateData,
-      token: string | undefined = undefined,
-      withCredentials: boolean = true
+    data: CategoryUpdateData,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
   ): Promise<any> {
     const rs = await this.execute({
       url: `/categories/`,
@@ -127,9 +127,9 @@ class Categories extends Base {
   }
 
   async delete(
-      token: string | undefined = undefined,
-      withCredentials: boolean = true,
-      id: string
+    token: string | undefined = undefined,
+    withCredentials: boolean = true,
+    id: string
   ) {
     const rs = await this.execute({
       url: `/categories/${id}`,
@@ -145,4 +145,5 @@ class Categories extends Base {
   }
 }
 
-export default new Categories();
+const Categories = new CategoriesServer();
+export default Categories;

@@ -4,6 +4,16 @@ interface OpVariantIn {
   product_variant_id: string;
   status: "active" | "inactive";
 }
+interface OpVariantCreate {
+  name: string;
+  status: "active" | "inactive";
+  product_variant: string;
+}
+
+interface OpVariantUpdate {
+  name: string;
+  status: "active" | "inactive";
+}
 interface Filters {
   name?: string;
   status?: string;
@@ -69,7 +79,7 @@ class OptionVariantServer extends Base {
     return rs.data;
   }
   async create(
-    data: OpVariantIn,
+    data: OpVariantCreate,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
@@ -88,7 +98,7 @@ class OptionVariantServer extends Base {
 
   async update(
     id: string,
-    data: OpVariantIn,
+    data: OpVariantUpdate,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
