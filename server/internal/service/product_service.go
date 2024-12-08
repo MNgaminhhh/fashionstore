@@ -51,7 +51,7 @@ type ProductWithSkus struct {
 type IProductService interface {
 	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) int
 	GetProductByID(id string) (int, *ProductResponse)
-	ViewFullDetailOfProduct(id string) (int, *ProductResponse)
+	ViewFullDetailOfProduct(slug string) (int, *ProductResponse)
 	UpdateProduct(id string, customParam validator.UpdateProductRequest) int
 	DeleteProductByID(id string) int
 	ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{})
@@ -106,9 +106,8 @@ func (ps *ProductService) GetProductByID(id string) (int, *ProductResponse) {
 	return response.SuccessCode, responseData
 }
 
-func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductResponse) {
-	productId, _ := uuid.Parse(id)
-	product, err := ps.productRepo.ViewFullDetailOfProduct(productId)
+func (ps *ProductService) ViewFullDetailOfProduct(slug string) (int, *ProductResponse) {
+	product, err := ps.productRepo.ViewFullDetailOfProduct(slug)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -117,7 +116,7 @@ func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductRespo
 		return response.ErrCodeInternal, nil
 	}
 	skusRepo := repository.NewSkusRepository()
-	skus, findSkusErr := skusRepo.GetAllSkusByProductId(productId)
+	skus, findSkusErr := skusRepo.GetAllSkusByProductId(product.ID)
 	if findSkusErr != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -126,7 +125,7 @@ func (ps *ProductService) ViewFullDetailOfProduct(id string) (int, *ProductRespo
 		return response.ErrCodeInternal, nil
 	}
 	reviewsRepo := repository.NewReviewsRepository()
-	reviews, _ := reviewsRepo.GetAllReviewsByProductId(productId)
+	reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ID)
 	productWithSkus := ProductWithSkus{
 		Product: product,
 		Skus:    skus,
