@@ -102,7 +102,6 @@ const VALIDATION_SCHEMA = yup.object().shape({
 });
 
 export default function CouponsDForm({ coupon, cond, token }: Props) {
-  console.log(coupon);
   const router = useRouter();
   const [conditionsOptions, setConditionsOptions] = useState(cond || []);
   const [loading, setLoading] = useState<boolean>(false);

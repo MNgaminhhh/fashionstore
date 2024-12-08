@@ -9,7 +9,8 @@ export default async function SkuVendorPage({ params }: IdParams) {
   const cookieStore = cookies();
   const token = cookieStore.get("access_cookie")?.value;
 
-  const skus = await Skus.getByVendor(token);
+  const filters = { productId: params.id };
+  const skus = await Skus.getByVendor(token, true, 10, 1, filters);
   const infoSku = get(skus, "data", {});
 
   const product = await Products.findOne(params.id);

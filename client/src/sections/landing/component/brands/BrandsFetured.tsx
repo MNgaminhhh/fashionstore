@@ -20,8 +20,8 @@ export default function BrandsFeatured({ brands = [] }: Props) {
     : [...data, ...data];
 
   return (
-    <Container className="mt-4 mb-4">
-      <H3 mb={3}>Thương hiệu nổi bật</H3>
+    <Container className="mt-2 mb-2">
+      <H3 mb={2}>Thương hiệu nổi bật</H3>
       <Box
         padding={2}
         bgcolor="white"

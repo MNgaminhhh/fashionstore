@@ -16,6 +16,8 @@ interface Filterss {
   high_price?: string;
   cate_name?: string;
   is_approved?: string;
+  child_cate_name?: string;
+  sub_cate_name?: string;
 }
 interface cuProductModel {
   name: string;
@@ -128,6 +130,16 @@ class ProductsServer extends Base {
         `product_type=${encodeURIComponent(filters.product_type)}`
       );
     }
+    if (filters.sub_cate_name) {
+      queryParams.push(
+        `sub_cate_name=${encodeURIComponent(filters.sub_cate_name)}`
+      );
+    }
+    if (filters.child_cate_name) {
+      queryParams.push(
+        `child_cate_name=${encodeURIComponent(filters.child_cate_name)}`
+      );
+    }
     if (filters.status) {
       queryParams.push(`status=${encodeURIComponent(filters.status)}`);
     }
@@ -141,8 +153,19 @@ class ProductsServer extends Base {
 
     return rs;
   }
+
   async getByListProduct() {
     let url = `/products`;
+    const rs = await this.execute({
+      url,
+      method: "get",
+    });
+
+    return rs.data;
+  }
+
+  async getDetailProduct(slug: string) {
+    let url = `/products/detail/${slug}`;
     const rs = await this.execute({
       url,
       method: "get",

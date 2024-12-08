@@ -51,7 +51,6 @@ export default function FlashSaleItemForm({
   products,
   token,
 }: Props) {
-  console.log(flashSaleItem);
   const router = useRouter();
   const params = useParams();
   const { id } = params;

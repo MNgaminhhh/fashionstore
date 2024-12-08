@@ -1,7 +1,7 @@
 import Box from "@mui/material/Box";
-import { FlexBox } from "../flexbox";
-import { Paragraph } from "../Typography";
-import { calculateDiscount, formatCurrency } from "../../utils/lib";
+import { calculateDiscount, formatCurrency } from "../../../../utils/lib";
+import { Paragraph } from "../../../Typography";
+import { FlexBox } from "../../../flexbox";
 
 type Props = { price: number; off: number };
 

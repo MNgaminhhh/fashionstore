@@ -42,7 +42,6 @@ export default function DetailDialog({
   coupon,
 }: DetailDialogProps) {
   if (!coupon) return null;
-  console.log(coupon);
   const formatDate = (dateStr: string) => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",

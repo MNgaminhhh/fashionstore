@@ -52,7 +52,6 @@ const SkuSchema = Yup.object().shape({
 
 function convertToDateTimeLocalFormat(dateStr: string): string {
   if (!dateStr) return "";
-  // dateStr dạng "DD-MM-YYYY HH:mm"
   const [datePart, timePart] = dateStr.split(" ");
   const [day, month, year] = datePart.split("-");
   return `${year}-${month}-${day}T${timePart}`;
@@ -86,8 +85,6 @@ export default function SkuEditForm({
   };
 
   const formatDate = (dateStr: string): string => {
-    // Đổi ngược lại về format "DD-MM-YYYY HH:mm" trước khi gửi đi
-    // vì trong payload cần đúng format ban đầu.
     const date = new Date(dateStr);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -118,6 +115,7 @@ export default function SkuEditForm({
       } else {
         notifyError("Cập nhật SKU thất bại!");
       }
+      router.push(``);
     } catch (error) {
       notifyError("Có lỗi xảy ra khi cập nhật SKU");
     } finally {

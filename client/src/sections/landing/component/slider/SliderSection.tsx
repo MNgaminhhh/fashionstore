@@ -11,11 +11,17 @@ export default async function SliderSection() {
 
   const validBanners =
     Array.isArray(banners) && banners.length > 0 ? banners : carouselData;
-
+  const shouldInfinite = validBanners.length > 1;
   return (
     <div>
       <Container className="pt-2 pb-2">
-        <SliderShow slidesToShow={1} arrows={false} dots autoplay>
+        <SliderShow
+          slidesToShow={1}
+          arrows={false}
+          dots
+          autoplay
+          infinite={shouldInfinite}
+        >
           {validBanners.map((data, ind) => (
             <SliderCard {...data} key={ind} />
           ))}

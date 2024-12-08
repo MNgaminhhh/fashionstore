@@ -7,6 +7,8 @@ import BrandsFetured from "../component/brands/BrandsFetured";
 import CategoryProductView from "../component/product/CategoryProductView";
 import Products from "../../../services/Products";
 import Categories from "../../../services/Categories";
+import ServiceListView from "../component/service/ServiceListView";
+import SelectedProductsView from "../component/product/SelectedProductsView";
 
 export default async function LandingView() {
   const brands = await Brand.getAllBrands();
@@ -15,32 +17,38 @@ export default async function LandingView() {
   const listCate = await Categories.getFullCate();
   const categories = get(listCate, "data", []);
 
-  // const filter = { cate_name };
-  // const products = await Products.getAllProduct(10, 1);
-  // const infoProduct = get(products, "data.data.brands", {});
-
   const categoryData = await Promise.all(
     categories.map(async (category) => {
       const filter = { cate_name: category.title };
       const productsResponse = await Products.getAllProduct(10, 1, filter);
-      const products = get(productsResponse, "data.data.products", []);
+      const products = get(productsResponse, "data.data.products", []) || [];
       return {
         category,
         products,
       };
     })
   );
-
+  const filteredCategoryData = categoryData
+    .filter((data) => Array.isArray(data.products) && data.products.length > 0)
+    .slice(0, 3);
   return (
     <Fragment>
       <SliderSection />
+      <ServiceListView />
+      <SelectedProductsView />
+
       <BrandsFetured brands={infoBrands} />
-      {categoryData.map((data, index) => (
-        <>
-          <CategoryProductView key={index} data={data} />
-          <Box sx={{ height: "50vh" }} />
-        </>
-      ))}
+      {filteredCategoryData.length > 0 ? (
+        filteredCategoryData.map((data) => (
+          <Fragment key={data.category.id}>
+            <CategoryProductView data={data} />
+          </Fragment>
+        ))
+      ) : (
+        <Box textAlign="center" py={5}>
+          Không có dữ liệu Danh Mục có sản phẩm
+        </Box>
+      )}
     </Fragment>
   );
 }

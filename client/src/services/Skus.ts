@@ -7,6 +7,7 @@ interface Filters {
   status?: string;
   price?: string;
   productName?: string;
+  productId?: string;
 }
 interface cuSkuModel {
   in_stock: string;
@@ -66,6 +67,9 @@ class SkusServer extends Base {
       queryParams.push(
         `productName=${encodeURIComponent(filters.productName)}`
       );
+    }
+    if (filters.productId) {
+      queryParams.push(`productId=${encodeURIComponent(filters.productId)}`);
     }
     if (queryParams.length > 0) {
       url += `&${queryParams.join("&")}`;
