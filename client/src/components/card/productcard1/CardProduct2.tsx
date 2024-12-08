@@ -47,9 +47,9 @@ export default function CardProduct2({ product }: Props) {
 
   return (
     <Card>
-      <CardMedia>
-        <Box minHeight="300px" position="relative">
-          <Link href={`/products/${product.slug}`}>
+      <Link href={`/product/${product.slug}`}>
+        <CardMedia>
+          <Box minHeight="300px" position="relative">
             <BaseImage
               fill
               alt={product.name || "product"}
@@ -62,64 +62,64 @@ export default function CardProduct2({ product }: Props) {
               layout="fill"
               objectFit="cover"
             />
-          </Link>
-        </Box>
-        <StyledIconButton className="product-actions" onClick={toggleDialog}>
-          <Tooltip title="Xem nhanh" arrow>
-            <RemoveRedEye color="disabled" fontSize="small" />
-          </Tooltip>
-        </StyledIconButton>
-      </CardMedia>
-      <ProductViewDialog
-        openDialog={openModal}
-        handleCloseDialog={toggleDialog}
-        product={product}
-      />
+          </Box>
+          <StyledIconButton className="product-actions" onClick={toggleDialog}>
+            <Tooltip title="Xem nhanh" arrow>
+              <RemoveRedEye color="disabled" fontSize="small" />
+            </Tooltip>
+          </StyledIconButton>
+        </CardMedia>
+        <ProductViewDialog
+          openDialog={openModal}
+          handleCloseDialog={toggleDialog}
+          product={product}
+        />
 
-      <Box
-        p={2}
-        textAlign="center"
-        display="flex"
-        flexDirection="column"
-        flexGrow={1}
-        maxWidth="100%"
-      >
-        <Paragraph
-          sx={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
+        <Box
+          p={2}
+          textAlign="center"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+          maxWidth="100%"
         >
-          {product.name}
-        </Paragraph>
+          <Paragraph
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {product.name}
+          </Paragraph>
 
-        <H4
-          fontWeight={700}
-          py={0.5}
-          sx={{ maxHeight: "2.5em", overflow: "hidden" }}
-        >
-          {formatCurrency(product.highest_price || 0)}
-        </H4>
+          <H4
+            fontWeight={700}
+            py={0.5}
+            sx={{ maxHeight: "2.5em", overflow: "hidden" }}
+          >
+            {formatCurrency(product.highest_price || 0)}
+          </H4>
 
-        <FlexCenterRow gap={1} mb={2}>
-          <Rating name="read-only" value={0} readOnly sx={{ fontSize: 14 }} />
-          {/* <Small fontWeight={600} color="grey.500">
+          <FlexCenterRow gap={1} mb={2}>
+            <Rating name="read-only" value={0} readOnly sx={{ fontSize: 14 }} />
+            {/* <Small fontWeight={600} color="grey.500">
       ({reviews.length})
     </Small> */}
-        </FlexCenterRow>
+          </FlexCenterRow>
 
-        <Box mt="auto">
-          <Button
-            fullWidth
-            color="dark"
-            variant="outlined"
-            onClick={handleAddToCart}
-          >
-            Thêm vào giỏ
-          </Button>
+          <Box mt="auto">
+            <Button
+              fullWidth
+              color="dark"
+              variant="outlined"
+              onClick={handleAddToCart}
+            >
+              Thêm vào giỏ
+            </Button>
+          </Box>
         </Box>
-      </Box>
+      </Link>
     </Card>
   );
 }

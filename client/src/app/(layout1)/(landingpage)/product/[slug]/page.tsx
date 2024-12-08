@@ -1,26 +1,43 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ProductDetailsPageView } from "pages-sections/product-details/page-view";
+import Products from "../../../../../services/Products";
+import { get } from "lodash";
+import ProductDetailsView from "../../../../../sections/product-detail/view/ProductDetailsView";
 
-export const metadata: Metadata = {
-  title: "Product Details - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
-  authors: [{ name: "UI-LIB", url: "https://ui-lib.com" }],
-  keywords: ["e-commerce", "e-commerce template", "next.js", "react"],
-};
+export async function generateMetadata({ params }): Promise<Metadata> {
+  try {
+    const product = await Products.getDetailProduct(params.slug as string);
+    const infoPro = get(product, "data", {});
+    const productName = infoPro.name || "Chi tiết sản Phẩm";
+
+    return {
+      title: `${productName} | MTShop`,
+      description: `Chi tiết của sản phẩm ${productName} tại MTShop.`,
+      keywords: ["e-commerce", "MTShop", productName],
+    };
+  } catch (error) {
+    return {
+      title: "Sản Phẩm Không Tìm Thấy | MTShop",
+      description: `Sản phẩm bạn tìm kiếm không tồn tại tại MTShop.`,
+      keywords: ["e-commerce", "MTShop"],
+    };
+  }
+}
 
 export default async function ProductDetails({ params }) {
   try {
-    const product = await api.getProduct(params.slug as string);
-    const relatedProducts = await getRelatedProducts();
-    const frequentlyBought = await getFrequentlyBought();
+    //get product
+    const product = await Products.getDetailProduct(params.slug as string);
+    const infoPro = get(product, "data", {});
+
+    //get related product
+    const cateName = infoPro.cate_name || "";
+    const filters = { cate_name: cateName };
+    const reProduct = await Products.getAllProduct(10, 1, filters);
+    const infoReProduct = get(reProduct, "data.data", {});
 
     return (
-      <ProductDetailsPageView
-        product={product}
-        relatedProducts={relatedProducts}
-        frequentlyBought={frequentlyBought}
-      />
+      <ProductDetailsView product={infoPro} relatedProducts={infoReProduct} />
     );
   } catch (error) {
     notFound();

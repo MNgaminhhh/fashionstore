@@ -51,8 +51,6 @@ export default function NavigationList() {
               position="relative"
               flexDirection="column"
               sx={{
-                fontSize: "14px",
-                fontWeight: 600,
                 cursor: "pointer",
                 "&:hover": {
                   color: "primary.main",
@@ -75,9 +73,9 @@ export default function NavigationList() {
               alignItems="center"
               position="relative"
               flexDirection="column"
+              justifyItems="center"
               sx={{
                 "&:hover": { "& > .child-nav-item": { display: "block" } },
-                fontSize: "14px",
               }}
             >
               <FlexBox alignItems="flex-end" gap={0.3} sx={NAV_LINK_STYLES}>

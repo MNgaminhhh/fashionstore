@@ -80,7 +80,7 @@ export default function ProductCard1({
           toggleView={toggleDialog}
           toggleFavorite={toggleFavorite}
         />
-        <Link href={`/products/${slug}`}>
+        <Link href={`/product/${slug}`}>
           <BaseImage
             priority
             src={imgUrl}

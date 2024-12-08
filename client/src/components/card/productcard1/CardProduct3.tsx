@@ -33,7 +33,7 @@ export default function ProductCard2({
 
   return (
     <div>
-      <Link href={`/products/${slug}`}>
+      <Link href={`/product/${slug}`}>
         <HoverBox overflow="hidden" borderRadius={2}>
           <BaseImage width={270} height={270} alt={title} src={imgUrl} />
         </HoverBox>

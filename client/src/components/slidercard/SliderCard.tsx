@@ -25,7 +25,7 @@ export default function SliderCard({
   return (
     <StyledRoot
       sx={{
-        height: 450,
+        height: 500,
         position: "relative",
         display: "flex",
         justifyContent: "center",

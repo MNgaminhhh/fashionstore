@@ -22,6 +22,7 @@ interface ProductModel {
   offer_start_date: Date;
   offer_end_date: Date;
   status: string;
+  vendor: any;
 }
 
 export default ProductModel;
