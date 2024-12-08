@@ -110,6 +110,6 @@ FROM products p
 INNER JOIN product_variants pv ON pv.product_id = p.id
 INNER JOIN variant_options vo ON vo.product_variant_id = pv.id
 INNER JOIN vendors v ON p.vendor_id = v.id
-WHERE p.id = $1
+WHERE p.slug = $1
 GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id,
 v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email;

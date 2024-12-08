@@ -58,8 +58,8 @@ func (pc *ProductController) GetProductByID(c echo.Context) error {
 }
 
 func (pc *ProductController) ViewFullDetailOfProduct(c echo.Context) error {
-	id := c.Param("id")
-	code, data := pc.productService.ViewFullDetailOfProduct(id)
+	slug := c.Param("slug")
+	code, data := pc.productService.ViewFullDetailOfProduct(slug)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "get fail")
 	}

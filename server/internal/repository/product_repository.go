@@ -16,7 +16,7 @@ import (
 type IProductRepository interface {
 	AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) error
 	GetProductByID(id uuid.UUID) (*database.Product, error)
-	ViewFullDetailOfProduct(id uuid.UUID) (*database.ViewFullDetailOfProductRow, error)
+	ViewFullDetailOfProduct(slug string) (*database.ViewFullDetailOfProductRow, error)
 	UpdateProduct(customParam *database.Product) error
 	DeleteProductByID(id uuid.UUID) error
 	ListProducts(filter database.ListProductsParams) ([]database.ListProductsRow, error)
@@ -81,8 +81,8 @@ func (pr *ProductRepository) GetProductByID(id uuid.UUID) (*database.Product, er
 	return &product, err
 }
 
-func (pr *ProductRepository) ViewFullDetailOfProduct(id uuid.UUID) (*database.ViewFullDetailOfProductRow, error) {
-	product, err := pr.sqlc.ViewFullDetailOfProduct(ctx, id)
+func (pr *ProductRepository) ViewFullDetailOfProduct(slug string) (*database.ViewFullDetailOfProductRow, error) {
+	product, err := pr.sqlc.ViewFullDetailOfProduct(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
