@@ -83,6 +83,115 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getFlashSaleProductNow = `-- name: GetFlashSaleProductNow :many
+SELECT f.id, f.flash_sales_id, f.product_id, f.show, f.created_at, f.updated_at,
+       p.id,
+       p.name,
+       p.slug,
+       p.images,
+       p.vendor_id,
+       p.category_id,
+       p.sub_category_id,
+       p.child_category_id,
+       p.short_description,
+       p.long_description,
+       p.product_type,
+       p.status,
+       p.is_approved,
+       p.created_at,
+       p.updated_at,
+       v.store_name,
+       c.name AS category_name,
+       sc.name AS sub_category_name,
+       cc.name AS child_category_name
+FROM flash_sales_items f
+    INNER JOIN flash_sales fl ON f.flash_sales_id = fl.id
+    INNER JOIN products p ON f.product_id = p.id
+    INNER JOIN vendors v ON p.vendor_id = v.id
+    INNER JOIN categories c ON p.category_id = c.id
+    LEFT JOIN sub_categories sc ON sc.id = p.sub_category_id
+    LEFT JOIN child_categories cc ON cc.id = p.child_category_id
+WHERE fl.start_date <= CURRENT_TIMESTAMP AND fl.end_date >= CURRENT_TIMESTAMP
+    AND (show = $1 OR $1 IS NULL)
+`
+
+type GetFlashSaleProductNowRow struct {
+	ID                uuid.UUID
+	FlashSalesID      uuid.UUID
+	ProductID         uuid.UUID
+	Show              sql.NullBool
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	ID_2              uuid.UUID
+	Name              string
+	Slug              string
+	Images            json.RawMessage
+	VendorID          uuid.UUID
+	CategoryID        uuid.UUID
+	SubCategoryID     uuid.NullUUID
+	ChildCategoryID   uuid.NullUUID
+	ShortDescription  sql.NullString
+	LongDescription   sql.NullString
+	ProductType       sql.NullString
+	Status            NullProductStatus
+	IsApproved        sql.NullBool
+	CreatedAt_2       sql.NullTime
+	UpdatedAt_2       sql.NullTime
+	StoreName         string
+	CategoryName      string
+	SubCategoryName   sql.NullString
+	ChildCategoryName sql.NullString
+}
+
+func (q *Queries) GetFlashSaleProductNow(ctx context.Context, show sql.NullBool) ([]GetFlashSaleProductNowRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFlashSaleProductNow, show)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFlashSaleProductNowRow
+	for rows.Next() {
+		var i GetFlashSaleProductNowRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FlashSalesID,
+			&i.ProductID,
+			&i.Show,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ID_2,
+			&i.Name,
+			&i.Slug,
+			&i.Images,
+			&i.VendorID,
+			&i.CategoryID,
+			&i.SubCategoryID,
+			&i.ChildCategoryID,
+			&i.ShortDescription,
+			&i.LongDescription,
+			&i.ProductType,
+			&i.Status,
+			&i.IsApproved,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
+			&i.StoreName,
+			&i.CategoryName,
+			&i.SubCategoryName,
+			&i.ChildCategoryName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductByID = `-- name: GetProductByID :one
 SELECT
     id,

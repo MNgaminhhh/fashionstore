@@ -20,6 +20,7 @@ type IProductRepository interface {
 	UpdateProduct(customParam *database.Product) error
 	DeleteProductByID(id uuid.UUID) error
 	ListProducts(filter database.ListProductsParams) ([]database.ListProductsRow, error)
+	GetAllProductsFlashSale(show *bool) ([]database.GetFlashSaleProductNowRow, error)
 }
 
 type ProductRepository struct {
@@ -131,4 +132,19 @@ func (pr *ProductRepository) ListProducts(filter database.ListProductsParams) ([
 		return nil, err
 	}
 	return products, nil
+}
+
+func (pr *ProductRepository) GetAllProductsFlashSale(show *bool) ([]database.GetFlashSaleProductNowRow, error) {
+	filterShow := sql.NullBool{
+		Valid: false,
+	}
+	if show != nil {
+		filterShow.Valid = true
+		filterShow.Bool = *show
+	}
+	results, err := pr.sqlc.GetFlashSaleProductNow(ctx, filterShow)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }

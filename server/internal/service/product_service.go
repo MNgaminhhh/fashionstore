@@ -59,6 +59,7 @@ type IProductService interface {
 	DeleteProductByID(id string) int
 	ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{})
 	GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{})
+	GetAllProductFlashSale(filter validator.FilterProductRequest) (int, map[string]interface{})
 }
 
 type ProductService struct {
@@ -463,6 +464,60 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 	}, nil
 }
 
+func (ps *ProductService) GetAllProductFlashSale(filter validator.FilterProductRequest) (int, map[string]interface{}) {
+	skusRepo := repository.NewSkusRepository()
+	reviewsRepo := repository.NewReviewsRepository()
+	flashSaleProducts, err := ps.productRepo.GetAllProductsFlashSale(filter.Show)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	page := 1
+	limit := 0
+	totalResults := len(flashSaleProducts)
+	if filter.Limit != nil {
+		limit = *filter.Limit
+	}
+	if filter.Page != nil {
+		page = *filter.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(flashSaleProducts, page, limit)
+	var responseData []ProductResponse
+	for _, product := range pagination {
+		resData, _ := mapProductToResponseData(&product)
+		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
+		if getSkusErr != nil {
+			log.Println(getSkusErr)
+			return response.ErrCodeInternal, nil
+		}
+		reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ID)
+		ratingPoint := calculateRatingPoint(reviews)
+		resData.RatingPoint = ratingPoint
+		if skus != nil && len(skus) > 0 {
+			lowestPrice, highestPrice := getLowestHighestPrice(skus)
+			resData.LowestPrice = lowestPrice
+			resData.HighestPrice = highestPrice
+			if filter.LowPrice != nil && filter.HighPrice != nil {
+				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
+					continue
+				}
+			}
+			responseData = append(responseData, *resData)
+		}
+	}
+
+	results := map[string]interface{}{
+		"products":      responseData,
+		"total_pages":   totalPages,
+		"total_results": totalResults,
+	}
+	return response.SuccessCode, results
+}
+
 func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	switch p := any(data).(type) {
 	case *database.Product:
@@ -485,6 +540,29 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			ProductType:      p.ProductType.String,
 			Status:           string(p.Status.ProductStatus),
 			IsApproved:       p.IsApproved.Bool,
+		}, nil
+	case *database.GetFlashSaleProductNowRow:
+		var images []string
+		err := json.Unmarshal(p.Images, &images)
+		if err != nil {
+			return nil, err
+		}
+		return &ProductResponse{
+			ID:              p.ID,
+			Name:            p.Name,
+			Slug:            p.Slug,
+			Images:          images,
+			VendorID:        p.VendorID.String(),
+			CategoryID:      p.CategoryID.String(),
+			SubCategoryID:   p.SubCategoryID.UUID.String(),
+			ChildCategoryID: p.ChildCategoryID.UUID.String(),
+			ProductType:     p.ProductType.String,
+			Status:          string(p.Status.ProductStatus),
+			IsApproved:      false,
+			StoreName:       p.StoreName,
+			CategoryName:    p.CategoryName,
+			SubCateName:     p.SubCategoryName.String,
+			ChildCateName:   p.ChildCategoryName.String,
 		}, nil
 	case *ProductWithSkus:
 		product := p.Product

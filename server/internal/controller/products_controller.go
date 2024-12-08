@@ -137,3 +137,15 @@ func (pc *ProductController) ListProductsOfVendor(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, data)
 }
+
+func (pc *ProductController) GetFlashSaleProducts(c echo.Context) error {
+	reqParam := validator.FilterProductRequest{}
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
+	}
+	code, results := pc.productService.GetAllProductFlashSale(reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
