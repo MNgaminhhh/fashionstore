@@ -43,6 +43,7 @@ type ProductResponse struct {
 	Vendor           map[string]interface{}   `json:"vendor,omitempty"`
 	Skus             []map[string]interface{} `json:"skus,omitempty"`
 	Reviews          []map[string]interface{} `json:"reviews,omitempty"`
+	ShowFlashSale    *bool                    `json:"show,omitempty"`
 }
 
 type ProductWithSkus struct {
@@ -476,7 +477,7 @@ func (ps *ProductService) GetAllProductFlashSale(filter validator.FilterProductR
 		return response.ErrCodeInternal, nil
 	}
 	page := 1
-	limit := 0
+	limit := len(flashSaleProducts)
 	totalResults := len(flashSaleProducts)
 	if filter.Limit != nil {
 		limit = *filter.Limit
@@ -494,7 +495,7 @@ func (ps *ProductService) GetAllProductFlashSale(filter validator.FilterProductR
 			log.Println(getSkusErr)
 			return response.ErrCodeInternal, nil
 		}
-		reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ID)
+		reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ProductID)
 		ratingPoint := calculateRatingPoint(reviews)
 		resData.RatingPoint = ratingPoint
 		if skus != nil && len(skus) > 0 {
@@ -514,6 +515,8 @@ func (ps *ProductService) GetAllProductFlashSale(filter validator.FilterProductR
 		"products":      responseData,
 		"total_pages":   totalPages,
 		"total_results": totalResults,
+		"page":          page,
+		"limit":         limit,
 	}
 	return response.SuccessCode, results
 }
@@ -548,7 +551,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			return nil, err
 		}
 		return &ProductResponse{
-			ID:              p.ID,
+			ID:              p.ProductID,
 			Name:            p.Name,
 			Slug:            p.Slug,
 			Images:          images,
@@ -563,6 +566,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			CategoryName:    p.CategoryName,
 			SubCateName:     p.SubCategoryName.String,
 			ChildCateName:   p.ChildCategoryName.String,
+			ShowFlashSale:   &p.Show.Bool,
 		}, nil
 	case *ProductWithSkus:
 		product := p.Product
