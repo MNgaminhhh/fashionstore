@@ -2,9 +2,10 @@
 INSERT INTO reviews (user_id, sku_id, order_id, rating, comment) VALUES ($1, $2, $3, $4, $5);
 
 -- name: GetAllReviewsByProductId :many
-SELECT r.*
+SELECT r.*, u.full_name, u.avt
 FROM reviews r
 INNER JOIN skus s ON r.sku_id = s.id
+INNER JOIN users u ON r.user_id = u.id
 WHERE s.product_id = $1
 ORDER BY r.created_at DESC;
 

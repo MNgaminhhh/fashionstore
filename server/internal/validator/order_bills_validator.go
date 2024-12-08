@@ -17,3 +17,7 @@ type FilterBillValidator struct {
 	Page       *int  `json:"page"`
 	Limit      *int  `json:"limit"`
 }
+
+type UpdateSkusOrderValidator struct {
+	IsPrepared *bool `json:"is_prepared" validate:"required"`
+}

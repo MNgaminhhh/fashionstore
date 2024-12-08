@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 
 	"github.com/google/uuid"
@@ -51,22 +52,36 @@ func (q *Queries) DeleteReviewById(ctx context.Context, arg DeleteReviewByIdPara
 }
 
 const getAllReviewsByProductId = `-- name: GetAllReviewsByProductId :many
-SELECT r.id, r.sku_id, r.user_id, r.order_id, r.rating, r.comment, r.created_at, r.updated_at
+SELECT r.id, r.sku_id, r.user_id, r.order_id, r.rating, r.comment, r.created_at, r.updated_at, u.full_name, u.avt
 FROM reviews r
 INNER JOIN skus s ON r.sku_id = s.id
+INNER JOIN users u ON r.user_id = u.id
 WHERE s.product_id = $1
 ORDER BY r.created_at DESC
 `
 
-func (q *Queries) GetAllReviewsByProductId(ctx context.Context, productID uuid.UUID) ([]Review, error) {
+type GetAllReviewsByProductIdRow struct {
+	ID        uuid.UUID
+	SkuID     uuid.UUID
+	UserID    uuid.UUID
+	OrderID   uuid.UUID
+	Rating    float64
+	Comment   json.RawMessage
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+	FullName  sql.NullString
+	Avt       sql.NullString
+}
+
+func (q *Queries) GetAllReviewsByProductId(ctx context.Context, productID uuid.UUID) ([]GetAllReviewsByProductIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllReviewsByProductId, productID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Review
+	var items []GetAllReviewsByProductIdRow
 	for rows.Next() {
-		var i Review
+		var i GetAllReviewsByProductIdRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.SkuID,
@@ -76,6 +91,8 @@ func (q *Queries) GetAllReviewsByProductId(ctx context.Context, productID uuid.U
 			&i.Comment,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FullName,
+			&i.Avt,
 		); err != nil {
 			return nil, err
 		}

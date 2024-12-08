@@ -49,7 +49,7 @@ type ProductResponse struct {
 type ProductWithSkus struct {
 	Product *database.ViewFullDetailOfProductRow
 	Skus    []database.GetAllSkuByProductIdRow
-	Reviews []database.Review
+	Reviews []database.GetAllReviewsByProductIdRow
 }
 
 type IProductService interface {
@@ -107,17 +107,18 @@ func (ps *ProductService) ViewFullDetailOfProduct(slug string) (int, *ProductRes
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			pg_error.GetMessageError(pqErr)
+			return pg_error.GetMessageError(pqErr), nil
 		}
-		return response.ErrCodeInternal, nil
+		return response.ErrCodeNoContent, nil
 	}
 	skusRepo := repository.NewSkusRepository()
 	skus, findSkusErr := skusRepo.GetAllSkusByProductId(product.ID)
 	if findSkusErr != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			pg_error.GetMessageError(pqErr)
+			return pg_error.GetMessageError(pqErr), nil
 		}
+		log.Println(err)
 		return response.ErrCodeInternal, nil
 	}
 	reviewsRepo := repository.NewReviewsRepository()
@@ -595,11 +596,13 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		var reviewsRes []map[string]interface{}
 		for _, review := range reviews {
 			reviewsRes = append(reviewsRes, map[string]interface{}{
-				"id":      review.ID,
-				"sku_id":  review.SkuID,
-				"user_id": review.UserID,
-				"comment": review.Comment,
-				"rating":  review.Rating,
+				"id":        review.ID,
+				"sku_id":    review.SkuID,
+				"user_id":   review.UserID,
+				"user_name": review.FullName,
+				"avt":       review.Avt,
+				"comment":   review.Comment,
+				"rating":    review.Rating,
 			})
 		}
 		lowest, highest := getLowestHighestPrice(skus)
@@ -632,7 +635,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	}
 }
 
-func calculateRatingPoint(reviews []database.Review) float64 {
+func calculateRatingPoint(reviews []database.GetAllReviewsByProductIdRow) float64 {
 	if len(reviews) == 0 {
 		return 0
 	}

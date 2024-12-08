@@ -28,12 +28,35 @@ type SkuOrderBillItem struct {
 }
 
 type IOrderBillsService interface {
-	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterBillValidator) (int, map[string]interface{})
 	CreateBill(userId string, customParam validator.CreateBillValidator) int
+	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterBillValidator) (int, map[string]interface{})
+	UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int
 }
 
 type OrderBillsService struct {
 	orderBillRepo repository.IOrderBillsRepository
+}
+
+func (o OrderBillsService) UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int {
+	//vendorUUID, _ := uuid.Parse(vendorId)
+	//orderUUID, _ := uuid.Parse(orderId)
+	//skusOrder, getErr := o.orderBillRepo.GetAllSkuOfOrderBill(orderUUID)
+	//if getErr != nil {
+	//	log.Println(getErr)
+	//	return response.ErrCodeInternal
+	//}
+	//alreadyPrepared := false
+	//
+	//err := o.orderBillRepo.UpdateOrderBillOfVendor(vendorUUID, orderUUID, isPrepared)
+	//if err != nil {
+	//	var pqErr *pq.Error
+	//	if errors.As(err, &pqErr) {
+	//		return pg_error.GetMessageError(pqErr)
+	//	}
+	//	return response.ErrCodeInternal
+	//}
+
+	return response.SuccessCode
 }
 
 func (o OrderBillsService) GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterBillValidator) (int, map[string]interface{}) {

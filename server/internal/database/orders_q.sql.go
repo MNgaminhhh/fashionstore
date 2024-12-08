@@ -93,7 +93,7 @@ const getAllOrderBillsOfVendor = `-- name: GetAllOrderBillsOfVendor :many
 SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
 FROM skus_order_bills
 WHERE vendor_id = $1
-AND (is_prepared = $2 OR $2 IS NULL)
+  AND (is_prepared = $2 OR $2 IS NULL)
 ORDER BY updated_at
 `
 
@@ -132,4 +132,82 @@ func (q *Queries) GetAllOrderBillsOfVendor(ctx context.Context, arg GetAllOrderB
 		return nil, err
 	}
 	return items, nil
+}
+
+const getAllSkusByOrderId = `-- name: GetAllSkusByOrderId :many
+SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
+FROM skus_order_bills
+WHERE order_id = $1 AND
+      (is_prepared = $2 OR $2 IS NULl)
+ORDER BY updated_at
+`
+
+type GetAllSkusByOrderIdParams struct {
+	OrderID    uuid.UUID
+	IsPrepared sql.NullBool
+}
+
+func (q *Queries) GetAllSkusByOrderId(ctx context.Context, arg GetAllSkusByOrderIdParams) ([]SkusOrderBill, error) {
+	rows, err := q.db.QueryContext(ctx, getAllSkusByOrderId, arg.OrderID, arg.IsPrepared)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SkusOrderBill
+	for rows.Next() {
+		var i SkusOrderBill
+		if err := rows.Scan(
+			&i.SkuID,
+			&i.Quantity,
+			&i.OrderID,
+			&i.VendorID,
+			&i.IsPrepared,
+			&i.Price,
+			&i.OfferPrice,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateOrderBillsOfVendor = `-- name: UpdateOrderBillsOfVendor :exec
+UPDATE skus_order_bills
+SET is_prepared = $1
+WHERE vendor_id = $2 AND order_id = $3
+`
+
+type UpdateOrderBillsOfVendorParams struct {
+	IsPrepared sql.NullBool
+	VendorID   uuid.UUID
+	OrderID    uuid.UUID
+}
+
+func (q *Queries) UpdateOrderBillsOfVendor(ctx context.Context, arg UpdateOrderBillsOfVendorParams) error {
+	_, err := q.db.ExecContext(ctx, updateOrderBillsOfVendor, arg.IsPrepared, arg.VendorID, arg.OrderID)
+	return err
+}
+
+const updateStatusOrderBill = `-- name: UpdateStatusOrderBill :exec
+UPDATE order_bills
+SET order_status = $1
+WHERE id = $2
+`
+
+type UpdateStatusOrderBillParams struct {
+	OrderStatus NullOrderStatus
+	ID          uuid.UUID
+}
+
+func (q *Queries) UpdateStatusOrderBill(ctx context.Context, arg UpdateStatusOrderBillParams) error {
+	_, err := q.db.ExecContext(ctx, updateStatusOrderBill, arg.OrderStatus, arg.ID)
+	return err
 }

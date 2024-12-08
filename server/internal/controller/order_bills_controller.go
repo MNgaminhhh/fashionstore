@@ -50,3 +50,24 @@ func (oc *OrderBillsController) CreateOrderBill(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Tạo đơn hàng thành công!")
 }
+
+func (oc *OrderBillsController) UpdateOrderBillOfVendor(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "update fail")
+	}
+	vendorId := c.Get("vendorId").(string)
+	orderId := c.Param("id")
+	reqParam := validator.UpdateSkusOrderValidator{}
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "create fail")
+	}
+	if err := c.Validate(reqParam); err != nil {
+		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	}
+	code := oc.orderBillService.UpdateOrderBillOfVendor(vendorId, orderId, *reqParam.IsPrepared)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "update fail")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật đơn hàng thành công!")
+}

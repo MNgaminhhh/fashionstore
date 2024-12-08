@@ -15,6 +15,7 @@ func (or *OrderBillRouter) InitOrderBillRouter(router *echo.Group) {
 	orderRouter := router.Group("/order_bills")
 	{
 		orderRouter.GET("/vendor", orderBillController.GetAllOrderBillsOfVendor, middleware.JWTMiddleware)
+		orderRouter.PUT("/vendor/:id", orderBillController.UpdateOrderBillOfVendor, middleware.JWTMiddleware)
 		orderRouter.POST("", orderBillController.CreateOrderBill, middleware.JWTMiddleware)
 	}
 }
