@@ -22,11 +22,13 @@ type ReviewsRepository struct {
 
 func (r ReviewsRepository) CreateReview(userId uuid.UUID, customParam validator.CreateReviewValidator) error {
 	skuId, _ := uuid.Parse(customParam.SkuId)
+	orderId, _ := uuid.Parse(customParam.OrderId)
 	comments := customParam.Comment
 	commentJSON, _ := json.Marshal(comments)
 	param := database.CreateReviewParams{
 		UserID:  userId,
 		SkuID:   skuId,
+		OrderID: orderId,
 		Rating:  customParam.Rating,
 		Comment: commentJSON,
 	}

@@ -13,12 +13,13 @@ import (
 )
 
 const createReview = `-- name: CreateReview :exec
-INSERT INTO reviews (user_id, sku_id, rating, comment) VALUES ($1, $2, $3, $4)
+INSERT INTO reviews (user_id, sku_id, order_id, rating, comment) VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateReviewParams struct {
 	UserID  uuid.UUID
 	SkuID   uuid.UUID
+	OrderID uuid.UUID
 	Rating  float64
 	Comment json.RawMessage
 }
@@ -27,6 +28,7 @@ func (q *Queries) CreateReview(ctx context.Context, arg CreateReviewParams) erro
 	_, err := q.db.ExecContext(ctx, createReview,
 		arg.UserID,
 		arg.SkuID,
+		arg.OrderID,
 		arg.Rating,
 		arg.Comment,
 	)
@@ -49,7 +51,7 @@ func (q *Queries) DeleteReviewById(ctx context.Context, arg DeleteReviewByIdPara
 }
 
 const getAllReviewsByProductId = `-- name: GetAllReviewsByProductId :many
-SELECT r.id, r.sku_id, r.user_id, r.rating, r.comment, r.created_at, r.updated_at
+SELECT r.id, r.sku_id, r.user_id, r.order_id, r.rating, r.comment, r.created_at, r.updated_at
 FROM reviews r
 INNER JOIN skus s ON r.sku_id = s.id
 WHERE s.product_id = $1
@@ -69,6 +71,7 @@ func (q *Queries) GetAllReviewsByProductId(ctx context.Context, productID uuid.U
 			&i.ID,
 			&i.SkuID,
 			&i.UserID,
+			&i.OrderID,
 			&i.Rating,
 			&i.Comment,
 			&i.CreatedAt,
@@ -88,7 +91,7 @@ func (q *Queries) GetAllReviewsByProductId(ctx context.Context, productID uuid.U
 }
 
 const getReviewById = `-- name: GetReviewById :one
-SELECT id, sku_id, user_id, rating, comment, created_at, updated_at
+SELECT id, sku_id, user_id, order_id, rating, comment, created_at, updated_at
 FROM reviews
 WHERE id = $1
 `
@@ -100,6 +103,7 @@ func (q *Queries) GetReviewById(ctx context.Context, id uuid.UUID) (Review, erro
 		&i.ID,
 		&i.SkuID,
 		&i.UserID,
+		&i.OrderID,
 		&i.Rating,
 		&i.Comment,
 		&i.CreatedAt,

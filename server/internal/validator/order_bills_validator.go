@@ -11,3 +11,9 @@ type CreateBillValidator struct {
 	ProductCoupon  *string        `json:"product_coupon"`
 	DeliveryInfo   string         `json:"delivery_info" validate:"required"`
 }
+
+type FilterBillValidator struct {
+	IsPrepared *bool `json:"is_prepared"`
+	Page       *int  `json:"page"`
+	Limit      *int  `json:"limit"`
+}

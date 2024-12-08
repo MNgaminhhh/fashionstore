@@ -25,14 +25,22 @@ CREATE TABLE order_bills(
 CREATE TABLE skus_order_bills(
     sku_id UUID NOT NULL REFERENCES skus(id) ON DELETE SET NULL,
     quantity int NOT NULL CHECK ( quantity > 0 ),
-    order_id UUID NOT NULL REFERENCES order_bills(id) ON DELETE CASCADE ,
+    order_id UUID NOT NULL REFERENCES order_bills(id) ON DELETE CASCADE,
+    vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE SET NULL,
+    is_prepared BOOLEAN default false,
     price BIGINT NOT NULL,
     offer_price BIGINT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (sku_id, order_id)
 );
 
 CREATE TRIGGER set_updated_at
     BEFORE UPDATE ON order_bills
+    FOR EACH ROW
+    EXECUTE FUNCTION update_product_timestamp();
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON skus_order_bills
     FOR EACH ROW
     EXECUTE FUNCTION update_product_timestamp();
 -- +goose StatementEnd

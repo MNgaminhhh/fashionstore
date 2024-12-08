@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/internal/database"
 	"backend/internal/service"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -15,6 +16,23 @@ func NewOrderBillsController(orderBillService service.IOrderBillsService) *Order
 	return &OrderBillsController{
 		orderBillService: orderBillService,
 	}
+}
+
+func (oc *OrderBillsController) GetAllOrderBillsOfVendor(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "get fail")
+	}
+	vendorId := c.Get("vendorId").(string)
+	var reqParam validator.FilterBillValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
+	}
+	code, results := oc.orderBillService.GetAllOrderBillsOfVendor(vendorId, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
 }
 
 func (oc *OrderBillsController) CreateOrderBill(c echo.Context) error {

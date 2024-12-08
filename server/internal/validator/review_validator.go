@@ -7,6 +7,7 @@ type CommentObj struct {
 
 type CreateReviewValidator struct {
 	SkuId   string       `json:"sku_id" validate:"required"`
+	OrderId string       `json:"order_id" validate:"required"`
 	Rating  float64      `json:"rating" validate:"required"`
 	Comment []CommentObj `json:"comment" validate:"required,min=1,dive,required"`
 }

@@ -11,9 +11,17 @@ INSERT INTO order_bills (
     delivery_info_id
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
+-- name: GetAllOrderBillsOfVendor :many
+SELECT *
+FROM skus_order_bills
+WHERE vendor_id = $1
+AND (is_prepared = $2 OR $2 IS NULL)
+ORDER BY updated_at;
+
+
 -- name: CreateOrderBillSku :exec
-INSERT INTO skus_order_bills (sku_id, order_id, quantity, price, offer_price)
-VALUES ($1, $2, $3,$4, $5);
+INSERT INTO skus_order_bills (sku_id, order_id, vendor_id, quantity, price, offer_price)
+VALUES ($1, $2, $3,$4, $5, $6);
 
 -- name: DeleteOrderBill :exec
 DELETE FROM order_bills

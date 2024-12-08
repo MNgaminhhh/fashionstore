@@ -1,5 +1,5 @@
 -- name: CreateReview :exec
-INSERT INTO reviews (user_id, sku_id, rating, comment) VALUES ($1, $2, $3, $4);
+INSERT INTO reviews (user_id, sku_id, order_id, rating, comment) VALUES ($1, $2, $3, $4, $5);
 
 -- name: GetAllReviewsByProductId :many
 SELECT r.*

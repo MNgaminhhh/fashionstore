@@ -3,10 +3,13 @@ package repository
 import (
 	"backend/global"
 	"backend/internal/database"
+	"backend/internal/validator"
+	"database/sql"
 	"github.com/google/uuid"
 )
 
 type IOrderBillsRepository interface {
+	GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterBillValidator) ([]database.SkusOrderBill, error)
 	CreateOrderBill(bill database.OrderBill) error
 	CreateSkuOrderBill(skuOrderBill database.SkusOrderBill) error
 	DeleteOrderBill(id uuid.UUID) error
@@ -14,6 +17,24 @@ type IOrderBillsRepository interface {
 
 type OrderBillsRepository struct {
 	sqlc *database.Queries
+}
+
+func (o OrderBillsRepository) GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterBillValidator) ([]database.SkusOrderBill, error) {
+	param := database.GetAllOrderBillsOfVendorParams{
+		VendorID:   vendorId,
+		IsPrepared: sql.NullBool{},
+	}
+	if filterParam.IsPrepared != nil {
+		param.IsPrepared = sql.NullBool{
+			Bool:  *filterParam.IsPrepared,
+			Valid: true,
+		}
+	}
+	results, err := o.sqlc.GetAllOrderBillsOfVendor(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func (o OrderBillsRepository) CreateOrderBill(bill database.OrderBill) error {
@@ -39,6 +60,7 @@ func (o OrderBillsRepository) CreateSkuOrderBill(skuOrderBill database.SkusOrder
 		Quantity:   skuOrderBill.Quantity,
 		Price:      skuOrderBill.Price,
 		OfferPrice: skuOrderBill.OfferPrice,
+		VendorID:   skuOrderBill.VendorID,
 	}
 	err := o.sqlc.CreateOrderBillSku(ctx, param)
 	return err

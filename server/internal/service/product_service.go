@@ -72,16 +72,7 @@ func (ps *ProductService) AddProduct(customParam validator.AddProductRequest, ve
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return response.ErrCodeConflict
-			case "foreign_key_violation":
-				return response.ErrCodeForeignKey
-			case "check_violation":
-				return response.ErrCodeValidate
-			default:
-				return response.ErrCodeDatabase
-			}
+			return pg_error.GetMessageError(pqErr)
 		}
 		return response.ErrCodeInternal
 	}

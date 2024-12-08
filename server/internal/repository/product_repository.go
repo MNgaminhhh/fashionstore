@@ -33,7 +33,6 @@ func NewProductRepository() IProductRepository {
 }
 
 func (pr *ProductRepository) AddProduct(customParam validator.AddProductRequest, vendorId uuid.UUID) error {
-	log.Println(customParam)
 	imagesJSON := utils.MarshalImages(customParam.Images)
 	categoryID := utils.OptionalUUID(uuid.MustParse(customParam.CategoryID), customParam.CategoryID != "")
 	subCategoryID := utils.OptionalNullUUID(customParam.SubCategoryID)
