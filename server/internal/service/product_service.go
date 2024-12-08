@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
+	"slices"
+	"time"
 )
 
 type ProductResponse struct {
@@ -334,8 +336,9 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		ratingPoint := calculateRatingPoint(reviews)
 		resData.RatingPoint = ratingPoint
 		if skus != nil && len(skus) > 0 {
-			resData.LowestPrice = int(skus[0].OfferPrice)
-			resData.HighestPrice = int(skus[len(skus)-1].OfferPrice)
+			lowestPrice, highestPrice := getLowestHighestPrice(skus)
+			resData.LowestPrice = lowestPrice
+			resData.HighestPrice = highestPrice
 			if filter.LowPrice != nil && filter.HighPrice != nil {
 				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
 					continue
@@ -352,6 +355,23 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	}
 
 	return response.SuccessCode, results
+}
+
+func getLowestHighestPrice(skus []database.GetAllSkuByProductIdRow) (int, int) {
+	var lowest, highest int
+	var priceArr []int
+	for _, sku := range skus {
+		offerStartDate := sku.OfferStartDate.Time
+		offerEndDate := sku.OfferEndDate.Time
+		if time.Now().Before(offerStartDate) || time.Now().After(offerEndDate) {
+			priceArr = append(priceArr, int(sku.Price))
+		} else {
+			priceArr = append(priceArr, int(sku.OfferPrice))
+		}
+	}
+	lowest = slices.Min(priceArr)
+	highest = slices.Max(priceArr)
+	return lowest, highest
 }
 
 func (ps *ProductService) GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{}) {
@@ -477,15 +497,18 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		}
 		var skusRes []map[string]interface{}
 		for _, sku := range skus {
-			skusRes = append(skusRes, map[string]interface{}{
+			mapData := map[string]interface{}{
 				"id":              sku.ID,
 				"sku":             sku.Sku,
 				"price":           sku.Price,
-				"offer":           sku.Offer.Int32,
 				"in_stock":        sku.InStock.Int16,
-				"offer_price":     sku.OfferPrice,
 				"variant_options": sku.VariantOptions,
-			})
+			}
+			if time.Now().After(sku.OfferStartDate.Time) && time.Now().Before(sku.OfferEndDate.Time) {
+				mapData["offer_price"] = sku.OfferPrice
+				mapData["offer"] = sku.Offer.Int32
+			}
+			skusRes = append(skusRes, mapData)
 		}
 		var reviewsRes []map[string]interface{}
 		for _, review := range reviews {
@@ -497,6 +520,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 				"rating":  review.Rating,
 			})
 		}
+		lowest, highest := getLowestHighestPrice(skus)
 		return &ProductResponse{
 			ID:               product.ID,
 			Name:             product.Name,
@@ -506,8 +530,8 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			CategoryName:     product.CategoryName,
 			Variants:         product.Variants,
 			Options:          product.Options,
-			LowestPrice:      int(skus[0].OfferPrice),
-			HighestPrice:     int(skus[len(skus)-1].OfferPrice),
+			LowestPrice:      lowest,
+			HighestPrice:     highest,
 			Vendor: map[string]interface{}{
 				"vendorId":     product.VendorID.String(),
 				"name":         product.VendorFullName,
