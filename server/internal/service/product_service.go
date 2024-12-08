@@ -596,13 +596,15 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		var reviewsRes []map[string]interface{}
 		for _, review := range reviews {
 			reviewsRes = append(reviewsRes, map[string]interface{}{
-				"id":        review.ID,
-				"sku_id":    review.SkuID,
-				"user_id":   review.UserID,
-				"user_name": review.FullName,
-				"avt":       review.Avt,
-				"comment":   review.Comment,
-				"rating":    review.Rating,
+				"id":         review.ID,
+				"sku_id":     review.SkuID,
+				"user_id":    review.UserID,
+				"user_name":  review.FullName,
+				"avt":        review.Avt,
+				"created_at": review.CreatedAt.Time.Format("02-01-2006 15:04"),
+				"updated_at": review.UpdatedAt.Time.Format("02-01-2006 15:04"),
+				"comment":    review.Comment,
+				"rating":     review.Rating,
 			})
 		}
 		lowest, highest := getLowestHighestPrice(skus)
