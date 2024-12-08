@@ -35,11 +35,12 @@ type ProductResponse struct {
 	ChildCateName    string                   `json:"child_cate_name,omitempty"`
 	LowestPrice      int                      `json:"lowest_price,omitempty"`
 	HighestPrice     int                      `json:"highest_price,omitempty"`
+	RatingPoint      float64                  `json:"review_point"`
 	Variants         json.RawMessage          `json:"variants,omitempty"`
 	Options          json.RawMessage          `json:"options,omitempty"`
 	Vendor           map[string]interface{}   `json:"vendor,omitempty"`
 	Skus             []map[string]interface{} `json:"skus,omitempty"`
-	Reviews          []map[string]interface{} `json:"reviews"`
+	Reviews          []map[string]interface{} `json:"reviews,omitempty"`
 }
 
 type ProductWithSkus struct {
@@ -243,6 +244,7 @@ func (ps *ProductService) DeleteProductByID(id string) int {
 func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{}) {
 	storeName := sql.NullString{}
 	skusRepo := repository.NewSkusRepository()
+	reviewsRepo := repository.NewReviewsRepository()
 	if filter.StoreName != nil && *filter.StoreName != "" {
 		storeName = sql.NullString{String: *filter.StoreName, Valid: true}
 	}
@@ -337,6 +339,9 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 			log.Println(getSkusErr)
 			return response.ErrCodeInternal, nil
 		}
+		reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ID)
+		ratingPoint := calculateRatingPoint(reviews)
+		resData.RatingPoint = ratingPoint
 		if skus != nil && len(skus) > 0 {
 			resData.LowestPrice = int(skus[0].OfferPrice)
 			resData.HighestPrice = int(skus[len(skus)-1].OfferPrice)
@@ -502,14 +507,16 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			})
 		}
 		return &ProductResponse{
-			ID:              product.ID,
-			Name:            product.Name,
-			Images:          images,
-			LongDescription: product.LongDescription.String,
-			Variants:        product.Variants,
-			Options:         product.Options,
-			LowestPrice:     int(skus[0].OfferPrice),
-			HighestPrice:    int(skus[len(skus)-1].OfferPrice),
+			ID:               product.ID,
+			Name:             product.Name,
+			Images:           images,
+			LongDescription:  product.LongDescription.String,
+			ShortDescription: product.ShortDescription.String,
+			CategoryName:     product.CategoryName,
+			Variants:         product.Variants,
+			Options:          product.Options,
+			LowestPrice:      int(skus[0].OfferPrice),
+			HighestPrice:     int(skus[len(skus)-1].OfferPrice),
 			Vendor: map[string]interface{}{
 				"vendorId":     product.VendorID.String(),
 				"name":         product.VendorFullName,
@@ -526,4 +533,17 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	default:
 		return &ProductResponse{}, nil
 	}
+}
+
+func calculateRatingPoint(reviews []database.Review) float64 {
+	if len(reviews) == 0 {
+		return 0
+	}
+	var totalPoint float64
+	totalPoint = 0
+	for _, review := range reviews {
+		rating := review.Rating
+		totalPoint += rating
+	}
+	return totalPoint / float64(len(reviews))
 }

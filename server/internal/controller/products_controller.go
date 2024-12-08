@@ -66,7 +66,6 @@ func (pc *ProductController) ViewFullDetailOfProduct(c echo.Context) error {
 	return response.SuccessResponse(c, code, data)
 }
 
-// put ::::/products/:id
 func (pc *ProductController) UpdateProduct(c echo.Context) error {
 	id := c.Param("id")
 	var req validator.UpdateProductRequest

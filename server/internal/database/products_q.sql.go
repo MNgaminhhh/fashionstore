@@ -307,9 +307,10 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 }
 
 const viewFullDetailOfProduct = `-- name: ViewFullDetailOfProduct :one
-SELECT p.id, p.name, p.long_description, p.images, p.vendor_id,
+SELECT p.id, p.name, p.long_description, p.images, p.vendor_id, p.short_description,
        v.store_name, v.full_name AS vendor_full_name, v.phone_number, v.description AS vendor_description,
        v.address AS vendor_address, v.banner AS vendor_banner, v.email,
+       c.name AS category_name,
        JSON_AGG(DISTINCT pv.name) AS variants,
 
        JSON_AGG(
@@ -321,9 +322,11 @@ FROM products p
 INNER JOIN product_variants pv ON pv.product_id = p.id
 INNER JOIN variant_options vo ON vo.product_variant_id = pv.id
 INNER JOIN vendors v ON p.vendor_id = v.id
+INNER JOIN categories c ON p.category_id = c.id
 WHERE p.slug = $1
-GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id,
-v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email
+GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id, p.short_description,
+v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email,
+c.name
 `
 
 type ViewFullDetailOfProductRow struct {
@@ -332,6 +335,7 @@ type ViewFullDetailOfProductRow struct {
 	LongDescription   sql.NullString
 	Images            json.RawMessage
 	VendorID          uuid.UUID
+	ShortDescription  sql.NullString
 	StoreName         string
 	VendorFullName    string
 	PhoneNumber       string
@@ -339,6 +343,7 @@ type ViewFullDetailOfProductRow struct {
 	VendorAddress     string
 	VendorBanner      string
 	Email             string
+	CategoryName      string
 	Variants          json.RawMessage
 	Options           json.RawMessage
 }
@@ -352,6 +357,7 @@ func (q *Queries) ViewFullDetailOfProduct(ctx context.Context, slug string) (Vie
 		&i.LongDescription,
 		&i.Images,
 		&i.VendorID,
+		&i.ShortDescription,
 		&i.StoreName,
 		&i.VendorFullName,
 		&i.PhoneNumber,
@@ -359,6 +365,7 @@ func (q *Queries) ViewFullDetailOfProduct(ctx context.Context, slug string) (Vie
 		&i.VendorAddress,
 		&i.VendorBanner,
 		&i.Email,
+		&i.CategoryName,
 		&i.Variants,
 		&i.Options,
 	)
