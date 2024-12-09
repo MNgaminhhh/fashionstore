@@ -17,16 +17,16 @@ type Props = {
   title: string;
   slug: string;
   price: number;
-  imgUrl: string;
+  imgUrl: string[];
   rating?: number;
-  discount?: number;
+  discount?: any;
   id: string | number;
   hideRating?: boolean;
   hoverEffect?: boolean;
   showProductSize?: boolean;
 };
 
-export default function ProductCard1({
+export default function CardProduct1({
   id,
   slug,
   title,
@@ -75,15 +75,11 @@ export default function ProductCard1({
     <StyledCard hoverEffect={hoverEffect}>
       <ImageWrapper>
         <DiscountChip discount={discount} />
-        <HoverActions
-          isFavorite={isFavorite}
-          toggleView={toggleDialog}
-          toggleFavorite={toggleFavorite}
-        />
+        <HoverActions toggleView={toggleDialog} />
         <Link href={`/product/${slug}`}>
           <BaseImage
             priority
-            src={imgUrl}
+            src={imgUrl.length > 0 ? imgUrl[0] : "/placeholder.png"}
             width={500}
             height={500}
             alt={title}
@@ -105,7 +101,7 @@ export default function ProductCard1({
             </Span>
           ) : null}
 
-          <ProductPrice discount={discount} price={price} />
+          <ProductPrice discount={discount} price={Number(price)} />
         </Box>
 
         <QuantityButtons

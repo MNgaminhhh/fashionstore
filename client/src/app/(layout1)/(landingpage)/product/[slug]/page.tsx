@@ -31,10 +31,11 @@ export default async function ProductDetails({ params }) {
     const infoPro = get(product, "data", {});
 
     //get related product
-    const cateName = infoPro.cate_name || "";
+    const cateName = infoPro.category_name || "";
     const filters = { cate_name: cateName };
     const reProduct = await Products.getAllProduct(10, 1, filters);
-    const infoReProduct = get(reProduct, "data.data", {});
+    const infoReProduct = get(reProduct, "data.data.products", {});
+    //get review
 
     return (
       <ProductDetailsView product={infoPro} relatedProducts={infoReProduct} />

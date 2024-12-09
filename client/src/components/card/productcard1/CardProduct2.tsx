@@ -17,7 +17,6 @@ import ProductViewDialog from "../productsdialog/ProductViewDialog";
 type Props = { product: any };
 
 export default function CardProduct2({ product }: Props) {
-  console.log(product);
   if (!product) return null;
 
   const {
@@ -102,10 +101,12 @@ export default function CardProduct2({ product }: Props) {
           </H4>
 
           <FlexCenterRow gap={1} mb={2}>
-            <Rating name="read-only" value={0} readOnly sx={{ fontSize: 14 }} />
-            {/* <Small fontWeight={600} color="grey.500">
-      ({reviews.length})
-    </Small> */}
+            <Rating
+              name="read-only"
+              value={product.review_point}
+              readOnly
+              sx={{ fontSize: 14 }}
+            />
           </FlexCenterRow>
 
           <Box mt="auto">
@@ -115,7 +116,7 @@ export default function CardProduct2({ product }: Props) {
               variant="outlined"
               onClick={handleAddToCart}
             >
-              Thêm vào giỏ
+              Xem Chi Tiết
             </Button>
           </Box>
         </Box>

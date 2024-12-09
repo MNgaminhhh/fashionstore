@@ -7,7 +7,7 @@ type Props = { price: number; discountPrice: number };
 
 export default function ProductDiscount({ discountPrice, price }: Props) {
   return (
-    <FlexBox alignItems="center" gap={1} mt={0.5}>
+    <Box display="flex" alignItems="center" gap={1} mt={0.5}>
       <H2 fontWeight={600} color="primary.main">
         {formatCurrency(discountPrice)}
       </H2>
@@ -17,6 +17,6 @@ export default function ProductDiscount({ discountPrice, price }: Props) {
           {formatCurrency(price)}
         </Box>
       ) : null}
-    </FlexBox>
+    </Box>
   );
 }

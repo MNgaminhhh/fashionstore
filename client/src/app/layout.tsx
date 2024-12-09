@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import ThemeProvider from "../theme/ThemeProvider";
 import CartProvider from "../context/CartContext";
 import Categories from "../services/Categories";
-import {get} from "lodash";
+import { get } from "lodash";
 
 export const inter = Open_Sans({ subsets: ["latin"] });
 
@@ -25,19 +25,22 @@ export default async function RootLayout({
   const sessionToken = cookieStore.get("access_cookie");
 
   const listCate = await Categories.getFullCate();
-  const categories = get(listCate, 'data', [])
+  const categories = get(listCate, "data", []);
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <CartProvider>
-          <ThemeProvider>
-            <AppProvider initialToken={sessionToken?.value} initialCategories={categories}>
+        <ThemeProvider>
+          <AppProvider
+            initialToken={sessionToken?.value}
+            initialCategories={categories}
+          >
+            <CartProvider>
               <Toaster />
               {children}
-            </AppProvider>
-          </ThemeProvider>
-        </CartProvider>
+            </CartProvider>
+          </AppProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

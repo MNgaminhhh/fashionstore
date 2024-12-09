@@ -6,6 +6,7 @@ import { FlexCenterRow } from "../../../../components/flexbox";
 import BrandsModel from "../../../../models/Brands.model";
 import { H3 } from "../../../../components/Typography";
 import { data } from "./data";
+import Link from "next/link";
 
 type Props = { brands?: BrandsModel[] };
 
@@ -34,23 +35,29 @@ export default function BrandsFeatured({ brands = [] }: Props) {
       >
         <Slider slidesToShow={6} arrows={true} responsive={responsive} autoplay>
           {loopedBrands.map((brand, index) => (
-            <FlexCenterRow
-              key={`${brand.id}-${index}`}
-              height={150}
-              width="100%"
-              sx={{
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 2,
-                transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                  boxShadow: 3,
-                },
-              }}
-            >
-              <MTImage alt={`Thương hiệu ${brand.id}`} src={brand.image} fill />
-            </FlexCenterRow>
+            <Link href={`/vendor/${brand.store_id}`}>
+              <FlexCenterRow
+                key={`${brand.id}-${index}`}
+                height={150}
+                width="100%"
+                sx={{
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: 2,
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                    boxShadow: 3,
+                  },
+                }}
+              >
+                <MTImage
+                  alt={`Thương hiệu ${brand.id}`}
+                  src={brand.image}
+                  fill
+                />
+              </FlexCenterRow>
+            </Link>
           ))}
         </Slider>
       </Box>

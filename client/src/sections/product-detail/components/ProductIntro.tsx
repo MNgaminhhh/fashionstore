@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
@@ -9,163 +9,273 @@ import Rating from "@mui/material/Rating";
 import Button from "@mui/material/Button";
 import Add from "@mui/icons-material/Add";
 import Remove from "@mui/icons-material/Remove";
+import Tooltip from "@mui/material/Tooltip";
 import useCart from "../../../hooks/useCart";
 import ProductModel from "../../../models/Product.model";
-import { FlexBox, FlexCenterRow } from "../../../components/flexbox";
-import BaseImage from "../../../components/BaseImage";
-import { H1, H2, H3, H6 } from "../../../components/Typography";
+import { H1, H2 } from "../../../components/Typography";
 import ProductDiscount from "../../../components/card/ProductDiscount";
 import { formatCurrency } from "../../../utils/lib";
+import { Typography } from "@mui/material";
+import ImageWithHoverZoom from "./ImageWithHoverZoom";
+import { notifySuccess } from "../../../utils/ToastNotification";
 
 type Props = { product: ProductModel };
-export default function ProductIntro({ product }: Props) {
-  const { id, lowest_price, highest_price, name, images, slug } = product || {};
 
-  const { state, dispatch } = useCart();
+export default function ProductIntro({ product }: Props) {
+  const {
+    id,
+    lowest_price,
+    highest_price,
+    name,
+    images,
+    short_description,
+    variants,
+    options,
+    skus,
+    review_point,
+    vendor,
+  } = product || {};
+
+  const { state, addItemToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectVariants, setSelectVariants] = useState({
-    option: "option 1",
-    type: "type 1",
+  const [selectedVariants, setSelectedVariants] = useState<{
+    [key: string]: string;
+  }>({});
+  const [availableSkus, setAvailableSkus] = useState<ProductModel["skus"]>([]);
+  const [currentSku, setCurrentSku] = useState<ProductModel["skus"][0] | null>(
+    null
+  );
+  const [cartQty, setCartQty] = useState(1);
+  const variantOptions: { [key: string]: string[] } = {};
+
+  variants?.forEach((variant) => {
+    variantOptions[variant] = options
+      .filter((option) => Object.keys(option)[0] === variant)
+      .map((option) => Object.values(option)[0]);
   });
 
-  const handleChangeVariant = (variantName: string, value: string) => () => {
-    setSelectVariants((state) => ({
-      ...state,
-      [variantName.toLowerCase()]: value,
+  useEffect(() => {
+    if (!variants || variants.length === 0) {
+      setAvailableSkus(skus);
+      setCurrentSku(skus[0] || null);
+      return;
+    }
+
+    const filteredSkus = skus.filter((sku) => {
+      return variants.every((variant) => {
+        if (!selectedVariants[variant]) return true;
+        return sku.variant_options[variant] === selectedVariants[variant];
+      });
+    });
+
+    setAvailableSkus(filteredSkus);
+
+    if (filteredSkus.length === 1) {
+      setCurrentSku(filteredSkus[0]);
+    } else {
+      setCurrentSku(null);
+    }
+  }, [selectedVariants, skus, variants]);
+
+  const handleVariantSelect = (variant: string, option: string) => () => {
+    setSelectedVariants((prev) => ({
+      ...prev,
+      [variant]: prev[variant] === option ? "" : option,
     }));
   };
 
-  const cartItem = state.cart.find((item) => item.id === id);
-
   const handleImageClick = (ind: number) => () => setSelectedImage(ind);
+  console.log(state);
+  const handleAddToCart = () => {
+    if (!currentSku) {
+      return;
+    }
+    addItemToCart(currentSku.id, cartQty);
+  };
 
-  const handleCartAmountChange = (amount: number) => () => {
-    dispatch({
-      type: "CHANGE_CART_AMOUNT",
-      payload: {
-        lowest_price,
-        highest_price,
-        qty: amount,
-        name: name,
-        imgUrl: images,
-        id,
-        slug,
-      },
-    });
+  const handleCartAmountChange = (newQty: number) => {
+    if (newQty <= 0 || !currentSku || newQty > currentSku.in_stock) return;
+    setCartQty(newQty);
   };
 
   return (
-    <Box width="90%" alignItems="center">
-      <Grid container spacing={3} justifyContent="space-around">
-        <Grid item md={5} xs={12} alignItems="center">
-          <FlexBox
-            borderRadius={3}
-            overflow="hidden"
-            justifyContent="center"
-            mb={3}
-            height={500}
-          >
-            <BaseImage
-              alt={name}
-              width={300}
-              height={300}
-              loading="eager"
-              src={product.images[selectedImage]}
-              objectFit="cover"
-            />
-          </FlexBox>
-
-          <FlexBox overflow="auto">
-            {images.map((url, ind) => (
-              <FlexCenterRow
-                key={ind}
-                width={64}
-                height={64}
-                minWidth={64}
-                bgcolor="white"
-                border="1px solid"
-                borderRadius="10px"
-                ml={ind === 0 ? "auto" : 0}
-                style={{ cursor: "pointer" }}
-                onClick={handleImageClick(ind)}
-                mr={ind === images.length - 1 ? "auto" : "10px"}
-                borderColor={
-                  selectedImage === ind ? "primary.main" : "grey.400"
-                }
-              >
-                <Avatar
-                  alt="product"
-                  src={url}
-                  variant="square"
-                  sx={{ height: 40 }}
-                />
-              </FlexCenterRow>
-            ))}
-          </FlexBox>
+    <Box mx="auto" p={2}>
+      <Grid container spacing={4}>
+        <Grid item md={5} xs={12}>
+          <ImageWithHoverZoom
+            src={images[selectedImage]}
+            alt={name}
+            width={550}
+            height={550}
+          />
+          {images.length > 1 && (
+            <Box display="flex" overflow="auto" sx={{ mt: 1 }}>
+              {images.map((url, ind) => (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  key={ind}
+                  width={64}
+                  height={64}
+                  minWidth={64}
+                  bgcolor="white"
+                  border="1px solid"
+                  borderRadius="10px"
+                  ml={ind === 0 ? "auto" : 0}
+                  style={{ cursor: "pointer" }}
+                  onClick={handleImageClick(ind)}
+                  mr={ind === images.length - 1 ? "auto" : "10px"}
+                  borderColor={
+                    selectedImage === ind ? "primary.main" : "grey.400"
+                  }
+                >
+                  <Avatar
+                    alt="product"
+                    src={url}
+                    variant="square"
+                    sx={{ height: 40 }}
+                  />
+                </Box>
+              ))}
+            </Box>
+          )}
         </Grid>
 
         <Grid item md={6} xs={12}>
-          <H1 mb={1}>{name}</H1>
+          <H1 mb={2}>{name}</H1>
+          <Box
+            mb={2}
+            color="textSecondary"
+            dangerouslySetInnerHTML={{ __html: short_description }}
+          />
 
-          <Box display="flex" mb={1}>
-            <div>{`Tên cửa hàng: `}</div>
-            <H6>{` ${product.vendor.store_name}`}</H6>
+          <Box display="flex" alignItems="center" mb={2}>
+            <Rating value={review_point} precision={0.5} readOnly />
           </Box>
 
-          <Box display="flex" gap={1} mb={2}>
-            <Box lineHeight="1">Rated:</Box>
-            <Rating color="warn" value={4} readOnly />
-            <H6 lineHeight="1">(50)</H6>
-          </Box>
+          {variants?.map((variant) => (
+            <Box key={variant} mb={2}>
+              <Typography variant="subtitle1" fontWeight={500} mb={1}>
+                {variant}:
+              </Typography>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {variantOptions[variant].map((option) => (
+                  <Tooltip key={option} title={option}>
+                    <Chip
+                      label={option}
+                      clickable
+                      color={
+                        selectedVariants[variant] === option
+                          ? "primary"
+                          : "default"
+                      }
+                      onClick={handleVariantSelect(variant, option)}
+                      variant={
+                        selectedVariants[variant] === option
+                          ? "filled"
+                          : "outlined"
+                      }
+                      disabled={
+                        !availableSkus.some(
+                          (sku) =>
+                            sku.variant_options[variant] === option &&
+                            Object.keys(selectedVariants).every(
+                              (selVariant) =>
+                                !selectedVariants[selVariant] ||
+                                sku.variant_options[selVariant] ===
+                                  selectedVariants[selVariant]
+                            )
+                        )
+                      }
+                    />
+                  </Tooltip>
+                ))}
+              </Box>
+            </Box>
+          ))}
 
-          <Box pt={1} mb={3}>
-            {lowest_price != highest_price ? (
+          <Box mb={2}>
+            {currentSku && currentSku.offer_price < currentSku.price ? (
               <ProductDiscount
-                price={Number(highest_price)}
-                discountPrice={Number(lowest_price)}
-              ></ProductDiscount>
+                price={Number(currentSku.price)}
+                discountPrice={Number(currentSku.offer_price)}
+              />
             ) : (
-              <H2 color="primary.main" mb={0.5} lineHeight="1">
-                {formatCurrency(Number(lowest_price))}
+              <H2 color="primary.main" fontWeight={600}>
+                {formatCurrency(Number(currentSku?.price || highest_price))}
               </H2>
             )}
           </Box>
 
-          {!cartItem?.qty ? (
+          <Box display="flex" alignItems="center" mb={2}>
             <Button
+              size="small"
               color="primary"
-              variant="contained"
-              onClick={handleCartAmountChange(1)}
-              sx={{ mb: 4.5, px: "1.75rem", height: 40 }}
+              variant="outlined"
+              onClick={() => handleCartAmountChange(cartQty - 1)}
+              disabled={cartQty <= 1}
             >
-              Thêm vào giỏ
+              <Remove />
             </Button>
-          ) : (
-            <FlexBox alignItems="center" mb={4.5}>
-              <Button
-                size="small"
-                sx={{ p: 1 }}
-                color="primary"
-                variant="outlined"
-                onClick={handleCartAmountChange(cartItem?.qty - 1)}
-              >
-                <Remove fontSize="small" />
-              </Button>
 
-              <H3 fontWeight="600" mx={2.5}>
-                {cartItem?.qty.toString().padStart(2, "0")}
-              </H3>
+            <Typography variant="h6" mx={2}>
+              {cartQty}
+            </Typography>
 
-              <Button
-                size="small"
-                sx={{ p: 1 }}
-                color="primary"
-                variant="outlined"
-                onClick={handleCartAmountChange(cartItem?.qty + 1)}
-              >
-                <Add fontSize="small" />
-              </Button>
-            </FlexBox>
+            <Button
+              size="small"
+              color="primary"
+              variant="outlined"
+              onClick={() => handleCartAmountChange(cartQty + 1)}
+              disabled={cartQty >= currentSku?.in_stock}
+            >
+              <Add />
+            </Button>
+          </Box>
+          <Box mt={2}>
+            {currentSku ? (
+              currentSku.in_stock > 0 ? (
+                <Typography variant="body1" color="success.main">
+                  Còn hàng ({currentSku.in_stock} sản phẩm)
+                </Typography>
+              ) : (
+                <Typography variant="body1" color="error.main">
+                  Hết hàng
+                </Typography>
+              )
+            ) : (
+              <Typography variant="body1" color="error.main">
+                Vui lòng chọn các tùy chọn để xem tình trạng hàng
+              </Typography>
+            )}
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={!currentSku || currentSku.in_stock <= 0}
+            onClick={handleAddToCart}
+            fullWidth
+            sx={{ height: 48, fontSize: "16px" }}
+          >
+            Thêm vào giỏ
+          </Button>
+          {variants && variants.length > 0 && (
+            <Box mt={2}>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {variants.map((variant) => (
+                  <Chip
+                    key={variant}
+                    label={`${variant}: ${
+                      selectedVariants[variant] || "Chưa chọn"
+                    }`}
+                    color={selectedVariants[variant] ? "primary" : "default"}
+                    variant={selectedVariants[variant] ? "filled" : "outlined"}
+                  />
+                ))}
+              </Box>
+            </Box>
           )}
         </Grid>
       </Grid>

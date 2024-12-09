@@ -6,17 +6,14 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import DialogContent from "@mui/material/DialogContent";
-import Add from "@mui/icons-material/Add";
 import Close from "@mui/icons-material/Close";
-import Remove from "@mui/icons-material/Remove";
-import { H1, H2, H3, H6, Paragraph } from "../../Typography";
+import { H2, H6, Paragraph } from "../../Typography";
 import SliderShow from "../../slider/SliderShow";
 import MTImage from "../../MTImage";
 import { FlexBox } from "../../flexbox";
 import { formatCurrency } from "../../../utils/lib";
-import useCart from "../../../hooks/useCart";
 import ProductDiscount from "../ProductDiscount";
-import ProductModel from "../../../models/Product.model";
+import { useRouter } from "next/navigation";
 
 interface Props {
   product: any;
@@ -26,25 +23,10 @@ interface Props {
 
 export default function ProductViewDialog(props: Props) {
   const { product, openDialog, handleCloseDialog } = props;
-
-  const { state, dispatch } = useCart();
-  const cartItem = state.cart.find((item) => item.id === product.id);
-
-  const handleCartAmountChange = (amount: number) => () => {
-    if (amount < 1) return;
-
-    dispatch({
-      type: "CHANGE_CART_AMOUNT",
-      payload: {
-        ...product,
-        qty: amount,
-        name: product.name,
-        imgUrl: product.images[0],
-        price: product.lowest_price,
-      },
-    });
+  const router = useRouter();
+  const handleView = () => {
+    router.push(`/product/${product.slug}`);
   };
-
   return (
     <Dialog
       open={openDialog}
@@ -121,39 +103,15 @@ export default function ProductViewDialog(props: Props) {
             />
 
             <Divider sx={{ mb: 2 }} />
-            {!cartItem?.qty ? (
-              <Button
-                size="large"
-                color="dark"
-                variant="contained"
-                onClick={handleCartAmountChange(1)}
-                sx={{ height: 45, borderRadius: 2 }}
-              >
-                Xem chi tiết
-              </Button>
-            ) : (
-              <FlexBox alignItems="center">
-                <Button
-                  size="small"
-                  color="dark"
-                  variant="outlined"
-                  sx={{ p: ".6rem", height: 45 }}
-                  onClick={handleCartAmountChange(cartItem.qty - 1)}
-                >
-                  <Remove fontSize="small" />
-                </Button>
-
-                <Button
-                  size="small"
-                  color="dark"
-                  variant="outlined"
-                  sx={{ p: ".6rem", height: 45 }}
-                  onClick={handleCartAmountChange(cartItem.qty + 1)}
-                >
-                  <Add fontSize="small" />
-                </Button>
-              </FlexBox>
-            )}
+            <Button
+              size="large"
+              color="dark"
+              variant="contained"
+              onClick={handleView}
+              sx={{ height: 45, borderRadius: 2 }}
+            >
+              Xem chi tiết
+            </Button>
           </Grid>
         </Grid>
         <IconButton

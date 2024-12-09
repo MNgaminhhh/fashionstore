@@ -23,14 +23,13 @@ export default function Navbar({
         <InnerContainer sx={{ justifyContent: "center" }}>
           <NavigationList />
           <Profile />
+          {!sessionToken ? <LoginRegisterButton /> : <Profile />}
         </InnerContainer>
       ) : (
         <InnerContainer>
-          <FlexBox gap={3}>
-            <Categories />
-            <NavigationList />
-          </FlexBox>
-          {!sessionToken ? <LoginRegisterButton /> : <Profile />}
+          <Categories />
+          <NavigationList />
+          {!sessionToken ? <LoginRegisterButton /> : null}
         </InnerContainer>
       )}
     </NavBarWrapper>

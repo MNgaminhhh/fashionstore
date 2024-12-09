@@ -186,6 +186,12 @@ const navbarNavigation = [
   {
     megaMenu: false,
     megaMenuWithSub: false,
+    title: "Tất Cả Sản Phẩm",
+    url: "/product",
+  },
+  {
+    megaMenu: false,
+    megaMenuWithSub: false,
     title: "Các Cửa Hàng",
     url: "public/vendor",
   },

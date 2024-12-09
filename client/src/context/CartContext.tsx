@@ -1,89 +1,137 @@
 "use client";
+import {
+  createContext,
+  PropsWithChildren,
+  useMemo,
+  useReducer,
+  useEffect,
+  useState,
+} from "react";
+import Cart from "../services/Cart";
+import { useAppContext } from "./AppContext";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { notifySuccess } from "../utils/ToastNotification";
 
-import { createContext, PropsWithChildren, useMemo, useReducer } from "react";
-
-type InitialState = { cart: CartItem[] };
-
-export type CartItem = {
-    qty: number;
-    name: string;
-    slug: string;
-    price: number;
-    imgUrl?: string;
-    id: string | number;
+type CartItem = {
+  id: string;
+  sku_id: string;
+  quantity: number;
+  price: number;
+  offer_price: number;
+  total_price: number;
+  total_offer_price: number;
+  product_image: string[];
+  banner: string;
 };
 
-type CartActionType = {
-    type: "CHANGE_CART_AMOUNT";
-    payload: CartItem;
-};
+type CartActionType =
+  | { type: "SET_CART"; payload: CartItem[] }
+  | { type: "ADD_ITEM"; payload: CartItem }
+  | { type: "REMOVE_ITEM"; payload: string };
 
-const INITIAL_CART = [
-    {
-        qty: 1,
-        price: 210,
-        slug: "silver-high-neck-sweater",
-        name: "Silver High Neck Sweater",
-        id: "6e8f151b-277b-4465-97b6-547f6a72e5c9",
-        imgUrl: "/assets/images/products/Fashion/Clothes/1.SilverHighNeckSweater.png"
-    },
-    {
-        qty: 1,
-        price: 110,
-        slug: "yellow-casual-sweater",
-        name: "Yellow Casual Sweater",
-        id: "76d14d65-21d0-4b41-8ee1-eef4c2232793",
-        imgUrl: "/assets/images/products/Fashion/Clothes/21.YellowCasualSweater.png"
-    },
-    {
-        qty: 1,
-        price: 140,
-        slug: "denim-blue-jeans",
-        name: "Denim Blue Jeans",
-        id: "0fffb188-98d8-47f7-8189-254f06cad488",
-        imgUrl: "/assets/images/products/Fashion/Clothes/4.DenimBlueJeans.png"
-    }
-];
+const INITIAL_STATE = { cart: [] as CartItem[] };
 
-const INITIAL_STATE = { cart: INITIAL_CART };
 interface ContextProps {
-    state: InitialState;
-    dispatch: (args: CartActionType) => void;
+  state: { cart: CartItem[] };
+  dispatch: (action: CartActionType) => void;
 }
 
 export const CartContext = createContext<ContextProps>({} as ContextProps);
 
-const reducer = (state: InitialState, action: CartActionType) => {
-    switch (action.type) {
-        case "CHANGE_CART_AMOUNT":
-            let cartList = state.cart;
-            let cartItem = action.payload;
-            let exist = cartList.find((item) => item.id === cartItem.id);
-
-            if (cartItem.qty < 1) {
-                const filteredCart = cartList.filter((item) => item.id !== cartItem.id);
-                return { ...state, cart: filteredCart };
-            }
-            if (exist) {
-                const newCart = cartList.map((item) =>
-                    item.id === cartItem.id ? { ...item, qty: cartItem.qty } : item
-                );
-
-                return { ...state, cart: newCart };
-            }
-
-            return { ...state, cart: [...cartList, cartItem] };
-
-        default: {
-            return state;
-        }
-    }
+const reducer = (state: { cart: CartItem[] }, action: CartActionType) => {
+  switch (action.type) {
+    case "SET_CART":
+      return { ...state, cart: action.payload };
+    case "ADD_ITEM":
+      return { ...state, cart: [...state.cart, action.payload] };
+    case "REMOVE_ITEM":
+      return {
+        ...state,
+        cart: state.cart.filter((item) => item.id !== action.payload),
+      };
+    default:
+      return state;
+  }
 };
 
-export default function CartProvider({ children }: PropsWithChildren) {
-    const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+const CartProvider = ({ children }: PropsWithChildren) => {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [loading, setLoading] = useState(true);
+  const { sessionToken } = useAppContext();
 
-    const contextValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await Cart.getAllCart(sessionToken);
+        if (response?.success || response?.data?.success) {
+          dispatch({ type: "SET_CART", payload: response.data });
+        }
+      } catch (error) {
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCart();
+  }, []);
 
-    return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
-}
+  const addItemToCart = async (sku_id: string, quantity: number) => {
+    try {
+      const data = {
+        sku_id,
+        quantity,
+      };
+      const response = await Cart.create(data, sessionToken);
+      if (response?.success || response?.data?.success) {
+        const res = await Cart.getAllCart(sessionToken);
+        if (res?.success || res?.data?.success) {
+          dispatch({ type: "SET_CART", payload: res.data });
+        }
+        notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
+      }
+    } catch (error) {}
+  };
+
+  const removeItemFromCart = async (itemId: string) => {
+    try {
+      const response = await Cart.delete(itemId, sessionToken);
+      if (response?.success || response?.data?.success) {
+        const res = await Cart.getAllCart(sessionToken);
+        if (res?.success || res?.data?.success) {
+          dispatch({ type: "SET_CART", payload: res.data });
+        }
+        notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
+      }
+    } catch (error) {}
+  };
+
+  const contextValue = useMemo(
+    () => ({
+      state,
+      dispatch,
+      addItemToCart,
+      removeItemFromCart,
+    }),
+    [state]
+  );
+
+  if (loading)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress size={50} color="primary" />
+        <Typography variant="h6" ml={2}>
+          Đang tải...
+        </Typography>
+      </Box>
+    );
+
+  return (
+    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
+  );
+};
+
+export default CartProvider;
