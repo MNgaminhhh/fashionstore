@@ -65,6 +65,8 @@ SELECT
     s.in_stock,
     s.status,
     (s.price*(100-s.offer)/100) AS offer_price,
+    s.offer_start_date,
+    s.offer_end_date,
     jsonb_object_agg(
         COALESCE(pv.name, ''),
         COALESCE(vo.name, '')
@@ -75,7 +77,7 @@ FROM skus s
          LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.product_id = $1
-GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, s.status
+GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, s.status, s.offer_start_date, s.offer_end_date
 ORDER BY s.price ASC
 `
 
@@ -89,6 +91,8 @@ type GetAllSkuByProductIdRow struct {
 	InStock        sql.NullInt16
 	Status         SkuStatus
 	OfferPrice     int32
+	OfferStartDate sql.NullTime
+	OfferEndDate   sql.NullTime
 	VariantOptions json.RawMessage
 }
 
@@ -111,6 +115,8 @@ func (q *Queries) GetAllSkuByProductId(ctx context.Context, productID uuid.UUID)
 			&i.InStock,
 			&i.Status,
 			&i.OfferPrice,
+			&i.OfferStartDate,
+			&i.OfferEndDate,
 			&i.VariantOptions,
 		); err != nil {
 			return nil, err

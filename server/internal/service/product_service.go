@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"log"
+	"slices"
+	"time"
 )
 
 type ProductResponse struct {
@@ -41,12 +43,13 @@ type ProductResponse struct {
 	Vendor           map[string]interface{}   `json:"vendor,omitempty"`
 	Skus             []map[string]interface{} `json:"skus,omitempty"`
 	Reviews          []map[string]interface{} `json:"reviews,omitempty"`
+	ShowFlashSale    *bool                    `json:"show,omitempty"`
 }
 
 type ProductWithSkus struct {
 	Product *database.ViewFullDetailOfProductRow
 	Skus    []database.GetAllSkuByProductIdRow
-	Reviews []database.Review
+	Reviews []database.GetAllReviewsByProductIdRow
 }
 
 type IProductService interface {
@@ -57,6 +60,7 @@ type IProductService interface {
 	DeleteProductByID(id string) int
 	ListProducts(filter *validator.FilterProductRequest) (int, map[string]interface{})
 	GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{})
+	GetAllProductFlashSale(filter validator.FilterProductRequest) (int, map[string]interface{})
 }
 
 type ProductService struct {
@@ -72,16 +76,7 @@ func (ps *ProductService) AddProduct(customParam validator.AddProductRequest, ve
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return response.ErrCodeConflict
-			case "foreign_key_violation":
-				return response.ErrCodeForeignKey
-			case "check_violation":
-				return response.ErrCodeValidate
-			default:
-				return response.ErrCodeDatabase
-			}
+			return pg_error.GetMessageError(pqErr)
 		}
 		return response.ErrCodeInternal
 	}
@@ -112,17 +107,18 @@ func (ps *ProductService) ViewFullDetailOfProduct(slug string) (int, *ProductRes
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			pg_error.GetMessageError(pqErr)
+			return pg_error.GetMessageError(pqErr), nil
 		}
-		return response.ErrCodeInternal, nil
+		return response.ErrCodeNoContent, nil
 	}
 	skusRepo := repository.NewSkusRepository()
 	skus, findSkusErr := skusRepo.GetAllSkusByProductId(product.ID)
 	if findSkusErr != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			pg_error.GetMessageError(pqErr)
+			return pg_error.GetMessageError(pqErr), nil
 		}
+		log.Println(err)
 		return response.ErrCodeInternal, nil
 	}
 	reviewsRepo := repository.NewReviewsRepository()
@@ -343,8 +339,9 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		ratingPoint := calculateRatingPoint(reviews)
 		resData.RatingPoint = ratingPoint
 		if skus != nil && len(skus) > 0 {
-			resData.LowestPrice = int(skus[0].OfferPrice)
-			resData.HighestPrice = int(skus[len(skus)-1].OfferPrice)
+			lowestPrice, highestPrice := getLowestHighestPrice(skus)
+			resData.LowestPrice = lowestPrice
+			resData.HighestPrice = highestPrice
 			if filter.LowPrice != nil && filter.HighPrice != nil {
 				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
 					continue
@@ -361,6 +358,23 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	}
 
 	return response.SuccessCode, results
+}
+
+func getLowestHighestPrice(skus []database.GetAllSkuByProductIdRow) (int, int) {
+	var lowest, highest int
+	var priceArr []int
+	for _, sku := range skus {
+		offerStartDate := sku.OfferStartDate.Time
+		offerEndDate := sku.OfferEndDate.Time
+		if time.Now().Before(offerStartDate) || time.Now().After(offerEndDate) {
+			priceArr = append(priceArr, int(sku.Price))
+		} else {
+			priceArr = append(priceArr, int(sku.OfferPrice))
+		}
+	}
+	lowest = slices.Min(priceArr)
+	highest = slices.Max(priceArr)
+	return lowest, highest
 }
 
 func (ps *ProductService) GetAllProductOfVendor(filter *validator.FilterProductRequest) (int, map[string]interface{}) {
@@ -452,6 +466,62 @@ func mapListProductsRowToResponse(row *database.ListProductsRow) (*ProductRespon
 	}, nil
 }
 
+func (ps *ProductService) GetAllProductFlashSale(filter validator.FilterProductRequest) (int, map[string]interface{}) {
+	skusRepo := repository.NewSkusRepository()
+	reviewsRepo := repository.NewReviewsRepository()
+	flashSaleProducts, err := ps.productRepo.GetAllProductsFlashSale(filter.Show)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	page := 1
+	limit := len(flashSaleProducts)
+	totalResults := len(flashSaleProducts)
+	if filter.Limit != nil {
+		limit = *filter.Limit
+	}
+	if filter.Page != nil {
+		page = *filter.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(flashSaleProducts, page, limit)
+	var responseData []ProductResponse
+	for _, product := range pagination {
+		resData, _ := mapProductToResponseData(&product)
+		skus, getSkusErr := skusRepo.GetAllSkusByProductId(resData.ID)
+		if getSkusErr != nil {
+			log.Println(getSkusErr)
+			return response.ErrCodeInternal, nil
+		}
+		reviews, _ := reviewsRepo.GetAllReviewsByProductId(product.ProductID)
+		ratingPoint := calculateRatingPoint(reviews)
+		resData.RatingPoint = ratingPoint
+		if skus != nil && len(skus) > 0 {
+			lowestPrice, highestPrice := getLowestHighestPrice(skus)
+			resData.LowestPrice = lowestPrice
+			resData.HighestPrice = highestPrice
+			if filter.LowPrice != nil && filter.HighPrice != nil {
+				if resData.LowestPrice <= *filter.LowPrice || resData.HighestPrice >= *filter.HighPrice {
+					continue
+				}
+			}
+			responseData = append(responseData, *resData)
+		}
+	}
+
+	results := map[string]interface{}{
+		"products":      responseData,
+		"total_pages":   totalPages,
+		"total_results": totalResults,
+		"page":          page,
+		"limit":         limit,
+	}
+	return response.SuccessCode, results
+}
+
 func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	switch p := any(data).(type) {
 	case *database.Product:
@@ -475,6 +545,30 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			Status:           string(p.Status.ProductStatus),
 			IsApproved:       p.IsApproved.Bool,
 		}, nil
+	case *database.GetFlashSaleProductNowRow:
+		var images []string
+		err := json.Unmarshal(p.Images, &images)
+		if err != nil {
+			return nil, err
+		}
+		return &ProductResponse{
+			ID:              p.ProductID,
+			Name:            p.Name,
+			Slug:            p.Slug,
+			Images:          images,
+			VendorID:        p.VendorID.String(),
+			CategoryID:      p.CategoryID.String(),
+			SubCategoryID:   p.SubCategoryID.UUID.String(),
+			ChildCategoryID: p.ChildCategoryID.UUID.String(),
+			ProductType:     p.ProductType.String,
+			Status:          string(p.Status.ProductStatus),
+			IsApproved:      false,
+			StoreName:       p.StoreName,
+			CategoryName:    p.CategoryName,
+			SubCateName:     p.SubCategoryName.String,
+			ChildCateName:   p.ChildCategoryName.String,
+			ShowFlashSale:   &p.Show.Bool,
+		}, nil
 	case *ProductWithSkus:
 		product := p.Product
 		skus := p.Skus
@@ -486,26 +580,34 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		}
 		var skusRes []map[string]interface{}
 		for _, sku := range skus {
-			skusRes = append(skusRes, map[string]interface{}{
+			mapData := map[string]interface{}{
 				"id":              sku.ID,
 				"sku":             sku.Sku,
 				"price":           sku.Price,
-				"offer":           sku.Offer.Int32,
 				"in_stock":        sku.InStock.Int16,
-				"offer_price":     sku.OfferPrice,
 				"variant_options": sku.VariantOptions,
-			})
+			}
+			if time.Now().After(sku.OfferStartDate.Time) && time.Now().Before(sku.OfferEndDate.Time) {
+				mapData["offer_price"] = sku.OfferPrice
+				mapData["offer"] = sku.Offer.Int32
+			}
+			skusRes = append(skusRes, mapData)
 		}
 		var reviewsRes []map[string]interface{}
 		for _, review := range reviews {
 			reviewsRes = append(reviewsRes, map[string]interface{}{
-				"id":      review.ID,
-				"sku_id":  review.SkuID,
-				"user_id": review.UserID,
-				"comment": review.Comment,
-				"rating":  review.Rating,
+				"id":         review.ID,
+				"sku_id":     review.SkuID,
+				"user_id":    review.UserID,
+				"user_name":  review.FullName,
+				"avt":        review.Avt,
+				"created_at": review.CreatedAt.Time.Format("02-01-2006 15:04"),
+				"updated_at": review.UpdatedAt.Time.Format("02-01-2006 15:04"),
+				"comment":    review.Comment,
+				"rating":     review.Rating,
 			})
 		}
+		lowest, highest := getLowestHighestPrice(skus)
 		return &ProductResponse{
 			ID:               product.ID,
 			Name:             product.Name,
@@ -515,8 +617,8 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			CategoryName:     product.CategoryName,
 			Variants:         product.Variants,
 			Options:          product.Options,
-			LowestPrice:      int(skus[0].OfferPrice),
-			HighestPrice:     int(skus[len(skus)-1].OfferPrice),
+			LowestPrice:      lowest,
+			HighestPrice:     highest,
 			Vendor: map[string]interface{}{
 				"vendorId":     product.VendorID.String(),
 				"name":         product.VendorFullName,
@@ -535,7 +637,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 	}
 }
 
-func calculateRatingPoint(reviews []database.Review) float64 {
+func calculateRatingPoint(reviews []database.GetAllReviewsByProductIdRow) float64 {
 	if len(reviews) == 0 {
 		return 0
 	}

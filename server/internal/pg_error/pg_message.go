@@ -24,7 +24,7 @@ func GetMessageError(pqError *pq.Error) int {
 		if name == "unique_coupon_code" {
 			return response.ErrCodeCouponIsAlreadyExist
 		}
-		if name == "reviews_sku_id_user_id_key" {
+		if name == "reviews_sku_id_user_id_order_id_key" {
 			return response.ErrCodeAlreadyReviewed
 		}
 		if name == "shipping_rules_min_order_cost_key" {

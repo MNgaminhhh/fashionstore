@@ -116,3 +116,35 @@ WHERE p.slug = $1
 GROUP BY p.id, p.name, p.long_description, p.images, p.vendor_id, p.short_description,
 v.store_name, v.full_name, v.phone_number, v.description, v.address, v.banner, v.email,
 c.name;
+
+
+-- name: GetFlashSaleProductNow :many
+SELECT f.*,
+       p.id,
+       p.name,
+       p.slug,
+       p.images,
+       p.vendor_id,
+       p.category_id,
+       p.sub_category_id,
+       p.child_category_id,
+       p.short_description,
+       p.long_description,
+       p.product_type,
+       p.status,
+       p.is_approved,
+       p.created_at,
+       p.updated_at,
+       v.store_name,
+       c.name AS category_name,
+       sc.name AS sub_category_name,
+       cc.name AS child_category_name
+FROM flash_sales_items f
+    INNER JOIN flash_sales fl ON f.flash_sales_id = fl.id
+    INNER JOIN products p ON f.product_id = p.id
+    INNER JOIN vendors v ON p.vendor_id = v.id
+    INNER JOIN categories c ON p.category_id = c.id
+    LEFT JOIN sub_categories sc ON sc.id = p.sub_category_id
+    LEFT JOIN child_categories cc ON cc.id = p.child_category_id
+WHERE fl.start_date <= CURRENT_TIMESTAMP AND fl.end_date >= CURRENT_TIMESTAMP
+    AND (show = $1 OR $1 IS NULL);

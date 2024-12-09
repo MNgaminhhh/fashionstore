@@ -43,4 +43,5 @@ type FilterProductRequest struct {
 	ChildCateName *string `query:"child_cate_name"`
 	IsApproved    *bool   `query:"is_approved"`
 	VendorId      *string
+	Show          *bool `query:"show"`
 }

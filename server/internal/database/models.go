@@ -662,6 +662,7 @@ type Review struct {
 	ID        uuid.UUID
 	SkuID     uuid.UUID
 	UserID    uuid.UUID
+	OrderID   uuid.UUID
 	Rating    float64
 	Comment   json.RawMessage
 	CreatedAt sql.NullTime
@@ -696,8 +697,11 @@ type SkusOrderBill struct {
 	SkuID      uuid.UUID
 	Quantity   int32
 	OrderID    uuid.UUID
+	VendorID   uuid.UUID
+	IsPrepared sql.NullBool
 	Price      int64
 	OfferPrice int64
+	UpdatedAt  sql.NullTime
 }
 
 type SkusVariantOption struct {

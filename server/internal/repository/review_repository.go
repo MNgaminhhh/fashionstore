@@ -10,7 +10,7 @@ import (
 
 type IReviewsRepository interface {
 	CreateReview(userId uuid.UUID, customParam validator.CreateReviewValidator) error
-	GetAllReviewsByProductId(productId uuid.UUID) ([]database.Review, error)
+	GetAllReviewsByProductId(productId uuid.UUID) ([]database.GetAllReviewsByProductIdRow, error)
 	GetReviewById(id uuid.UUID) (*database.Review, error)
 	UpdateReview(review *database.Review) error
 	DeleteReview(id uuid.UUID, userId uuid.UUID) error
@@ -22,11 +22,13 @@ type ReviewsRepository struct {
 
 func (r ReviewsRepository) CreateReview(userId uuid.UUID, customParam validator.CreateReviewValidator) error {
 	skuId, _ := uuid.Parse(customParam.SkuId)
+	orderId, _ := uuid.Parse(customParam.OrderId)
 	comments := customParam.Comment
 	commentJSON, _ := json.Marshal(comments)
 	param := database.CreateReviewParams{
 		UserID:  userId,
 		SkuID:   skuId,
+		OrderID: orderId,
 		Rating:  customParam.Rating,
 		Comment: commentJSON,
 	}
@@ -34,7 +36,7 @@ func (r ReviewsRepository) CreateReview(userId uuid.UUID, customParam validator.
 	return err
 }
 
-func (r ReviewsRepository) GetAllReviewsByProductId(productId uuid.UUID) ([]database.Review, error) {
+func (r ReviewsRepository) GetAllReviewsByProductId(productId uuid.UUID) ([]database.GetAllReviewsByProductIdRow, error) {
 	results, err := r.sqlc.GetAllReviewsByProductId(ctx, productId)
 	if err != nil {
 		return nil, err

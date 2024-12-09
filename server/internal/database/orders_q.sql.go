@@ -54,13 +54,14 @@ func (q *Queries) CreateOrderBill(ctx context.Context, arg CreateOrderBillParams
 }
 
 const createOrderBillSku = `-- name: CreateOrderBillSku :exec
-INSERT INTO skus_order_bills (sku_id, order_id, quantity, price, offer_price)
-VALUES ($1, $2, $3,$4, $5)
+INSERT INTO skus_order_bills (sku_id, order_id, vendor_id, quantity, price, offer_price)
+VALUES ($1, $2, $3,$4, $5, $6)
 `
 
 type CreateOrderBillSkuParams struct {
 	SkuID      uuid.UUID
 	OrderID    uuid.UUID
+	VendorID   uuid.UUID
 	Quantity   int32
 	Price      int64
 	OfferPrice int64
@@ -70,6 +71,7 @@ func (q *Queries) CreateOrderBillSku(ctx context.Context, arg CreateOrderBillSku
 	_, err := q.db.ExecContext(ctx, createOrderBillSku,
 		arg.SkuID,
 		arg.OrderID,
+		arg.VendorID,
 		arg.Quantity,
 		arg.Price,
 		arg.OfferPrice,
@@ -84,5 +86,128 @@ WHERE id = $1
 
 func (q *Queries) DeleteOrderBill(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteOrderBill, id)
+	return err
+}
+
+const getAllOrderBillsOfVendor = `-- name: GetAllOrderBillsOfVendor :many
+SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
+FROM skus_order_bills
+WHERE vendor_id = $1
+  AND (is_prepared = $2 OR $2 IS NULL)
+ORDER BY updated_at
+`
+
+type GetAllOrderBillsOfVendorParams struct {
+	VendorID   uuid.UUID
+	IsPrepared sql.NullBool
+}
+
+func (q *Queries) GetAllOrderBillsOfVendor(ctx context.Context, arg GetAllOrderBillsOfVendorParams) ([]SkusOrderBill, error) {
+	rows, err := q.db.QueryContext(ctx, getAllOrderBillsOfVendor, arg.VendorID, arg.IsPrepared)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SkusOrderBill
+	for rows.Next() {
+		var i SkusOrderBill
+		if err := rows.Scan(
+			&i.SkuID,
+			&i.Quantity,
+			&i.OrderID,
+			&i.VendorID,
+			&i.IsPrepared,
+			&i.Price,
+			&i.OfferPrice,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllSkusByOrderId = `-- name: GetAllSkusByOrderId :many
+SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
+FROM skus_order_bills
+WHERE order_id = $1 AND
+      (is_prepared = $2 OR $2 IS NULl)
+ORDER BY updated_at
+`
+
+type GetAllSkusByOrderIdParams struct {
+	OrderID    uuid.UUID
+	IsPrepared sql.NullBool
+}
+
+func (q *Queries) GetAllSkusByOrderId(ctx context.Context, arg GetAllSkusByOrderIdParams) ([]SkusOrderBill, error) {
+	rows, err := q.db.QueryContext(ctx, getAllSkusByOrderId, arg.OrderID, arg.IsPrepared)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SkusOrderBill
+	for rows.Next() {
+		var i SkusOrderBill
+		if err := rows.Scan(
+			&i.SkuID,
+			&i.Quantity,
+			&i.OrderID,
+			&i.VendorID,
+			&i.IsPrepared,
+			&i.Price,
+			&i.OfferPrice,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateOrderBillsOfVendor = `-- name: UpdateOrderBillsOfVendor :exec
+UPDATE skus_order_bills
+SET is_prepared = $1
+WHERE vendor_id = $2 AND order_id = $3
+`
+
+type UpdateOrderBillsOfVendorParams struct {
+	IsPrepared sql.NullBool
+	VendorID   uuid.UUID
+	OrderID    uuid.UUID
+}
+
+func (q *Queries) UpdateOrderBillsOfVendor(ctx context.Context, arg UpdateOrderBillsOfVendorParams) error {
+	_, err := q.db.ExecContext(ctx, updateOrderBillsOfVendor, arg.IsPrepared, arg.VendorID, arg.OrderID)
+	return err
+}
+
+const updateStatusOrderBill = `-- name: UpdateStatusOrderBill :exec
+UPDATE order_bills
+SET order_status = $1
+WHERE id = $2
+`
+
+type UpdateStatusOrderBillParams struct {
+	OrderStatus NullOrderStatus
+	ID          uuid.UUID
+}
+
+func (q *Queries) UpdateStatusOrderBill(ctx context.Context, arg UpdateStatusOrderBillParams) error {
+	_, err := q.db.ExecContext(ctx, updateStatusOrderBill, arg.OrderStatus, arg.ID)
 	return err
 }
