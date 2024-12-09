@@ -232,6 +232,48 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 	return string(ns.OrderStatus), nil
 }
 
+type PayingMethod string
+
+const (
+	PayingMethodCOD    PayingMethod = "COD"
+	PayingMethodQRCODE PayingMethod = "QR_CODE"
+)
+
+func (e *PayingMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PayingMethod(s)
+	case string:
+		*e = PayingMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PayingMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPayingMethod struct {
+	PayingMethod PayingMethod
+	Valid        bool // Valid is true if PayingMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPayingMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PayingMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PayingMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPayingMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PayingMethod), nil
+}
+
 type ProductStatus string
 
 const (
@@ -627,7 +669,9 @@ type OrderBill struct {
 	ProductDiscount  sql.NullInt64
 	ShippingDiscount sql.NullInt64
 	TotalBill        int64
+	PayingMethod     NullPayingMethod
 	OrderStatus      NullOrderStatus
+	CreatedAt        sql.NullTime
 	UpdatedAt        sql.NullTime
 }
 
