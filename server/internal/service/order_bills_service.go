@@ -10,42 +10,122 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"github.com/payOSHQ/payos-lib-golang"
 	"log"
 	"strconv"
 	"time"
 )
 
 type SkuOrderBillItem struct {
-	SkuId      uuid.UUID `json:"sku_id"`
-	VendorId   uuid.UUID `json:"vendor_id"`
-	Quantity   int       `json:"quantity"`
-	Price      int       `json:"price"`
-	OfferPrice int       `json:"offer_price"`
-	IsPrepared bool      `json:"is_prepared"`
-	UpdatedAt  string    `json:"updated_at"`
+	SkuId        uuid.UUID       `json:"sku_id"`
+	VendorId     uuid.UUID       `json:"vendor_id"`
+	StoreName    string          `json:"store_name"`
+	Banner       string          `json:"banner"`
+	ProductName  string          `json:"product_name"`
+	ProductImage json.RawMessage `json:"product_image"`
+	Quantity     int             `json:"quantity"`
+	Price        int             `json:"price"`
+	OfferPrice   int             `json:"offer_price"`
+	IsPrepared   bool            `json:"is_prepared"`
+	UpdatedAt    string          `json:"updated_at"`
+}
+
+type ReceiverInfo struct {
+	Name        string `json:"receiver_name"`
+	PhoneNumber string `json:"phone_number"`
+	Address     string `json:"address"`
+	Email       string `json:"email"`
 }
 
 type OrderBillResponse struct {
-	ID           string `json:"id,omitempty"`
-	OrderStatus  string `json:"order_status,omitempty"`
-	TotalBill    int    `json:"total_bill,omitempty"`
-	PayingMethod string `json:"paying_method,omitempty"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	ID               string       `json:"id,omitempty"`
+	OrderStatus      string       `json:"order_status,omitempty"`
+	ProductTotal     int          `json:"product_total"`
+	ShippingFee      int          `json:"shipping_fee"`
+	TotalBill        int          `json:"total_bill,omitempty"`
+	DiscountShipping int          `json:"discount_shipping,omitempty"`
+	DiscountProduct  int          `json:"discount_product,omitempty"`
+	Receiver         ReceiverInfo `json:"receiver,omitempty"`
+	PayingMethod     string       `json:"paying_method,omitempty"`
+	CreatedAt        string       `json:"created_at,omitempty"`
+	UpdatedAt        string       `json:"updated_at,omitempty"`
 }
 
 type IOrderBillsService interface {
-	CreateBill(userId string, customParam validator.CreateBillValidator) int
+	CreateBill(userId string, customParam validator.CreateBillValidator) (int, *payos.CheckoutResponseDataType)
 	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
+	GetOrderBillById(orderId string) (int, map[string]interface{})
 	UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int
 	UpdateOrderBillOfAdmin(orderId string, status string) int
+	CallBackFunction(orderCode int64) int
+	DeleteOrderBillByOrderCode(orderCode string) int
 }
 
 type OrderBillsService struct {
 	orderBillRepo repository.IOrderBillsRepository
+}
+
+func (o OrderBillsService) DeleteOrderBillByOrderCode(orderCode string) int {
+	orderCodeStr := fmt.Sprintf(orderCode)
+	err := o.orderBillRepo.DeleteOrderBillByOrderCode(orderCodeStr)
+	log.Println(orderCodeStr)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (o OrderBillsService) GetOrderBillById(orderId string) (int, map[string]interface{}) {
+	orderUUID, _ := uuid.Parse(orderId)
+	orderBill, err := o.orderBillRepo.GetOrderBillById(orderUUID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeNoContent, nil
+	}
+	result, code := o.getFullDetailOfOrder(orderBill)
+	if code != response.SuccessCode {
+		return code, nil
+	}
+	return response.SuccessCode, result
+}
+
+func (o OrderBillsService) getFullDetailOfOrder(bill *database.GetOrderBillByIdRow) (map[string]interface{}, int) {
+	skusRepo := repository.NewSkusRepository()
+	skus, err := o.orderBillRepo.GetAllSkuOfOrderBill(bill.ID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return nil, pg_error.GetMessageError(pqErr)
+		}
+		return nil, response.ErrCodeDatabase
+	}
+	orderBill := mapOrderBillToResponseData(bill)
+	var skusResponse []SkuOrderBillItem
+	for _, sku := range skus {
+		skuResponse := mapSkuOrderBillToResponseData(&sku)
+		productInfo, _ := skusRepo.GetSkuById(sku.SkuID)
+		skuResponse.ProductName = productInfo.ProductName
+		skuResponse.StoreName = productInfo.StoreName
+		skuResponse.Banner = productInfo.Banner
+		skuResponse.ProductImage = productInfo.Images
+		skusResponse = append(skusResponse, *skuResponse)
+	}
+	result := map[string]interface{}{
+		"orderBill": orderBill,
+		"skus":      skusResponse,
+	}
+	return result, response.SuccessCode
 }
 
 func (o OrderBillsService) UpdateOrderBillOfAdmin(orderId string, status string) int {
@@ -190,7 +270,7 @@ func (o OrderBillsService) GetAllOrderBillsOfVendor(vendorId string, filterParam
 	return response.SuccessCode, resData
 }
 
-func (o OrderBillsService) CreateBill(userId string, customParam validator.CreateBillValidator) int {
+func (o OrderBillsService) CreateBill(userId string, customParam validator.CreateBillValidator) (int, *payos.CheckoutResponseDataType) {
 	couponRepo := repository.NewCouponRepository()
 	userUUID, _ := uuid.Parse(userId)
 	deliveryInfoId, _ := uuid.Parse(customParam.DeliveryInfo)
@@ -198,7 +278,7 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 	var shippingCouponId *uuid.UUID
 	var productCouponId *uuid.UUID
 	if !isValid {
-		return response.ErrCodeInvalidSku
+		return response.ErrCodeInvalidSku, nil
 	}
 	shippingFee := 0
 	totalSkusPrice := 0
@@ -206,7 +286,7 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		shippingFeeEachShop, err := getShippingFee(value)
 		if err != nil {
 			log.Println(err)
-			return response.ErrCodeInternal
+			return response.ErrCodeInternal, nil
 		}
 		totalSkusPrice += value
 		shippingFee += shippingFeeEachShop
@@ -230,14 +310,14 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		shippingCoupon, findErr := couponRepo.GetCouponById(*shippingCouponId)
 		if findErr != nil {
 			log.Println(findErr)
-			return response.ErrCodeNoContent
+			return response.ErrCodeNoContent, nil
 		}
 		if shippingCoupon.Type != database.DiscountTypeShippingPercentage && shippingCoupon.Type != database.DiscountTypeShippingFixed {
-			return response.ErrCodeInvalidCouponType
+			return response.ErrCodeInvalidCouponType, nil
 		}
 		shippingDiscount, code := getDiscountCoupon(totalSkusPrice, *shippingCoupon, userUUID, shippingFee)
 		if code != response.SuccessCode {
-			return code
+			return code, nil
 		}
 		orderBill.ShippingDiscount = sql.NullInt64{
 			Int64: int64(shippingDiscount),
@@ -250,14 +330,14 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		productCoupon, findErr := couponRepo.GetCouponById(*productCouponId)
 		if findErr != nil {
 			log.Println(findErr)
-			return response.ErrCodeNoContent
+			return response.ErrCodeNoContent, nil
 		}
 		if productCoupon.Type != database.DiscountTypeFixed && productCoupon.Type != database.DiscountTypePercentage {
-			return response.ErrCodeInvalidCouponType
+			return response.ErrCodeInvalidCouponType, nil
 		}
 		productDiscount, code := getDiscountCoupon(totalSkusPrice, *productCoupon, userUUID, totalSkusPrice)
 		if code != response.SuccessCode {
-			return code
+			return code, nil
 		}
 		orderBill.ProductDiscount = sql.NullInt64{
 			Int64: int64(productDiscount),
@@ -272,13 +352,66 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		totalBill -= orderBill.ProductDiscount.Int64
 	}
 	orderBill.TotalBill = totalBill
+	var payOSItems []payos.Item
+	for _, sku := range allSkus {
+		payOSItem := payos.Item{
+			Name:     sku.ProductName,
+			Quantity: sku.Quantity,
+			Price:    sku.Price,
+		}
+		if sku.OfferPrice != 0 {
+			payOSItem.Price = sku.OfferPrice
+		}
+		payOSItems = append(payOSItems, payOSItem)
+	}
+	shippingFeeItem := payos.Item{
+		Name:     "Phí vận chuyển",
+		Quantity: 1,
+		Price:    int(orderBill.ShippingFee),
+	}
+	payOSItems = append(payOSItems, shippingFeeItem)
+	if orderBill.ShippingDiscount.Valid {
+		shippingDiscount := payos.Item{
+			Name:     "Giảm giá phí vận chuyển",
+			Quantity: 1,
+			Price:    int(-orderBill.ShippingDiscount.Int64),
+		}
+		payOSItems = append(payOSItems, shippingDiscount)
+	}
+	if orderBill.ProductDiscount.Valid {
+		productDiscount := payos.Item{
+			Name:     "Giảm giá sản phẩm",
+			Quantity: 1,
+			Price:    int(-orderBill.ProductDiscount.Int64),
+		}
+		payOSItems = append(payOSItems, productDiscount)
+	}
+	orderCode := time.Now().UnixNano() / int64(time.Millisecond)
+	var paymentLink *payos.CheckoutResponseDataType
+	if orderBill.PayingMethod.PayingMethod == database.PayingMethodQRCODE {
+		paymentService := NewPaymentService()
+		paymentLinkRequest, err := paymentService.CreatePaymentLink(orderCode, orderBill.TotalBill, payOSItems)
+		if err != nil {
+			return response.ErrCodeInternal, nil
+		}
+		paymentLink, err = payos.CreatePaymentLink(*paymentLinkRequest)
+		if err != nil {
+			log.Println(err)
+			return response.ErrCodeInternal, nil
+		}
+	}
+	orderBill.OrderCode = fmt.Sprintf("MTS%d", orderCode)
 	createOrderBillErr := o.orderBillRepo.CreateOrderBill(orderBill)
 	if createOrderBillErr != nil {
 		var pqErr *pq.Error
 		if errors.As(createOrderBillErr, &pqErr) {
-			return pg_error.GetMessageError(pqErr)
+			return pg_error.GetMessageError(pqErr), nil
 		}
-		return response.ErrCodeInternal
+		return response.ErrCodeInternal, nil
+	}
+	cartRepo := repository.NewCartRepository()
+	for _, sku := range allSkus {
+		_ = cartRepo.DeleteCartItemBySkuIdAndUserId(sku.SkuId, userUUID)
 	}
 	code := o.createSkuOrderBill(allSkus, orderBill.ID)
 	if shippingCouponId != nil {
@@ -286,7 +419,7 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		if err != nil {
 			log.Println(err)
 			_ = o.orderBillRepo.DeleteOrderBill(orderBill.ID)
-			return response.ErrCodeInternal
+			return response.ErrCodeInternal, nil
 		}
 		_ = couponRepo.UpdateCouponQuantity(*shippingCouponId)
 	}
@@ -295,15 +428,15 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		if err != nil {
 			log.Println(err)
 			_ = o.orderBillRepo.DeleteOrderBill(orderBill.ID)
-			return response.ErrCodeInternal
+			return response.ErrCodeInternal, nil
 		}
 		_ = couponRepo.UpdateCouponQuantity(*productCouponId)
 	}
 	if code != response.SuccessCode {
 		_ = o.orderBillRepo.DeleteOrderBill(orderBill.ID)
-		return code
+		return code, nil
 	}
-	return response.SuccessCode
+	return response.SuccessCode, paymentLink
 }
 
 func getDiscountCoupon(totalSkusPrice int, coupon database.GetCouponByIdRow, userId uuid.UUID, cost int) (int, int) {
@@ -370,16 +503,20 @@ func getTotalBill(skus []validator.SkuValidator) (map[string]int, []SkuOrderBill
 			return nil, nil, false
 		}
 
-		vendorId := skuFindById.VendorID.UUID.String()
+		vendorId := skuFindById.VendorID.String()
 
 		skuPrice := getPriceOfSku(*skuFindById)
 		totalSkuGroupByVendorId[vendorId] += quantity * skuPrice
 		skuOrderBillIem := SkuOrderBillItem{
-			SkuId:      skuFindById.ID,
-			Quantity:   quantity,
-			VendorId:   skuFindById.VendorID.UUID,
-			Price:      int(skuFindById.Price),
-			OfferPrice: int(skuFindById.OfferPrice),
+			SkuId:       skuFindById.ID,
+			ProductName: skuFindById.ProductName,
+			Quantity:    quantity,
+			VendorId:    skuFindById.VendorID,
+			Price:       int(skuFindById.Price),
+			OfferPrice:  0,
+		}
+		if skuPrice == int(skuFindById.OfferPrice) {
+			skuOrderBillIem.OfferPrice = skuPrice
 		}
 		allSkus = append(allSkus, skuOrderBillIem)
 	}
@@ -437,6 +574,22 @@ func (o OrderBillsService) createSkuOrderBill(skus []SkuOrderBillItem, orderBill
 	return response.SuccessCode
 }
 
+func (o OrderBillsService) CallBackFunction(orderCode int64) int {
+	orderCodeStr := fmt.Sprintf("MTS%d", orderCode)
+	if orderCodeStr == "MTS123" {
+		return response.SuccessCode
+	}
+	err := o.orderBillRepo.UpdateOrderBillStatusByOrderCode(orderCodeStr, database.OrderStatusPending)
+	if err != nil {
+		var pqErr *pq.Error
+		if !errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
 func NewOrderBillsService(orderBillRepo repository.IOrderBillsRepository) IOrderBillsService {
 	return &OrderBillsService{orderBillRepo: orderBillRepo}
 }
@@ -464,6 +617,26 @@ func mapOrderBillToResponseData[T any](data *T) *OrderBillResponse {
 			PayingMethod: string(o.PayingMethod.PayingMethod),
 			CreatedAt:    o.CreatedAt.Time.Format("02-01-2006 15:04"),
 			UpdatedAt:    o.UpdatedAt.Time.Format("02-01-2006 15:04"),
+		}
+	case *database.GetOrderBillByIdRow:
+		receiverInfo := ReceiverInfo{
+			Name:        o.ReceiverName,
+			PhoneNumber: o.PhoneNumber,
+			Address:     o.Address,
+			Email:       o.Address,
+		}
+		return &OrderBillResponse{
+			ID:               o.ID.String(),
+			OrderStatus:      string(o.OrderStatus.OrderStatus),
+			ProductTotal:     int(o.ProductTotal),
+			ShippingFee:      int(o.ShippingFee),
+			TotalBill:        int(o.TotalBill),
+			DiscountShipping: int(o.ShippingDiscount.Int64),
+			DiscountProduct:  int(o.ProductDiscount.Int64),
+			Receiver:         receiverInfo,
+			PayingMethod:     string(o.PayingMethod.PayingMethod),
+			CreatedAt:        o.CreatedAt.Time.Format("02-01-2006 15:04"),
+			UpdatedAt:        o.UpdatedAt.Time.Format("02-01-2006 15:04"),
 		}
 	default:
 		return &OrderBillResponse{}

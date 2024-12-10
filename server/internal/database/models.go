@@ -702,6 +702,11 @@ type ProductVariant struct {
 	UpdatedAt sql.NullTime
 }
 
+type RefundRequest struct {
+	ID               uuid.UUID
+	SkusOrderBillsID uuid.UUID
+}
+
 type Review struct {
 	ID        uuid.UUID
 	SkuID     uuid.UUID

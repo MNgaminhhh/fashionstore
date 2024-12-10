@@ -17,11 +17,30 @@ type IOrderBillsRepository interface {
 	CreateSkuOrderBill(skuOrderBill database.SkusOrderBill) error
 	UpdateOrderBillOfVendor(vendorId uuid.UUID, orderId uuid.UUID, isPrepared bool) error
 	UpdateOrderBillStatus(orderId uuid.UUID, status database.OrderStatus) error
+	UpdateOrderBillStatusByOrderCode(orderCode string, status database.OrderStatus) error
 	DeleteOrderBill(id uuid.UUID) error
+	DeleteOrderBillByOrderCode(orderCode string) error
 }
 
 type OrderBillsRepository struct {
 	sqlc *database.Queries
+}
+
+func (o OrderBillsRepository) UpdateOrderBillStatusByOrderCode(orderCode string, status database.OrderStatus) error {
+	param := database.UpdateStatusOrderBillByOrderCodeParams{
+		OrderStatus: database.NullOrderStatus{
+			OrderStatus: status,
+			Valid:       true,
+		},
+		OrderCode: orderCode,
+	}
+	err := o.sqlc.UpdateStatusOrderBillByOrderCode(ctx, param)
+	return err
+}
+
+func (o OrderBillsRepository) DeleteOrderBillByOrderCode(orderCode string) error {
+	err := o.sqlc.DeleteOrderBillByOrderCode(ctx, orderCode)
+	return err
 }
 
 func (o OrderBillsRepository) GetOrderBillById(orderId uuid.UUID) (*database.GetOrderBillByIdRow, error) {

@@ -257,7 +257,6 @@ func (sv *SkusService) GetSkuById(id string) (int, *SkuResponse) {
 	skuId, _ := uuid.Parse(id)
 	sku, err := sv.skusRepo.GetSkuById(skuId)
 	if err != nil {
-		log.Println(err)
 		return response.ErrCodeNoContent, nil
 	}
 	resData, _ := mapResponseData(sku)
@@ -284,7 +283,7 @@ func mapResponseData[T any](data *T) (*SkuResponse, error) {
 	case *database.GetSkuByIdRow:
 		return &SkuResponse{
 			Id:             s.ID.String(),
-			ProductName:    s.ProductName.String,
+			ProductName:    s.ProductName,
 			ProductId:      s.ProductID.String(),
 			Sku:            s.Sku,
 			Price:          int(s.Price),

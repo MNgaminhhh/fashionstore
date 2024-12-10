@@ -16,7 +16,7 @@ func (sr *SKURouter) InitSKURouter(router *echo.Group) {
 	{
 		skusRouterGroup.POST("", skuController.CreateSku, middleware.JWTMiddleware)
 		skusRouterGroup.GET("/vendors", skuController.GetAllSkusOfVendor, middleware.JWTMiddleware)
-		skusRouterGroup.GET("/:id", skuController.GetSkuById)
+		skusRouterGroup.GET("/:id", skuController.GetSkuById, middleware.JWTMiddleware)
 		skusRouterGroup.PUT("/:id", skuController.UpdateSku, middleware.JWTMiddleware)
 		skusRouterGroup.DELETE("/:id", skuController.DeleteSku, middleware.JWTMiddleware)
 	}
