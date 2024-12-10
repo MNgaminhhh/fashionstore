@@ -18,34 +18,96 @@ import (
 )
 
 type SkuOrderBillItem struct {
-	SkuId      uuid.UUID `json:"sku_id"`
-	VendorId   uuid.UUID `json:"vendor_id"`
-	Quantity   int       `json:"quantity"`
-	Price      int       `json:"price"`
-	OfferPrice int       `json:"offer_price"`
-	IsPrepared bool      `json:"is_prepared"`
-	UpdatedAt  string    `json:"updated_at"`
+	SkuId        uuid.UUID       `json:"sku_id"`
+	VendorId     uuid.UUID       `json:"vendor_id"`
+	StoreName    string          `json:"store_name"`
+	Banner       string          `json:"banner"`
+	ProductName  string          `json:"product_name"`
+	ProductImage json.RawMessage `json:"product_image"`
+	Quantity     int             `json:"quantity"`
+	Price        int             `json:"price"`
+	OfferPrice   int             `json:"offer_price"`
+	IsPrepared   bool            `json:"is_prepared"`
+	UpdatedAt    string          `json:"updated_at"`
+}
+
+type ReceiverInfo struct {
+	Name        string `json:"receiver_name"`
+	PhoneNumber string `json:"phone_number"`
+	Address     string `json:"address"`
+	Email       string `json:"email"`
 }
 
 type OrderBillResponse struct {
-	ID           string `json:"id,omitempty"`
-	OrderStatus  string `json:"order_status,omitempty"`
-	TotalBill    int    `json:"total_bill,omitempty"`
-	PayingMethod string `json:"paying_method,omitempty"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	ID               string       `json:"id,omitempty"`
+	OrderStatus      string       `json:"order_status,omitempty"`
+	ProductTotal     int          `json:"product_total"`
+	ShippingFee      int          `json:"shipping_fee"`
+	TotalBill        int          `json:"total_bill,omitempty"`
+	DiscountShipping int          `json:"discount_shipping,omitempty"`
+	DiscountProduct  int          `json:"discount_product,omitempty"`
+	Receiver         ReceiverInfo `json:"receiver,omitempty"`
+	PayingMethod     string       `json:"paying_method,omitempty"`
+	CreatedAt        string       `json:"created_at,omitempty"`
+	UpdatedAt        string       `json:"updated_at,omitempty"`
 }
 
 type IOrderBillsService interface {
 	CreateBill(userId string, customParam validator.CreateBillValidator) int
 	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
+	GetOrderBillById(orderId string) (int, map[string]interface{})
 	UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int
 	UpdateOrderBillOfAdmin(orderId string, status string) int
 }
 
 type OrderBillsService struct {
 	orderBillRepo repository.IOrderBillsRepository
+}
+
+func (o OrderBillsService) GetOrderBillById(orderId string) (int, map[string]interface{}) {
+	orderUUID, _ := uuid.Parse(orderId)
+	orderBill, err := o.orderBillRepo.GetOrderBillById(orderUUID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeNoContent, nil
+	}
+	result, code := o.getFullDetailOfOrder(orderBill)
+	if code != response.SuccessCode {
+		return code, nil
+	}
+	return response.SuccessCode, result
+}
+
+func (o OrderBillsService) getFullDetailOfOrder(bill *database.GetOrderBillByIdRow) (map[string]interface{}, int) {
+	skusRepo := repository.NewSkusRepository()
+	skus, err := o.orderBillRepo.GetAllSkuOfOrderBill(bill.ID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return nil, pg_error.GetMessageError(pqErr)
+		}
+		return nil, response.ErrCodeDatabase
+	}
+	orderBill := mapOrderBillToResponseData(bill)
+	var skusResponse []SkuOrderBillItem
+	for _, sku := range skus {
+		skuResponse := mapSkuOrderBillToResponseData(&sku)
+		productInfo, _ := skusRepo.GetSkuById(sku.SkuID)
+		skuResponse.ProductName = productInfo.ProductName
+		skuResponse.StoreName = productInfo.StoreName
+		skuResponse.Banner = productInfo.Banner
+		skuResponse.ProductImage = productInfo.Images
+		skusResponse = append(skusResponse, *skuResponse)
+	}
+	result := map[string]interface{}{
+		"orderBill": orderBill,
+		"skus":      skusResponse,
+	}
+	return result, response.SuccessCode
 }
 
 func (o OrderBillsService) UpdateOrderBillOfAdmin(orderId string, status string) int {
@@ -370,14 +432,14 @@ func getTotalBill(skus []validator.SkuValidator) (map[string]int, []SkuOrderBill
 			return nil, nil, false
 		}
 
-		vendorId := skuFindById.VendorID.UUID.String()
+		vendorId := skuFindById.VendorID.String()
 
 		skuPrice := getPriceOfSku(*skuFindById)
 		totalSkuGroupByVendorId[vendorId] += quantity * skuPrice
 		skuOrderBillIem := SkuOrderBillItem{
 			SkuId:      skuFindById.ID,
 			Quantity:   quantity,
-			VendorId:   skuFindById.VendorID.UUID,
+			VendorId:   skuFindById.VendorID,
 			Price:      int(skuFindById.Price),
 			OfferPrice: int(skuFindById.OfferPrice),
 		}
@@ -464,6 +526,26 @@ func mapOrderBillToResponseData[T any](data *T) *OrderBillResponse {
 			PayingMethod: string(o.PayingMethod.PayingMethod),
 			CreatedAt:    o.CreatedAt.Time.Format("02-01-2006 15:04"),
 			UpdatedAt:    o.UpdatedAt.Time.Format("02-01-2006 15:04"),
+		}
+	case *database.GetOrderBillByIdRow:
+		receiverInfo := ReceiverInfo{
+			Name:        o.ReceiverName,
+			PhoneNumber: o.PhoneNumber,
+			Address:     o.Address,
+			Email:       o.Address,
+		}
+		return &OrderBillResponse{
+			ID:               o.ID.String(),
+			OrderStatus:      string(o.OrderStatus.OrderStatus),
+			ProductTotal:     int(o.ProductTotal),
+			ShippingFee:      int(o.ShippingFee),
+			TotalBill:        int(o.TotalBill),
+			DiscountShipping: int(o.ShippingDiscount.Int64),
+			DiscountProduct:  int(o.ProductDiscount.Int64),
+			Receiver:         receiverInfo,
+			PayingMethod:     string(o.PayingMethod.PayingMethod),
+			CreatedAt:        o.CreatedAt.Time.Format("02-01-2006 15:04"),
+			UpdatedAt:        o.UpdatedAt.Time.Format("02-01-2006 15:04"),
 		}
 	default:
 		return &OrderBillResponse{}

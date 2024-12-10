@@ -66,7 +66,10 @@ ORDER BY s.price ASC;
 -- name: GetSkuById :one
 SELECT
     p.name AS product_name,
+    p.images,
     p.vendor_id,
+    v.store_name,
+    v.banner,
     s.*,
     (s.price*(100-s.offer)/100) AS offer_price,
     jsonb_object_agg(
@@ -74,12 +77,13 @@ SELECT
             COALESCE(vo.name, '')
     ) AS variant_options
 FROM skus s
-         LEFT JOIN products p ON p.id = s.product_id
+         INNER JOIN products p ON p.id = s.product_id
+         INNER JOIN vendors v ON v.id = p.vendor_id
          LEFT JOIN skus_variant_options so ON so.sku_id = s.id
          LEFT JOIN variant_options vo ON so.variant_option = vo.id
          LEFT JOIN product_variants pv ON vo.product_variant_id = pv.id
 WHERE s.id = $1
-GROUP BY p.name, p.vendor_id, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price,s.status;
+GROUP BY p.name, p.vendor_id, p.images, v.store_name, v.banner, s.price, s.sku, s.offer, s.in_stock, s.id, offer_price,s.status;
 
 -- name: UpdateSkuById :exec
 UPDATE skus

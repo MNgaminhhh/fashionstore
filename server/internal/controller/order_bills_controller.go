@@ -113,3 +113,12 @@ func (oc *OrderBillsController) UpdateOrderStatusByAdmin(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Cập nhật đơn hàng thành công!")
 }
+
+func (oc *OrderBillsController) GetOrderBillById(c echo.Context) error {
+	id := c.Param("id")
+	code, result := oc.orderBillService.GetOrderBillById(id)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, result)
+}
