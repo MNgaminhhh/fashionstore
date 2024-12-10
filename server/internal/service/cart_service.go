@@ -20,6 +20,7 @@ type CartItemResponseData struct {
 	Price          int             `json:"price,omitempty"`
 	OfferPrice     int             `json:"offer_price,omitempty"`
 	TotalPrice     int             `json:"total_price,omitempty"`
+	ProductName    string          `json:"product_name,omitempty"`
 	ProductImages  json.RawMessage `json:"product_image,omitempty"`
 	VariantOptions json.RawMessage `json:"variant_image,omitempty"`
 	StoreName      string          `json:"store_name,omitempty"`
@@ -116,6 +117,7 @@ func mapCartItemToResponseData(data SkuItem) *CartItemResponseData {
 		Price:          int(cartItem.Price),
 		OfferPrice:     0,
 		TotalPrice:     int(cartItem.Price) * int(cartItem.Quantity),
+		ProductName:    cartItem.Name,
 		ProductImages:  cartItem.Images,
 		VariantOptions: skuInfo.VariantOptions,
 		StoreName:      cartItem.StoreName,
