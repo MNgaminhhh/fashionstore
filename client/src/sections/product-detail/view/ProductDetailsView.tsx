@@ -11,7 +11,6 @@ interface Props {
 }
 
 export default function ProductDetailsView(props: Props) {
-  console.log(props);
   return (
     <Container className="mt-2 mb-2">
       <ProductIntro product={props.product} />

@@ -51,6 +51,23 @@ class CartServer extends Base {
   }
 
   async create(
+    data: any,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    const rs = await this.execute({
+      url: `/cart`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data: data,
+      withCredentials: withCredentials,
+    });
+    return rs;
+  }
+  async orderBill(
     data: cuCartModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true

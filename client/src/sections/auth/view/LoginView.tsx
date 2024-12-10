@@ -67,8 +67,10 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
           const token = get(response, "data.data.access_token", true);
           setSessionToken(token);
           const cartCount = await Cart.getAllCart(token);
+          console.log(cartCount);
           if (cartCount?.success || cartCount?.data?.success) {
             const cartItemCount = cartCount?.data?.length || 0;
+            console.log(cartItemCount);
             setCart(cartItemCount);
           }
 
@@ -78,7 +80,6 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
           notifyError(response.data.message);
         }
       } catch (error) {
-        console.log(error);
         notifyError("Có lỗi xảy ra trong quá trình đăng nhập!");
       }
     },

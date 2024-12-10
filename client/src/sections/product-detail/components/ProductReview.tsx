@@ -38,7 +38,6 @@ export default function ProductReview({ reviews }: Props) {
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       resetForm();
-      console.log(values);
     },
   });
 

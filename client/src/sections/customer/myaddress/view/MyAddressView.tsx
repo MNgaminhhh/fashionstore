@@ -22,7 +22,9 @@ const ITEMS_PER_PAGE = 10;
 
 export default function MyAddressView({ addressList }: Props) {
   const { sessionToken } = useAppContext();
-  const [allAddress, setAllAddress] = useState<AddressModel[]>(addressList);
+  const [allAddress, setAllAddress] = useState<AddressModel[]>(
+    addressList || []
+  );
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);

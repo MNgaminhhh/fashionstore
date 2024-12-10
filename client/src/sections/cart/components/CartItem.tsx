@@ -1,14 +1,54 @@
+// components/CartItem.tsx
+
 import React from "react";
 import {
   Card,
   CardMedia,
-  CardContent,
   Typography,
   IconButton,
   Box,
+  Checkbox,
+  Chip,
+  Grid,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import useCart from "../../../hooks/useCart";
+import { styled } from "@mui/material/styles";
+import { formatCurrency } from "../../../utils/lib";
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  display: "flex",
+  alignItems: "flex-start",
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  [theme.breakpoints.down("sm")]: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  boxShadow: theme.shadows[3],
+  borderRadius: theme.shape.borderRadius,
+}));
+
+const ImageBox = styled(Box)(({ theme }) => ({
+  position: "relative",
+  width: 100,
+  height: 100,
+  marginRight: theme.spacing(2),
+  [theme.breakpoints.down("sm")]: {
+    width: "100%",
+    height: 100,
+    marginRight: 0,
+    marginBottom: theme.spacing(2),
+  },
+  borderRadius: theme.shape.borderRadius,
+  overflow: "hidden",
+}));
+
+const ContentBox = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+}));
 
 interface CartItemProps {
   id: string;
@@ -20,6 +60,11 @@ interface CartItemProps {
   totalOfferPrice: number;
   productImages: string[];
   banner: string;
+  productName: string;
+  variantImage: Record<string, string>;
+  storeName: string;
+  selected: boolean;
+  readOnly?: boolean; // Thêm prop này
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -32,65 +77,110 @@ const CartItem: React.FC<CartItemProps> = ({
   totalOfferPrice,
   productImages,
   banner,
+  productName,
+  variantImage,
+  storeName,
+  selected,
+  readOnly = false,
 }) => {
-  const { removeFromCart, updateQuantity } = useCart();
+  const { removeItemFromCart, toggleSelectItem } = useCart();
 
   const handleRemove = () => {
-    removeFromCart(id);
+    if (!readOnly) removeItemFromCart(id);
   };
 
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuantity = parseInt(e.target.value, 10);
-    if (newQuantity > 0) {
-      updateQuantity(id, newQuantity);
-    }
+  const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!readOnly) toggleSelectItem(id);
   };
 
   return (
-    <Card sx={{ display: "flex", mb: 2 }}>
-      <CardMedia
-        component="img"
-        sx={{ width: 151 }}
-        image={productImages[0] || banner}
-        alt="Product Image"
-      />
-      <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
-        <CardContent sx={{ flex: "1 0 auto" }}>
-          {/* Replace 'Product Name' with actual product name if available */}
-          <Typography component="div" variant="h6">
-            Product Name
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            color="text.secondary"
-            component="div"
-          >
-            SKU: {skuId}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Price: ₫{offerPrice.toLocaleString()}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Quantity:
-            <input
-              type="number"
-              value={quantity}
-              min="1"
-              onChange={handleQuantityChange}
-              style={{ width: "60px", marginLeft: "10px" }}
+    <StyledCard>
+      {!readOnly && (
+        <Checkbox
+          checked={selected}
+          onChange={handleSelect}
+          color="primary"
+          sx={{ alignSelf: "start", marginRight: 2 }}
+          inputProps={{ "aria-label": `Select ${productName}` }}
+        />
+      )}
+      <ImageBox>
+        <CardMedia
+          component="img"
+          image={productImages[0] || banner}
+          alt={productName}
+          loading="lazy"
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </ImageBox>
+      <ContentBox>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          mb={1}
+        >
+          <Box>
+            <Typography component="div" variant="h6" sx={{ fontWeight: 600 }}>
+              {productName}
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ marginBottom: 1 }}>
+          <Chip
+            label={storeName}
+            color="primary"
+            size="small"
+            sx={{ marginRight: 0.5, marginBottom: 0.5 }}
+          />
+          {Object.entries(variantImage).map(([key, value]) => (
+            <Chip
+              key={key}
+              label={`${key}: ${value}`}
+              variant="outlined"
+              size="small"
+              sx={{ marginRight: 0.5, marginBottom: 0.5 }}
             />
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Total: ₫{totalOfferPrice.toLocaleString()}
-          </Typography>
-        </CardContent>
-      </Box>
-      <Box sx={{ display: "flex", alignItems: "center", pr: 2 }}>
-        <IconButton onClick={handleRemove} aria-label="delete">
-          <DeleteIcon />
-        </IconButton>
-      </Box>
-    </Card>
+          ))}
+        </Box>
+        <Grid container spacing={1}>
+          <Grid item xs={12}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>{formatCurrency(price)}</strong> x{" "}
+              <strong>{quantity}</strong> ={" "}
+              <strong>{formatCurrency(totalPrice)}</strong>
+            </Typography>
+          </Grid>
+        </Grid>
+      </ContentBox>
+      {!readOnly && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            padding: 1,
+          }}
+        >
+          <IconButton
+            onClick={handleRemove}
+            aria-label={`Remove ${productName} from cart`}
+            color="error"
+            sx={{
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "scale(1.1)",
+              },
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      )}
+    </StyledCard>
   );
 };
 

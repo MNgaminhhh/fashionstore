@@ -85,7 +85,6 @@ export default function ProductIntro({ product }: Props) {
   };
 
   const handleImageClick = (ind: number) => () => setSelectedImage(ind);
-  console.log(state);
   const handleAddToCart = () => {
     if (!currentSku) {
       return;

@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import Profile from "../../profile/Profile";
 import { useAppContext } from "../../../context/AppContext";
 import Link from "next/link";
+import useCart from "../../../hooks/useCart";
 const CustomBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
     backgroundColor: "#FF0000",
@@ -21,11 +22,17 @@ const CustomBadge = styled(Badge)(({ theme }) => ({
 
 export default function NotificationButtons() {
   const { sessionToken, cart } = useAppContext();
-  console.log(cart);
+  const { state } = useCart();
+  const cartCount =
+    typeof cart !== "undefined" && cart !== null
+      ? cart
+      : Array.isArray(state.cart)
+      ? state.cart.length
+      : 0;
   return (
     <Box display="flex" justifyContent="center" alignItems="center" gap={3}>
       <Link href="/cart" passHref>
-        <CustomBadge badgeContent={cart}>
+        <CustomBadge badgeContent={cartCount}>
           <IconButton aria-label="shopping-bag" style={{ color: "white" }}>
             <ShoppingBagIcon style={{ fontSize: "30px" }} />
           </IconButton>

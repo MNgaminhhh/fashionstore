@@ -1,5 +1,5 @@
 "use client";
-import {
+import React, {
   createContext,
   PropsWithChildren,
   useMemo,
@@ -22,18 +22,28 @@ type CartItem = {
   total_offer_price: number;
   product_image: string[];
   banner: string;
+  selected?: boolean;
+  store_name: any;
+  variant_image: any;
+  product_name: any;
 };
 
 type CartActionType =
   | { type: "SET_CART"; payload: CartItem[] }
   | { type: "ADD_ITEM"; payload: CartItem }
-  | { type: "REMOVE_ITEM"; payload: string };
+  | { type: "REMOVE_ITEM"; payload: string }
+  | { type: "TOGGLE_SELECT_ITEM"; payload: string }
+  | { type: "SELECT_ALL"; payload: boolean };
 
 const INITIAL_STATE = { cart: [] as CartItem[] };
 
 interface ContextProps {
   state: { cart: CartItem[] };
   dispatch: (action: CartActionType) => void;
+  addItemToCart: (sku_id: string, quantity: number) => Promise<void>;
+  removeItemFromCart: (itemId: string) => Promise<void>;
+  toggleSelectItem: (itemId: string) => void;
+  selectAll: (select: boolean) => void;
 }
 
 export const CartContext = createContext<ContextProps>({} as ContextProps);
@@ -49,6 +59,20 @@ const reducer = (state: { cart: CartItem[] }, action: CartActionType) => {
         ...state,
         cart: state.cart.filter((item) => item.id !== action.payload),
       };
+    case "TOGGLE_SELECT_ITEM":
+      return {
+        ...state,
+        cart: state.cart.map((item) =>
+          item.id === action.payload
+            ? { ...item, selected: !item.selected }
+            : item
+        ),
+      };
+    case "SELECT_ALL":
+      return {
+        ...state,
+        cart: state.cart.map((item) => ({ ...item, selected: action.payload })),
+      };
     default:
       return state;
   }
@@ -57,14 +81,18 @@ const reducer = (state: { cart: CartItem[] }, action: CartActionType) => {
 const CartProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [loading, setLoading] = useState(true);
-  const { sessionToken } = useAppContext();
+  const { sessionToken, setCart } = useAppContext();
 
   useEffect(() => {
     const fetchCart = async () => {
       try {
         const response = await Cart.getAllCart(sessionToken);
         if (response?.success || response?.data?.success) {
-          dispatch({ type: "SET_CART", payload: response.data });
+          const cartWithSelection = response.data.map((item: CartItem) => ({
+            ...item,
+            selected: false,
+          }));
+          dispatch({ type: "SET_CART", payload: cartWithSelection });
         }
       } catch (error) {
       } finally {
@@ -72,19 +100,21 @@ const CartProvider = ({ children }: PropsWithChildren) => {
       }
     };
     fetchCart();
-  }, []);
+  }, [sessionToken]);
 
   const addItemToCart = async (sku_id: string, quantity: number) => {
     try {
-      const data = {
-        sku_id,
-        quantity,
-      };
+      const data = { sku_id, quantity };
       const response = await Cart.create(data, sessionToken);
       if (response?.success || response?.data?.success) {
         const res = await Cart.getAllCart(sessionToken);
         if (res?.success || res?.data?.success) {
-          dispatch({ type: "SET_CART", payload: res.data });
+          const cartWithSelection = res.data.map((item: CartItem) => ({
+            ...item,
+            selected: false,
+          }));
+          dispatch({ type: "SET_CART", payload: cartWithSelection });
+          setCart(cartWithSelection.length);
         }
         notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
       }
@@ -97,11 +127,24 @@ const CartProvider = ({ children }: PropsWithChildren) => {
       if (response?.success || response?.data?.success) {
         const res = await Cart.getAllCart(sessionToken);
         if (res?.success || res?.data?.success) {
-          dispatch({ type: "SET_CART", payload: res.data });
+          const cartWithSelection = res.data.map((item: CartItem) => ({
+            ...item,
+            selected: false,
+          }));
+          dispatch({ type: "SET_CART", payload: cartWithSelection });
+          setCart(cartWithSelection.length);
         }
         notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
       }
     } catch (error) {}
+  };
+
+  const toggleSelectItem = (itemId: string) => {
+    dispatch({ type: "TOGGLE_SELECT_ITEM", payload: itemId });
+  };
+
+  const selectAll = (select: boolean) => {
+    dispatch({ type: "SELECT_ALL", payload: select });
   };
 
   const contextValue = useMemo(
@@ -110,6 +153,8 @@ const CartProvider = ({ children }: PropsWithChildren) => {
       dispatch,
       addItemToCart,
       removeItemFromCart,
+      toggleSelectItem,
+      selectAll,
     }),
     [state]
   );
