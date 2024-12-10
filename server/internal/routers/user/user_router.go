@@ -19,6 +19,7 @@ func (ur *UserRouter) InitUserRouter(router *echo.Group) {
 
 		//POST
 		authRouterGroup.POST("/login", userController.Login)
+		authRouterGroup.POST("/logout", userController.Logout)
 		authRouterGroup.POST("/register", userController.CreateNewUser)
 		authRouterGroup.POST("/forgot-password/send-email", userController.SendEmailResetPassword)
 		authRouterGroup.POST("/verify-email/send-email", userController.SendEmailActiveUser)

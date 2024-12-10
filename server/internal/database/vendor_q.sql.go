@@ -219,6 +219,43 @@ func (q *Queries) GetVendorByUUID(ctx context.Context, userID uuid.UUID) (Vendor
 	return i, err
 }
 
+const updateVendor = `-- name: UpdateVendor :exec
+UPDATE vendors
+SET full_name = $2,
+    email = $3,
+    phone_number = $4,
+    store_name = $5,
+    description = $6,
+    address = $7,
+    banner = $8
+WHERE user_id = $1
+`
+
+type UpdateVendorParams struct {
+	UserID      uuid.UUID
+	FullName    string
+	Email       string
+	PhoneNumber string
+	StoreName   string
+	Description sql.NullString
+	Address     string
+	Banner      string
+}
+
+func (q *Queries) UpdateVendor(ctx context.Context, arg UpdateVendorParams) error {
+	_, err := q.db.ExecContext(ctx, updateVendor,
+		arg.UserID,
+		arg.FullName,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.StoreName,
+		arg.Description,
+		arg.Address,
+		arg.Banner,
+	)
+	return err
+}
+
 const updateVendorStatus = `-- name: UpdateVendorStatus :exec
 UPDATE vendors
 SET status = $1, updated_by = $2

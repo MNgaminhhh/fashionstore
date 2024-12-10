@@ -24,3 +24,13 @@ type FilterVendorRequest struct {
 	Limit       int    `query:"limit"`
 	Page        int    `query:"page"`
 }
+
+type UpdateVendorRequest struct {
+	FullName    *string `json:"full_name"`
+	Email       *string `json:"email"`
+	PhoneNumber *string `json:"phone_number"`
+	StoreName   *string `json:"store_name"`
+	Banner      *string `json:"banner"`
+	Description *string `json:"description"`
+	Address     *string `json:"address"`
+}
