@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 )
 
 type OrderBillsController struct {
@@ -91,8 +92,19 @@ func (oc *OrderBillsController) GetAllOrderBillsOfAdmin(c echo.Context) error {
 	if err := c.Bind(&filterParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
 	}
-	if err := c.Validate(&filterParam); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	if filterParam.PayingMethod != nil {
+		payingMethod := []string{"COD", "QR_CODE"}
+		_, isValid := slices.BinarySearch(payingMethod, *filterParam.PayingMethod)
+		if !isValid {
+			return response.ErrorResponse(c, response.ErrCodeInvalidPayingMethod, "get fail")
+		}
+	}
+	if filterParam.OrderCode != nil {
+		orderCode := []string{"pending", "paying", "shipping", "delivered", "cancel"}
+		_, isValid := slices.BinarySearch(orderCode, *filterParam.OrderCode)
+		if !isValid {
+			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
+		}
 	}
 	code, results := oc.orderBillService.GetAllOrderBillsOfAdmin(filterParam)
 	if code != response.SuccessCode {
