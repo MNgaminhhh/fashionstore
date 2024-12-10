@@ -208,9 +208,6 @@ func (c CouponsService) CreateCoupon(customParam validator.CreateCouponValidator
 	if parseErr != nil {
 		return response.ErrCodeIncorrectDateFormat
 	}
-	if time.Now().After(startDate) {
-		return response.ErrCodeInvalidFlashSaleStartDate
-	}
 	endDate, parseErr := time.Parse("02-01-2006", customParam.EndDate)
 	if parseErr != nil {
 		return response.ErrCodeIncorrectDateFormat
@@ -336,9 +333,6 @@ func (c CouponsService) UpdateCouponById(id string, couponValidator validator.Cr
 	endDate, parseErr := time.Parse("02-01-2006", couponValidator.EndDate)
 	if parseErr != nil {
 		return response.ErrCodeIncorrectDateFormat
-	}
-	if time.Now().After(startDate) {
-		return response.ErrCodeInvalidFlashSaleStartDate
 	}
 	if endDate.Before(startDate) {
 		return response.ErrCodeInvalidEndDate
