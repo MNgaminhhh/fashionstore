@@ -18,7 +18,7 @@ INSERT INTO coupons_users (coupon_id, user_id, order_id) VALUES ($1, $2, $3)
 type CreateCouponUserParams struct {
 	CouponID uuid.UUID
 	UserID   uuid.UUID
-	OrderID  uuid.UUID
+	OrderID  uuid.NullUUID
 }
 
 func (q *Queries) CreateCouponUser(ctx context.Context, arg CreateCouponUserParams) error {

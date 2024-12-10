@@ -12,6 +12,7 @@ type IOrderBillsRepository interface {
 	GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterUpdateBillValidator) ([]database.SkusOrderBill, error)
 	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) ([]database.OrderBill, error)
 	GetAllSkuOfOrderBill(orderId uuid.UUID) ([]database.SkusOrderBill, error)
+	GetAllOrderBillsOfUser(userId uuid.UUID) ([]database.GetAllOrderBillsOfUserRow, error)
 	GetOrderBillById(orderId uuid.UUID) (*database.GetOrderBillByIdRow, error)
 	CreateOrderBill(bill database.OrderBill) error
 	CreateSkuOrderBill(skuOrderBill database.SkusOrderBill) error
@@ -24,6 +25,14 @@ type IOrderBillsRepository interface {
 
 type OrderBillsRepository struct {
 	sqlc *database.Queries
+}
+
+func (o OrderBillsRepository) GetAllOrderBillsOfUser(userId uuid.UUID) ([]database.GetAllOrderBillsOfUserRow, error) {
+	results, err := o.sqlc.GetAllOrderBillsOfUser(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return results, err
 }
 
 func (o OrderBillsRepository) UpdateOrderBillStatusByOrderCode(orderCode string, status database.OrderStatus) error {

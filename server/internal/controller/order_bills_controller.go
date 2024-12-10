@@ -173,3 +173,16 @@ func (oc *OrderBillsController) CancelPayment(c echo.Context) error {
 	}
 	return response.SuccessResponse(c, code, "Xóa đơn hàng thành công!")
 }
+
+func (oc *OrderBillsController) GetAllOrderBillsOfUser(c echo.Context) error {
+	userId := c.Get("uuid").(string)
+	var reqParam validator.FilterUpdateBillValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	code, results := oc.orderBillService.GetAllOrderBillOfUser(userId, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
+}
