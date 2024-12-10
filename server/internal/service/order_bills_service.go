@@ -27,39 +27,125 @@ type SkuOrderBillItem struct {
 	UpdatedAt  string    `json:"updated_at"`
 }
 
+type OrderBillResponse struct {
+	ID           string `json:"id,omitempty"`
+	OrderStatus  string `json:"order_status,omitempty"`
+	TotalBill    int    `json:"total_bill,omitempty"`
+	PayingMethod string `json:"paying_method,omitempty"`
+	CreatedAt    string `json:"created_at,omitempty"`
+	UpdatedAt    string `json:"updated_at,omitempty"`
+}
+
 type IOrderBillsService interface {
 	CreateBill(userId string, customParam validator.CreateBillValidator) int
-	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterBillValidator) (int, map[string]interface{})
+	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
+	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int
+	UpdateOrderBillOfAdmin(orderId string, status string) int
 }
 
 type OrderBillsService struct {
 	orderBillRepo repository.IOrderBillsRepository
 }
 
-func (o OrderBillsService) UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int {
-	//vendorUUID, _ := uuid.Parse(vendorId)
-	//orderUUID, _ := uuid.Parse(orderId)
-	//skusOrder, getErr := o.orderBillRepo.GetAllSkuOfOrderBill(orderUUID)
-	//if getErr != nil {
-	//	log.Println(getErr)
-	//	return response.ErrCodeInternal
-	//}
-	//alreadyPrepared := false
-	//
-	//err := o.orderBillRepo.UpdateOrderBillOfVendor(vendorUUID, orderUUID, isPrepared)
-	//if err != nil {
-	//	var pqErr *pq.Error
-	//	if errors.As(err, &pqErr) {
-	//		return pg_error.GetMessageError(pqErr)
-	//	}
-	//	return response.ErrCodeInternal
-	//}
-
+func (o OrderBillsService) UpdateOrderBillOfAdmin(orderId string, status string) int {
+	orderUUID, _ := uuid.Parse(orderId)
+	orderStatus := database.OrderStatus(status)
+	order, err := o.orderBillRepo.GetOrderBillById(orderUUID)
+	if err != nil {
+		return response.ErrCodeNoContent
+	}
+	if order.OrderStatus.OrderStatus == database.OrderStatusPaying {
+		if orderStatus != database.OrderStatusPending {
+			return response.ErrCodeInvalidStatus
+		}
+		if order.PayingMethod.PayingMethod == database.PayingMethodQRCODE {
+			return response.ErrCodeUserNotPaying
+		}
+	} else if order.OrderStatus.OrderStatus == database.OrderStatusShipping {
+		if orderStatus != database.OrderStatusDelivered {
+			return response.ErrCodeInvalidStatus
+		}
+	} else {
+		return response.ErrCodeInvalidStatus
+	}
+	err = o.orderBillRepo.UpdateOrderBillStatus(orderUUID, orderStatus)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
 	return response.SuccessCode
 }
 
-func (o OrderBillsService) GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterBillValidator) (int, map[string]interface{}) {
+func (o OrderBillsService) GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{}) {
+	results, err := o.orderBillRepo.GetAllOrderBillsOfAdmin(filterParam)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeNoContent, nil
+	}
+	limit := len(results)
+	page := 1
+	totalResults := len(results)
+	if filterParam.Limit != nil {
+		limit = *filterParam.Limit
+	}
+	if filterParam.Page != nil {
+		page = *filterParam.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(results, page, limit)
+	var orderBills []OrderBillResponse
+	for _, orderBill := range pagination {
+		orderBills = append(orderBills, *mapOrderBillToResponseData(&orderBill))
+	}
+	resData := map[string]interface{}{
+		"order_bills":   orderBills,
+		"total_pages":   totalPages,
+		"total_results": totalResults,
+		"limit":         limit,
+		"page":          page,
+	}
+	return response.SuccessCode, resData
+}
+
+func (o OrderBillsService) UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int {
+	vendorUUID, _ := uuid.Parse(vendorId)
+	orderUUID, _ := uuid.Parse(orderId)
+	skusOrder, getErr := o.orderBillRepo.GetAllSkuOfOrderBill(orderUUID)
+	if getErr != nil {
+		log.Println(getErr)
+		return response.ErrCodeInternal
+	}
+
+	alreadyPrepared := true
+	for _, skuOrder := range skusOrder {
+		if !skuOrder.IsPrepared.Bool && skuOrder.OrderID != orderUUID {
+			alreadyPrepared = false
+			break
+		}
+	}
+
+	err := o.orderBillRepo.UpdateOrderBillOfVendor(vendorUUID, orderUUID, isPrepared)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	if alreadyPrepared {
+		_ = o.orderBillRepo.UpdateOrderBillStatus(orderUUID, database.OrderStatusShipping)
+	}
+	return response.SuccessCode
+}
+
+func (o OrderBillsService) GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{}) {
 	vendorUUID, _ := uuid.Parse(vendorId)
 	results, err := o.orderBillRepo.GetAllOrderBillsOfVendor(vendorUUID, filterParam)
 	if err != nil {
@@ -133,6 +219,10 @@ func (o OrderBillsService) CreateBill(userId string, customParam validator.Creat
 		ShippingFee:    int64(shippingFee),
 		ProductTotal:   int64(totalSkusPrice),
 		OrderCode:      strconv.FormatInt(time.Now().UnixNano(), 10),
+		PayingMethod: database.NullPayingMethod{
+			PayingMethod: database.PayingMethod(customParam.PayingMethod),
+			Valid:        true,
+		},
 	}
 	if customParam.ShippingCoupon != nil {
 		id, _ := uuid.Parse(*customParam.ShippingCoupon)
@@ -360,5 +450,22 @@ func mapSkuOrderBillToResponseData(data *database.SkusOrderBill) *SkuOrderBillIt
 		OfferPrice: int(data.OfferPrice),
 		IsPrepared: data.IsPrepared.Bool,
 		UpdatedAt:  data.UpdatedAt.Time.Format("02-01-2006 15:04"),
+	}
+}
+
+func mapOrderBillToResponseData[T any](data *T) *OrderBillResponse {
+	log.Printf("Kiểu của data: %T\n", data)
+	switch o := any(data).(type) {
+	case *database.OrderBill:
+		return &OrderBillResponse{
+			ID:           o.ID.String(),
+			OrderStatus:  string(o.OrderStatus.OrderStatus),
+			TotalBill:    int(o.TotalBill),
+			PayingMethod: string(o.PayingMethod.PayingMethod),
+			CreatedAt:    o.CreatedAt.Time.Format("02-01-2006 15:04"),
+			UpdatedAt:    o.UpdatedAt.Time.Format("02-01-2006 15:04"),
+		}
+	default:
+		return &OrderBillResponse{}
 	}
 }

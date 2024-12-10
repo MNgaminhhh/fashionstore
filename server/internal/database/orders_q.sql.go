@@ -22,8 +22,10 @@ INSERT INTO order_bills (
     shipping_discount,
     total_bill,
     user_id,
-    delivery_info_id
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    delivery_info_id,
+    paying_method
+) VALUES ($1, $2, $3, $4, $5,
+          $6, $7, $8, $9, $10)
 `
 
 type CreateOrderBillParams struct {
@@ -36,6 +38,7 @@ type CreateOrderBillParams struct {
 	TotalBill        int64
 	UserID           uuid.UUID
 	DeliveryInfoID   uuid.UUID
+	PayingMethod     NullPayingMethod
 }
 
 func (q *Queries) CreateOrderBill(ctx context.Context, arg CreateOrderBillParams) error {
@@ -49,6 +52,7 @@ func (q *Queries) CreateOrderBill(ctx context.Context, arg CreateOrderBillParams
 		arg.TotalBill,
 		arg.UserID,
 		arg.DeliveryInfoID,
+		arg.PayingMethod,
 	)
 	return err
 }
@@ -89,12 +93,65 @@ func (q *Queries) DeleteOrderBill(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAllOrderBills = `-- name: GetAllOrderBills :many
+SELECT o.id, o.user_id, o.delivery_info_id, o.order_code, o.product_total, o.shipping_fee, o.product_discount, o.shipping_discount, o.total_bill, o.paying_method, o.order_status, o.created_at, o.updated_at
+FROM order_bills o
+WHERE (order_status = $1 OR $1 IS NULL) AND
+    (order_code = $2 OR $2 = '') AND
+    (paying_method = $3 OR $3 IS NULL)
+`
+
+type GetAllOrderBillsParams struct {
+	OrderStatus  NullOrderStatus
+	OrderCode    string
+	PayingMethod NullPayingMethod
+}
+
+func (q *Queries) GetAllOrderBills(ctx context.Context, arg GetAllOrderBillsParams) ([]OrderBill, error) {
+	rows, err := q.db.QueryContext(ctx, getAllOrderBills, arg.OrderStatus, arg.OrderCode, arg.PayingMethod)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OrderBill
+	for rows.Next() {
+		var i OrderBill
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.DeliveryInfoID,
+			&i.OrderCode,
+			&i.ProductTotal,
+			&i.ShippingFee,
+			&i.ProductDiscount,
+			&i.ShippingDiscount,
+			&i.TotalBill,
+			&i.PayingMethod,
+			&i.OrderStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllOrderBillsOfVendor = `-- name: GetAllOrderBillsOfVendor :many
-SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
-FROM skus_order_bills
-WHERE vendor_id = $1
-  AND (is_prepared = $2 OR $2 IS NULL)
-ORDER BY updated_at
+SELECT sob.sku_id, sob.quantity, sob.order_id, sob.vendor_id, sob.is_prepared, sob.price, sob.offer_price, sob.updated_at
+FROM skus_order_bills sob
+         INNER JOIN order_bills o ON o.id = sob.order_id
+WHERE sob.vendor_id = $1
+  AND (sob.is_prepared = $2 OR $2 IS NULL)
+  AND (o.order_status = 'pending')
+ORDER BY sob.updated_at DESC
 `
 
 type GetAllOrderBillsOfVendorParams struct {
@@ -138,7 +195,7 @@ const getAllSkusByOrderId = `-- name: GetAllSkusByOrderId :many
 SELECT sku_id, quantity, order_id, vendor_id, is_prepared, price, offer_price, updated_at
 FROM skus_order_bills
 WHERE order_id = $1 AND
-      (is_prepared = $2 OR $2 IS NULl)
+    (is_prepared = $2 OR $2 IS NULl)
 ORDER BY updated_at
 `
 
@@ -177,6 +234,62 @@ func (q *Queries) GetAllSkusByOrderId(ctx context.Context, arg GetAllSkusByOrder
 		return nil, err
 	}
 	return items, nil
+}
+
+const getOrderBillById = `-- name: GetOrderBillById :one
+SELECT o.id, o.user_id, o.delivery_info_id, o.order_code, o.product_total, o.shipping_fee, o.product_discount, o.shipping_discount, o.total_bill, o.paying_method, o.order_status, o.created_at, o.updated_at,
+       di.receiver_name,
+       di.phone_number,
+       di.address,
+       di.email
+FROM order_bills o
+INNER JOIN delivery_info di ON o.delivery_info_id = di.id
+WHERE o.id = $1
+`
+
+type GetOrderBillByIdRow struct {
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	DeliveryInfoID   uuid.UUID
+	OrderCode        string
+	ProductTotal     int64
+	ShippingFee      int64
+	ProductDiscount  sql.NullInt64
+	ShippingDiscount sql.NullInt64
+	TotalBill        int64
+	PayingMethod     NullPayingMethod
+	OrderStatus      NullOrderStatus
+	CreatedAt        sql.NullTime
+	UpdatedAt        sql.NullTime
+	ReceiverName     string
+	PhoneNumber      string
+	Address          string
+	Email            string
+}
+
+func (q *Queries) GetOrderBillById(ctx context.Context, id uuid.UUID) (GetOrderBillByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getOrderBillById, id)
+	var i GetOrderBillByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.DeliveryInfoID,
+		&i.OrderCode,
+		&i.ProductTotal,
+		&i.ShippingFee,
+		&i.ProductDiscount,
+		&i.ShippingDiscount,
+		&i.TotalBill,
+		&i.PayingMethod,
+		&i.OrderStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReceiverName,
+		&i.PhoneNumber,
+		&i.Address,
+		&i.Email,
+	)
+	return i, err
 }
 
 const updateOrderBillsOfVendor = `-- name: UpdateOrderBillsOfVendor :exec

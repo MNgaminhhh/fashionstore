@@ -63,6 +63,8 @@ const (
 	ErrCodeOrderBillNotEqualMinCost     = 50049
 	ErrCodeShippingFeeIsRequired        = 50050
 	ErrCodeMinOrderCostIsRequired       = 50051
+	ErrCodeInvalidStatus                = 50052
+	ErrCodeUserNotPaying                = 50053
 	ErrCodeForbidden                    = 403
 )
 
@@ -130,4 +132,6 @@ var msg = map[int]string{
 	ErrCodeOrderBillNotEqualMinCost:     "Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã giảm gía",
 	ErrCodeShippingFeeIsRequired:        "Price là bắt buộc!",
 	ErrCodeMinOrderCostIsRequired:       "MinOrderCost là bắt buộc!",
+	ErrCodeInvalidStatus:                "Trạng thái mới không phù hợp với trạng thái hiện tại!",
+	ErrCodeUserNotPaying:                "Người dùng chưa thanh toán với phương thức QR Pay!",
 }

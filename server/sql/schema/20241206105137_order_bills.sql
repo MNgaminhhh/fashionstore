@@ -8,6 +8,11 @@ CREATE TYPE order_status AS ENUM (
     'canceled'
 );
 
+CREATE TYPE paying_method AS ENUM (
+    'COD',
+    'QR_CODE'
+);
+
 CREATE TABLE order_bills(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL references users(id),
@@ -18,7 +23,9 @@ CREATE TABLE order_bills(
     product_discount BIGINT DEFAULT 0,
     shipping_discount BIGINT DEFAULT 0,
     total_bill BIGINT NOT NULL,
+    paying_method paying_method,
     order_status order_status DEFAULT 'paying',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -49,5 +56,6 @@ CREATE TRIGGER set_updated_at
 -- +goose StatementBegin
 DROP TABLE IF EXISTS skus_order_bills;
 DROP TABLE IF EXISTS order_bills;
+DROP TYPE IF EXISTS paying_method;
 DROP TYPE IF EXISTS order_status;
 -- +goose StatementEnd

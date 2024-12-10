@@ -41,7 +41,6 @@ func ErrorResponse(c echo.Context, code int, message string) error {
 
 func ValidationResponse(c echo.Context, code int, err error) error {
 	errorMessages := parseValidation(err)
-
 	return c.JSON(http.StatusBadRequest, ValidationErrorResponse{
 		Code:    http.StatusBadRequest,
 		Success: false,
@@ -66,6 +65,7 @@ func parseValidation(err error) map[string]string {
 			fieldName := e.Field()
 			tag := e.Tag()
 			param := e.Param()
+			fieldType := e.Type()
 
 			switch tag {
 			case "required":
@@ -73,9 +73,21 @@ func parseValidation(err error) map[string]string {
 			case "email":
 				errorMessages[fieldName] = "Định dạng email không hợp lệ."
 			case "min":
-				errorMessages[fieldName] = fieldName + " phải có ít nhất " + param + " ký tự."
+				if fieldType.String() == "int" || fieldType.String() == "*int" {
+					errorMessages[fieldName] = "Giá trị nhỏ nhất của " + fieldName + " là  " + param + "."
+				} else if fieldType.String() == "string" || fieldType.String() == "*string" {
+					errorMessages[fieldName] = fieldName + " phải có ít nhất " + param + " ký tự."
+				} else {
+					errorMessages[fieldName] = fieldName + " phải có ít nhất " + param + " giá trị."
+				}
 			case "max":
-				errorMessages[fieldName] = fieldName + " phải có tối đa " + param + " ký tự."
+				if fieldType.String() == "int" || fieldType.String() == "*int" {
+					errorMessages[fieldName] = "Giá trị tối đa của " + fieldName + " là  " + param + "."
+				} else if fieldType.String() == "string" || fieldType.String() == "*string" {
+					errorMessages[fieldName] = fieldName + " chỉ có tối đa " + param + " ký tự."
+				} else {
+					errorMessages[fieldName] = fieldName + " chỉ có tối đa " + param + " giá trị."
+				}
 			case "uuid":
 				errorMessages[fieldName] = fieldName + " phải là UUID hợp lệ."
 			case "oneof":

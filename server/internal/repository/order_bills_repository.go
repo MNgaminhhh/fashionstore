@@ -9,8 +9,10 @@ import (
 )
 
 type IOrderBillsRepository interface {
-	GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterBillValidator) ([]database.SkusOrderBill, error)
+	GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterUpdateBillValidator) ([]database.SkusOrderBill, error)
+	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) ([]database.OrderBill, error)
 	GetAllSkuOfOrderBill(orderId uuid.UUID) ([]database.SkusOrderBill, error)
+	GetOrderBillById(orderId uuid.UUID) (*database.GetOrderBillByIdRow, error)
 	CreateOrderBill(bill database.OrderBill) error
 	CreateSkuOrderBill(skuOrderBill database.SkusOrderBill) error
 	UpdateOrderBillOfVendor(vendorId uuid.UUID, orderId uuid.UUID, isPrepared bool) error
@@ -20,6 +22,37 @@ type IOrderBillsRepository interface {
 
 type OrderBillsRepository struct {
 	sqlc *database.Queries
+}
+
+func (o OrderBillsRepository) GetOrderBillById(orderId uuid.UUID) (*database.GetOrderBillByIdRow, error) {
+	result, err := o.sqlc.GetOrderBillById(ctx, orderId)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (o OrderBillsRepository) GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) ([]database.OrderBill, error) {
+	param := database.GetAllOrderBillsParams{
+		OrderStatus:  database.NullOrderStatus{},
+		OrderCode:    "",
+		PayingMethod: database.NullPayingMethod{},
+	}
+	if filterParam.OrderStatus != nil {
+		status := database.OrderStatus(*filterParam.OrderStatus)
+		param.OrderStatus = database.NullOrderStatus{
+			OrderStatus: status,
+			Valid:       true,
+		}
+	}
+	if filterParam.OrderCode != nil {
+		param.OrderCode = *filterParam.OrderCode
+	}
+	results, err := o.sqlc.GetAllOrderBills(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func (o OrderBillsRepository) UpdateOrderBillStatus(orderId uuid.UUID, status database.OrderStatus) error {
@@ -59,7 +92,7 @@ func (o OrderBillsRepository) UpdateOrderBillOfVendor(vendorId uuid.UUID, orderI
 	return err
 }
 
-func (o OrderBillsRepository) GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterBillValidator) ([]database.SkusOrderBill, error) {
+func (o OrderBillsRepository) GetAllOrderBillsOfVendor(vendorId uuid.UUID, filterParam validator.FilterUpdateBillValidator) ([]database.SkusOrderBill, error) {
 	param := database.GetAllOrderBillsOfVendorParams{
 		VendorID:   vendorId,
 		IsPrepared: sql.NullBool{},
@@ -88,6 +121,7 @@ func (o OrderBillsRepository) CreateOrderBill(bill database.OrderBill) error {
 		TotalBill:        bill.TotalBill,
 		UserID:           bill.UserID,
 		DeliveryInfoID:   bill.DeliveryInfoID,
+		PayingMethod:     bill.PayingMethod,
 	}
 	err := o.sqlc.CreateOrderBill(ctx, param)
 	return err

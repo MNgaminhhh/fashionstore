@@ -39,7 +39,8 @@ func (q *Queries) DeleteSkuItemInCartById(ctx context.Context, id uuid.UUID) err
 }
 
 const getAllSkuItemInCartByUserId = `-- name: GetAllSkuItemInCartByUserId :many
-SELECT c.id, c.user_id, c.sku_id, c.quantity, c.updated_at, s.price, (s.price*(100-s.offer)/100) AS offer_price, p.id AS product_id, p.images,
+SELECT c.id, c.user_id, c.sku_id, c.quantity, c.updated_at, s.price, (s.price*(100-s.offer)/100) AS offer_price, p.id AS product_id,
+       p.images, p.name, p.slug,
        v.store_name, v.banner
 FROM cart c
 INNER JOIN skus s ON c.sku_id = s.id
@@ -59,6 +60,8 @@ type GetAllSkuItemInCartByUserIdRow struct {
 	OfferPrice int32
 	ProductID  uuid.UUID
 	Images     json.RawMessage
+	Name       string
+	Slug       string
 	StoreName  string
 	Banner     string
 }
@@ -82,6 +85,8 @@ func (q *Queries) GetAllSkuItemInCartByUserId(ctx context.Context, userID uuid.U
 			&i.OfferPrice,
 			&i.ProductID,
 			&i.Images,
+			&i.Name,
+			&i.Slug,
 			&i.StoreName,
 			&i.Banner,
 		); err != nil {
