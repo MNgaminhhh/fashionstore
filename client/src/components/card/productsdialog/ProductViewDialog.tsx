@@ -10,10 +10,10 @@ import Close from "@mui/icons-material/Close";
 import { H2, H6, Paragraph } from "../../Typography";
 import SliderShow from "../../slider/SliderShow";
 import MTImage from "../../MTImage";
-import { FlexBox } from "../../flexbox";
 import { formatCurrency } from "../../../utils/lib";
 import ProductDiscount from "../ProductDiscount";
 import { useRouter } from "next/navigation";
+import { Box } from "@mui/material";
 
 interface Props {
   product: any;
@@ -82,7 +82,7 @@ export default function ProductViewDialog(props: Props) {
               </H2>
             )}
 
-            <FlexBox alignItems="center" gap={1} mt={1}>
+            <Box display="flex" alignItems="center" gap={1} mt={1}>
               {product.reviews ? (
                 <>
                   <Rating
@@ -93,14 +93,9 @@ export default function ProductViewDialog(props: Props) {
                   <H6 lineHeight="1">({product.reviews.count || 0})</H6>
                 </>
               ) : (
-                <Rating color="warning" value={0} readOnly />
+                <Rating color="warning" value={product.review_point} readOnly />
               )}
-            </FlexBox>
-
-            <Paragraph
-              my={2}
-              dangerouslySetInnerHTML={{ __html: product.long_description }}
-            />
+            </Box>
 
             <Divider sx={{ mb: 2 }} />
             <Button

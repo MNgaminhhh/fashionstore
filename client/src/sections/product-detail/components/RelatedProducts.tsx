@@ -4,8 +4,8 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import ProductModel from "../../../models/Product.model";
 import { H3 } from "../../../components/Typography";
-import CardProduct from "../../../components/card/productcard1/CardProduct";
 import { Typography } from "@mui/material";
+import CardProduct1 from "../../../components/card/productcard1/CardProduct";
 type Props = { products: ProductModel[] };
 
 export default function RelatedProducts({ products }: Props) {
@@ -25,7 +25,7 @@ export default function RelatedProducts({ products }: Props) {
                 : 0;
             return (
               <Grid item lg={3} md={4} sm={6} xs={12} key={item.id}>
-                <CardProduct
+                <CardProduct1
                   hoverEffect
                   id={item.id}
                   slug={item.slug}
@@ -34,6 +34,7 @@ export default function RelatedProducts({ products }: Props) {
                   imgUrl={item.images}
                   rating={item.review_point}
                   discount={Math.round(discount)}
+                  discountPrice={item.lowest_price}
                 />
               </Grid>
             );

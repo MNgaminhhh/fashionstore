@@ -11,6 +11,7 @@ import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../../../context/AppContext";
 import { get } from "lodash";
+import Cart from "../../../services/Cart";
 interface LoginViewProps {
   closeDialog?: () => void;
 }
@@ -23,7 +24,7 @@ interface LoginFormValues {
 export const LoginView = ({ closeDialog }: LoginViewProps) => {
   const { visible, toggleVisible } = usePasswordVisible();
   const router = useRouter();
-  const { setSessionToken } = useAppContext();
+  const { setSessionToken, setCart } = useAppContext();
   const fields = [
     {
       name: "email",
@@ -65,12 +66,19 @@ export const LoginView = ({ closeDialog }: LoginViewProps) => {
           notifySuccess("Đăng nhập thành công!");
           const token = get(response, "data.data.access_token", true);
           setSessionToken(token);
+          const cartCount = await Cart.getAllCart(token);
+          if (cartCount?.success || cartCount?.data?.success) {
+            const cartItemCount = cartCount?.data?.length || 0;
+            setCart(cartItemCount);
+          }
+
           formik.resetForm();
           router.push("/");
         } else {
           notifyError(response.data.message);
         }
       } catch (error) {
+        console.log(error);
         notifyError("Có lỗi xảy ra trong quá trình đăng nhập!");
       }
     },

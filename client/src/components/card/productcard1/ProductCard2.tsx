@@ -7,13 +7,14 @@ import BaseImage from "../../BaseImage";
 import { FlexBetween } from "../../flexbox";
 import { H6 } from "../../Typography";
 import HoverBox from "../../HoverBox";
-import ProductPrice from "../ProductPrice";
+import { ProductDiscount2 } from "../ProductDiscount";
 
 interface Props {
   off?: number;
   slug: string;
   title: string;
   price: number;
+  discountPrice: number;
   imgUrl: string;
   rating: number;
   hideReview?: boolean;
@@ -24,13 +25,12 @@ export default function ProductCard2({
   slug,
   title,
   price,
+  discountPrice,
   imgUrl,
   rating,
   off = 20,
   hideReview,
 }: Props) {
-  const [favorite, setFavorite] = useState(false);
-
   return (
     <div>
       <Link href={`/product/${slug}`}>
@@ -49,7 +49,7 @@ export default function ProductCard2({
             <Rating size="small" value={rating} color="warn" readOnly />
           ) : null}
 
-          <ProductPrice price={price} off={off} />
+          <ProductDiscount2 price={price} discountPrice={discountPrice} />
         </div>
       </FlexBetween>
     </div>

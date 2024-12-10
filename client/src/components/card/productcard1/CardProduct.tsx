@@ -10,8 +10,8 @@ import QuantityButtons from "./components/QuantityButtons";
 import DiscountChip from "../DiscountChip";
 import HoverActions from "./components/HoverActions";
 import ProductTitle from "../ProductTitle";
-import ProductPrice from "../ProductPrice";
 import useProduct from "../hooks/useProduct";
+import { ProductDiscount2 } from "../ProductDiscount";
 
 type Props = {
   title: string;
@@ -19,6 +19,7 @@ type Props = {
   price: number;
   imgUrl: string[];
   rating?: number;
+  discountPrice?: string;
   discount?: any;
   id: string | number;
   hideRating?: boolean;
@@ -37,39 +38,9 @@ export default function CardProduct1({
   hoverEffect,
   discount = 5,
   showProductSize,
+  discountPrice,
 }: Props) {
-  const {
-    isFavorite,
-    openModal,
-    cartItem,
-    toggleDialog,
-    toggleFavorite,
-    handleCartAmountChange,
-  } = useProduct(slug);
-
-  const handleIncrementQuantity = () => {
-    const product = {
-      id,
-      slug,
-      price,
-      imgUrl,
-      name: title,
-      qty: (cartItem?.qty || 0) + 1,
-    };
-    handleCartAmountChange(product);
-  };
-
-  const handleDecrementQuantity = () => {
-    const product = {
-      id,
-      slug,
-      price,
-      imgUrl,
-      name: title,
-      qty: (cartItem?.qty || 0) - 1,
-    };
-    handleCartAmountChange(product, "remove");
-  };
+  const { cartItem, toggleDialog } = useProduct(slug);
 
   return (
     <StyledCard hoverEffect={hoverEffect}>
@@ -77,13 +48,21 @@ export default function CardProduct1({
         <DiscountChip discount={discount} />
         <HoverActions toggleView={toggleDialog} />
         <Link href={`/product/${slug}`}>
-          <BaseImage
-            priority
-            src={imgUrl.length > 0 ? imgUrl[0] : "/placeholder.png"}
-            width={500}
-            height={500}
-            alt={title}
-          />
+          <Box
+            width="400px"
+            height="400px"
+            overflow="hidden"
+            position="relative"
+          >
+            <BaseImage
+              priority
+              src={imgUrl.length > 0 ? imgUrl[0] : "/placeholder.png"}
+              width={400}
+              height={400}
+              alt={title}
+              style={{ objectFit: "cover" }}
+            />
+          </Box>
         </Link>
       </ImageWrapper>
 
@@ -91,24 +70,16 @@ export default function CardProduct1({
         <Box flex="1 1 0" minWidth="0px" mr={1}>
           <ProductTitle title={title} slug={slug} />
 
-          {!hideRating ? (
-            <Rating size="small" value={rating} color="warn" readOnly />
-          ) : null}
+          <Rating size="small" value={rating} color="warn" readOnly />
 
-          {showProductSize ? (
-            <Span color="grey.600" mb={1} display="block">
-              Liter
-            </Span>
-          ) : null}
-
-          <ProductPrice discount={discount} price={Number(price)} />
+          <ProductDiscount2
+            price={price}
+            discountPrice={discountPrice}
+            nocenter
+          />
         </Box>
 
-        <QuantityButtons
-          quantity={cartItem?.qty || 0}
-          handleIncrement={handleIncrementQuantity}
-          handleDecrement={handleDecrementQuantity}
-        />
+        <QuantityButtons quantity={cartItem?.qty || 0} slug={slug} />
       </ContentWrapper>
     </StyledCard>
   );

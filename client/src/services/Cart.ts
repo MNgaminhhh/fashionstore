@@ -15,7 +15,23 @@ class CartServer extends Base {
       url: "cart",
     });
   }
+  async getCouponsCanUse(
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    let url = `/coupons/can-use`;
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
 
+    return rs.data;
+  }
   async getAllCart(
     token: string | undefined = undefined,
     withCredentials: boolean = true

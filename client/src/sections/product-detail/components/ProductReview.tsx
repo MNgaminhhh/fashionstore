@@ -95,9 +95,7 @@ export default function ProductReview({ reviews }: Props) {
           </form>
         </>
       ) : (
-        <Box sx={{ textAlign: "center", mt: 5 }}>
-          <H5 color="textSecondary">Vui lòng đăng nhập để viết đánh giá.</H5>
-        </Box>
+        <></>
       )}
     </div>
   );

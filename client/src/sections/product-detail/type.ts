@@ -1,9 +1,7 @@
 export interface ProductFilters {
-  brand: string[];
-  color: string[];
-  sales: string[];
+  productType: any;
   price: number[];
-  rating: number;
+  category: any;
 }
 
 export type ProductFilterKeys = keyof ProductFilters;

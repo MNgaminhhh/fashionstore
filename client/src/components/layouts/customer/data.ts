@@ -15,15 +15,12 @@ export interface MenuItem {
 }
 export const MENUS = [
   {
-    title: "BẢNG ĐIỀU KHIỂN",
-  },
-  {
     title: "CÀI ĐẶT TÀI KHOẢN",
     list: [
       { href: "/profile", title: "Thông tin cá nhân", Icon: Person },
       { href: "/my-address", title: "Địa chỉ của tôi", Icon: HomeIcon },
-      { href: "/profiles", title: "Thông tin cá nhâns", Icon: Person },
-      { href: "/profiles", title: "Thông tin cá nhâns", Icon: Person },
+      { href: "/cart", title: "Giỏ hàng của tôi", Icon: HomeIcon },
+      { href: "/logout", title: "Đăng xuất", Icon: Person },
     ],
   },
 ];

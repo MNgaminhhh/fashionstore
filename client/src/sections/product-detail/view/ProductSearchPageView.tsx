@@ -1,37 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Box from "@mui/material/Box";
+import { useCallback, useState } from "react";
 import Grid from "@mui/material/Grid";
-import { Theme } from "@mui/material/styles";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import Container from "@mui/material/Container";
-import IconButton from "@mui/material/IconButton";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import Apps from "@mui/icons-material/Apps";
-import ViewList from "@mui/icons-material/ViewList";
-import FilterList from "@mui/icons-material/FilterList";
 
-import { H5, Paragraph, Span } from "../../../components/Typography";
+import { Paragraph, Span } from "../../../components/Typography";
 import {
   ProductFilterKeys,
   ProductFilterValues,
   ProductFilters,
 } from "../type";
 import ProductFilterCard from "../components/ProductFilterCard";
-import { FlexBetween, FlexBox } from "../../../components/flexbox";
-import ProductsGridView from "../components/ProductsGridView";
-import ProductsService from "../../../services/Products";
 import CardProduct2 from "../../../components/card/productcard1/CardProduct2";
 import ProductModel from "../../../models/Product.model";
-
 const initialFilters: ProductFilters = {
-  rating: 0,
-  color: [],
-  brand: [],
-  sales: [],
-  price: [0, 300],
+  productType: [],
+  price: [0, 10000000],
+  category: {
+    cate_names: [],
+    sub_cate_names: [],
+    child_cate_names: [],
+  },
 };
 
 type Props = { initialProducts: any };
@@ -78,19 +67,17 @@ export default function ProductSearchPageView({ initialProducts }: Props) {
             {error && <Paragraph color="error">{error}</Paragraph>}
 
             {!loading && !error && (
-              <>
-                <Grid container spacing={3}>
-                  {initialProducts.products.length === 0 ? (
-                    <Span color="grey.600">Không tìm thấy sản phẩm</Span>
-                  ) : (
-                    initialProducts.products.map((item: ProductModel) => (
-                      <Grid item lg={4} sm={6} xs={12} key={item.id}>
-                        <CardProduct2 product={item} />
-                      </Grid>
-                    ))
-                  )}
-                </Grid>
-              </>
+              <Grid container spacing={3}>
+                {(initialProducts?.products ?? []).length === 0 ? (
+                  <Span color="grey.600">Không tìm thấy sản phẩm</Span>
+                ) : (
+                  initialProducts.products.map((item: ProductModel) => (
+                    <Grid item lg={3} sm={6} xs={12} key={item.id}>
+                      <CardProduct2 product={item} />
+                    </Grid>
+                  ))
+                )}
+              </Grid>
             )}
           </Grid>
         </Grid>

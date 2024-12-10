@@ -24,8 +24,9 @@ export default async function Section2() {
           <ProductCard2
             key={item.id}
             slug={item.slug}
+            discountPrice={item.highest_price}
             title={item.title}
-            price={item.price}
+            price={item.lowest_price}
             off={item.discount}
             rating={item.rating}
             imgUrl={item.thumbnail}

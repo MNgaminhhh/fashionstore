@@ -1,44 +1,29 @@
-import { Fragment } from "react";
 import Button from "@mui/material/Button";
-import Add from "@mui/icons-material/Add";
-import Remove from "@mui/icons-material/Remove";
-import {Paragraph} from "../../../Typography";
-import {FlexBox} from "../../../flexbox";
+import { FlexBox } from "../../../flexbox";
+import PreviewIcon from "@mui/icons-material/Preview";
+import Link from "next/link";
+
 interface Props {
-    quantity: number;
-    handleDecrement: () => void;
-    handleIncrement: () => void;
+  quantity: number;
+  slug: string;
 }
 
 export default function QuantityButtons(props: Props) {
-    const { quantity, handleDecrement, handleIncrement } = props || {};
+  const { quantity, slug } = props || {};
 
-    return (
-        <FlexBox
-            width="30px"
-            alignItems="center"
-            className="add-cart"
-            flexDirection="column-reverse"
-            justifyContent={quantity ? "space-between" : "flex-start"}>
-            <Button color="primary" variant="outlined" onClick={handleIncrement} sx={{ padding: "3px" }}>
-                <Add fontSize="small" />
-            </Button>
-
-            {quantity ? (
-                <Fragment>
-                    <Paragraph color="text.primary" fontWeight="600">
-                        {quantity}
-                    </Paragraph>
-
-                    <Button
-                        color="primary"
-                        variant="outlined"
-                        onClick={handleDecrement}
-                        sx={{ padding: "3px" }}>
-                        <Remove fontSize="small" />
-                    </Button>
-                </Fragment>
-            ) : null}
-        </FlexBox>
-    );
+  return (
+    <FlexBox
+      width="30px"
+      alignItems="center"
+      className="add-cart"
+      flexDirection="column-reverse"
+      justifyContent={quantity ? "space-between" : "flex-start"}
+    >
+      <Link href={`/product/${slug}`} style={{ textDecoration: "none" }}>
+        <Button color="primary" variant="outlined" sx={{ padding: "3px" }}>
+          <PreviewIcon fontSize="small" />
+        </Button>
+      </Link>
+    </FlexBox>
+  );
 }
