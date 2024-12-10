@@ -20,5 +20,7 @@ func (or *OrderBillRouter) InitOrderBillRouter(router *echo.Group) {
 		orderRouter.PUT("/vendor/:id", orderBillController.UpdateOrderBillOfVendor, middleware.JWTMiddleware)
 		orderRouter.PUT("/admin/:id", orderBillController.UpdateOrderStatusByAdmin, middleware.JWTMiddleware)
 		orderRouter.POST("", orderBillController.CreateOrderBill, middleware.JWTMiddleware)
+		orderRouter.POST("/callback", orderBillController.WebHookUrl)
+		orderRouter.DELETE("/cancel/:orderCode", orderBillController.CancelPayment)
 	}
 }

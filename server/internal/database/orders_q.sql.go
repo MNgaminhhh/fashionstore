@@ -93,6 +93,16 @@ func (q *Queries) DeleteOrderBill(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteOrderBillByOrderCode = `-- name: DeleteOrderBillByOrderCode :exec
+DELETE FROM order_bills
+WHERE order_code = $1
+`
+
+func (q *Queries) DeleteOrderBillByOrderCode(ctx context.Context, orderCode string) error {
+	_, err := q.db.ExecContext(ctx, deleteOrderBillByOrderCode, orderCode)
+	return err
+}
+
 const getAllOrderBills = `-- name: GetAllOrderBills :many
 SELECT o.id, o.user_id, o.delivery_info_id, o.order_code, o.product_total, o.shipping_fee, o.product_discount, o.shipping_discount, o.total_bill, o.paying_method, o.order_status, o.created_at, o.updated_at
 FROM order_bills o
@@ -322,5 +332,21 @@ type UpdateStatusOrderBillParams struct {
 
 func (q *Queries) UpdateStatusOrderBill(ctx context.Context, arg UpdateStatusOrderBillParams) error {
 	_, err := q.db.ExecContext(ctx, updateStatusOrderBill, arg.OrderStatus, arg.ID)
+	return err
+}
+
+const updateStatusOrderBillByOrderCode = `-- name: UpdateStatusOrderBillByOrderCode :exec
+UPDATE order_bills
+SET order_status = $1
+WHERE order_code = $2
+`
+
+type UpdateStatusOrderBillByOrderCodeParams struct {
+	OrderStatus NullOrderStatus
+	OrderCode   string
+}
+
+func (q *Queries) UpdateStatusOrderBillByOrderCode(ctx context.Context, arg UpdateStatusOrderBillByOrderCodeParams) error {
+	_, err := q.db.ExecContext(ctx, updateStatusOrderBillByOrderCode, arg.OrderStatus, arg.OrderCode)
 	return err
 }

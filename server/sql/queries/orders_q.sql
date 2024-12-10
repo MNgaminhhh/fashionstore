@@ -55,6 +55,11 @@ UPDATE order_bills
 SET order_status = $1
 WHERE id = $2;
 
+-- name: UpdateStatusOrderBillByOrderCode :exec
+UPDATE order_bills
+SET order_status = $1
+WHERE order_code = $2;
+
 -- name: UpdateOrderBillsOfVendor :exec
 UPDATE skus_order_bills
 SET is_prepared = $1
@@ -63,4 +68,8 @@ WHERE vendor_id = $2 AND order_id = $3;
 -- name: DeleteOrderBill :exec
 DELETE FROM order_bills
 WHERE id = $1;
+
+-- name: DeleteOrderBillByOrderCode :exec
+DELETE FROM order_bills
+WHERE order_code = $1;
 

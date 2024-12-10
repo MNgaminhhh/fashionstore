@@ -14,7 +14,9 @@ type ICartRepository interface {
 	GetSkuItemInCartBySkuId(skuId uuid.UUID, userId uuid.UUID) (*database.Cart, error)
 	UpdateSkuItemInCartById(cartItem *database.Cart) error
 	DeleteCartItemById(id uuid.UUID) error
+	DeleteCartItemBySkuIdAndUserId(skuId uuid.UUID, userId uuid.UUID) error
 }
+
 type CartRepository struct {
 	sqlc *database.Queries
 }
@@ -69,6 +71,15 @@ func (c CartRepository) UpdateSkuItemInCartById(cartItem *database.Cart) error {
 
 func (c CartRepository) DeleteCartItemById(id uuid.UUID) error {
 	err := c.sqlc.DeleteSkuItemInCartById(ctx, id)
+	return err
+}
+
+func (c CartRepository) DeleteCartItemBySkuIdAndUserId(skuId uuid.UUID, userId uuid.UUID) error {
+	param := database.DeleteSkuItemInCartBySkuIdAndUserIdParams{
+		SkuID:  skuId,
+		UserID: userId,
+	}
+	err := c.sqlc.DeleteSkuItemInCartBySkuIdAndUserId(ctx, param)
 	return err
 }
 
