@@ -355,6 +355,8 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		"products":      responseData,
 		"total_pages":   totalPages,
 		"total_results": totalResults,
+		"page":          page,
+		"limit":         limit,
 	}
 
 	return response.SuccessCode, results
