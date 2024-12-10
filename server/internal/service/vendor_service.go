@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal"
 	"backend/internal/database"
+	"backend/internal/pg_error"
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
@@ -34,6 +35,7 @@ type ResponseVendorData struct {
 type IVendorService interface {
 	BecomeVendor(nVendor *database.Vendor) int
 	UpdateVendorStatus(userId uuid.UUID, adminId uuid.UUID, status database.VendorsStatus) int
+	UpdateVendor(userId string, customParam validator.UpdateVendorRequest) int
 	GetVendor(vendorId uuid.UUID) (int, *ResponseVendorData)
 	GetAllVendors(customParams validator.FilterVendorRequest, sortBy string, sortOrder string) (int, map[string]interface{})
 }
@@ -74,6 +76,48 @@ func (vs *VendorService) BecomeVendor(nVendor *database.Vendor) int {
 	err = userRepo.UpdateUser(user)
 	if err != nil {
 		log.Println(err)
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (vs *VendorService) UpdateVendor(userId string, customParam validator.UpdateVendorRequest) int {
+	userUUID, _ := uuid.Parse(userId)
+	vendor, err := vs.vendorRepository.GetVendorByUUID(userUUID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeNoContent
+	}
+	if customParam.FullName != nil {
+		vendor.FullName = *customParam.FullName
+	}
+	if customParam.PhoneNumber != nil {
+		vendor.PhoneNumber = *customParam.PhoneNumber
+	}
+	if customParam.StoreName != nil {
+		vendor.StoreName = *customParam.StoreName
+	}
+	if customParam.Banner != nil {
+		vendor.Banner = *customParam.Banner
+	}
+	if customParam.Address != nil {
+		vendor.Address = *customParam.Address
+	}
+	if customParam.Description != nil {
+		vendor.Description.String = *customParam.Description
+	}
+	if customParam.Email != nil {
+		vendor.Email = *customParam.Email
+	}
+	err = vs.vendorRepository.UpdateVendor(vendor)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
 		return response.ErrCodeInternal
 	}
 	return response.SuccessCode

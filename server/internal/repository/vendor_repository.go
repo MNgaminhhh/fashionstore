@@ -12,6 +12,7 @@ import (
 type IVendorRepository interface {
 	BecomeVendor(nVendor *database.Vendor) error
 	UpdateStatus(userId, updatedBy uuid.UUID, status database.VendorsStatus) error
+	UpdateVendor(vendor *database.Vendor) error
 	GetVendor(vendorId uuid.UUID) (*database.GetVendorByIdRow, error)
 	GetAllVendors(customParams validator.FilterVendorRequest) ([]database.Vendor, error)
 	GetVendorByUUID(userId uuid.UUID) (*database.Vendor, error)
@@ -19,6 +20,21 @@ type IVendorRepository interface {
 
 type VendorRepository struct {
 	sqlc *database.Queries
+}
+
+func (vr *VendorRepository) UpdateVendor(vendor *database.Vendor) error {
+	param := database.UpdateVendorParams{
+		UserID:      vendor.UserID,
+		FullName:    vendor.FullName,
+		Email:       vendor.Email,
+		PhoneNumber: vendor.PhoneNumber,
+		StoreName:   vendor.StoreName,
+		Description: vendor.Description,
+		Address:     vendor.Address,
+		Banner:      vendor.Banner,
+	}
+	err := vr.sqlc.UpdateVendor(ctx, param)
+	return err
 }
 
 func NewVendorRepository() IVendorRepository {

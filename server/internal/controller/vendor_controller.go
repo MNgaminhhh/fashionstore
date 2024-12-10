@@ -56,6 +56,23 @@ func (vc *VendorController) BecomeVendor(c echo.Context) error {
 	return response.SuccessResponse(c, code, "Become a vendor successfully")
 }
 
+func (vc *VendorController) UpdateVendor(c echo.Context) error {
+	role := c.Get("role").(database.UserRole)
+	if role != database.UserRoleVendors {
+		return response.ErrorResponse(c, response.ErrCodeInvalidRole, "Role must be vendors")
+	}
+	id := c.Get("uuid").(string)
+	var reqParams validator.UpdateVendorRequest
+	if err := c.Bind(&reqParams); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, err.Error())
+	}
+	code := vc.vendorService.UpdateVendor(id, reqParams)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "Update a vendor successfully")
+	}
+	return response.SuccessResponse(c, code, "Cập nhật thành công!")
+}
+
 func (vc *VendorController) UpdateVendorStatusByAdmin(c echo.Context) error {
 	role := c.Get("role").(database.UserRole)
 	if role != database.UserRoleAdmin {

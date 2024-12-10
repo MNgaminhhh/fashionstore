@@ -37,6 +37,17 @@ INSERT INTO vendors (user_id,
                      updated_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
+-- name: UpdateVendor :exec
+UPDATE vendors
+SET full_name = $2,
+    email = $3,
+    phone_number = $4,
+    store_name = $5,
+    description = $6,
+    address = $7,
+    banner = $8
+WHERE user_id = $1;
+
 -- name: UpdateVendorStatus :exec
 UPDATE vendors
 SET status = $1, updated_by = $2

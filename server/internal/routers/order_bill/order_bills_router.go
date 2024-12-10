@@ -16,6 +16,7 @@ func (or *OrderBillRouter) InitOrderBillRouter(router *echo.Group) {
 	{
 		orderRouter.GET("/vendor", orderBillController.GetAllOrderBillsOfVendor, middleware.JWTMiddleware)
 		orderRouter.GET("/admin", orderBillController.GetAllOrderBillsOfAdmin, middleware.JWTMiddleware)
+		orderRouter.GET("/user", orderBillController.GetAllOrderBillsOfUser, middleware.JWTMiddleware)
 		orderRouter.GET("/:id", orderBillController.GetOrderBillById)
 		orderRouter.PUT("/vendor/:id", orderBillController.UpdateOrderBillOfVendor, middleware.JWTMiddleware)
 		orderRouter.PUT("/admin/:id", orderBillController.UpdateOrderStatusByAdmin, middleware.JWTMiddleware)

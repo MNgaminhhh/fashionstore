@@ -34,24 +34,29 @@ type SkuOrderBillItem struct {
 }
 
 type ReceiverInfo struct {
-	Name        string `json:"receiver_name"`
-	PhoneNumber string `json:"phone_number"`
-	Address     string `json:"address"`
-	Email       string `json:"email"`
+	Name        string `json:"receiver_name,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Address     string `json:"address,omitempty"`
+	Email       string `json:"email,omitempty"`
 }
 
 type OrderBillResponse struct {
-	ID               string       `json:"id,omitempty"`
-	OrderStatus      string       `json:"order_status,omitempty"`
-	ProductTotal     int          `json:"product_total"`
-	ShippingFee      int          `json:"shipping_fee"`
-	TotalBill        int          `json:"total_bill,omitempty"`
-	DiscountShipping int          `json:"discount_shipping,omitempty"`
-	DiscountProduct  int          `json:"discount_product,omitempty"`
-	Receiver         ReceiverInfo `json:"receiver,omitempty"`
-	PayingMethod     string       `json:"paying_method,omitempty"`
-	CreatedAt        string       `json:"created_at,omitempty"`
-	UpdatedAt        string       `json:"updated_at,omitempty"`
+	ID               string          `json:"id,omitempty"`
+	OrderStatus      string          `json:"order_status,omitempty"`
+	ProductTotal     int             `json:"product_total,omitempty"`
+	ShippingFee      *int            `json:"shipping_fee,omitempty"`
+	TotalBill        int             `json:"total_bill,omitempty"`
+	DiscountShipping int             `json:"discount_shipping,omitempty"`
+	DiscountProduct  int             `json:"discount_product,omitempty"`
+	Receiver         *ReceiverInfo   `json:"receiver,omitempty"`
+	PayingMethod     string          `json:"paying_method,omitempty"`
+	CreatedAt        string          `json:"created_at,omitempty"`
+	UpdatedAt        string          `json:"updated_at,omitempty"`
+	Skus             json.RawMessage `json:"skus,omitempty"`
+	StoreName        string          `json:"store_name,omitempty"`
+	Images           json.RawMessage `json:"images,omitempty"`
+	ProductName      string          `json:"product_name,omitempty"`
+	NumberProduct    int             `json:"number_product,omitempty"`
 }
 
 type IOrderBillsService interface {
@@ -59,6 +64,7 @@ type IOrderBillsService interface {
 	GetAllOrderBillsOfVendor(vendorId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	GetAllOrderBillsOfAdmin(filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	GetOrderBillById(orderId string) (int, map[string]interface{})
+	GetAllOrderBillOfUser(userId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{})
 	UpdateOrderBillOfVendor(vendorId string, orderId string, isPrepared bool) int
 	UpdateOrderBillOfAdmin(orderId string, status string) int
 	CallBackFunction(orderCode int64) int
@@ -67,6 +73,55 @@ type IOrderBillsService interface {
 
 type OrderBillsService struct {
 	orderBillRepo repository.IOrderBillsRepository
+}
+
+func (o OrderBillsService) GetAllOrderBillOfUser(userId string, filterParam validator.FilterUpdateBillValidator) (int, map[string]interface{}) {
+	userUUID, _ := uuid.Parse(userId)
+	orderBills, err := o.orderBillRepo.GetAllOrderBillsOfUser(userUUID)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr), nil
+		}
+		return response.ErrCodeInternal, nil
+	}
+	limit := len(orderBills)
+	page := 1
+	totalResults := len(orderBills)
+	if filterParam.Limit != nil {
+		limit = *filterParam.Limit
+	}
+	if filterParam.Page != nil {
+		page = *filterParam.Page
+	}
+	totalPages := internal.CalculateTotalPages(totalResults, limit)
+	pagination := internal.Paginate(orderBills, page, limit)
+	countOrderStatus := map[string]int{
+		"paying":    0,
+		"pending":   0,
+		"shipping":  0,
+		"cancel":    0,
+		"delivered": 0,
+	}
+	var resData []OrderBillResponse
+	for _, order := range pagination {
+		resData = append(resData, *mapOrderBillToResponseData(&order))
+		orderStatus := string(order.OrderStatus.OrderStatus)
+		countOrderStatus[orderStatus]++
+	}
+	mapResult := map[string]interface{}{
+		"page":            page,
+		"limit":           limit,
+		"total_results":   totalResults,
+		"total_pages":     totalPages,
+		"order_bills":     resData,
+		"paying_count":    countOrderStatus["paying"],
+		"pending_count":   countOrderStatus["pending"],
+		"shipping_count":  countOrderStatus["shipping"],
+		"cancel_count":    countOrderStatus["cancel"],
+		"delivered_count": countOrderStatus["delivered"],
+	}
+	return response.SuccessCode, mapResult
 }
 
 func (o OrderBillsService) DeleteOrderBillByOrderCode(orderCode string) int {
@@ -625,18 +680,34 @@ func mapOrderBillToResponseData[T any](data *T) *OrderBillResponse {
 			Address:     o.Address,
 			Email:       o.Address,
 		}
+		shippingFee := int(o.ShippingFee)
 		return &OrderBillResponse{
 			ID:               o.ID.String(),
 			OrderStatus:      string(o.OrderStatus.OrderStatus),
 			ProductTotal:     int(o.ProductTotal),
-			ShippingFee:      int(o.ShippingFee),
+			ShippingFee:      &shippingFee,
 			TotalBill:        int(o.TotalBill),
 			DiscountShipping: int(o.ShippingDiscount.Int64),
 			DiscountProduct:  int(o.ProductDiscount.Int64),
-			Receiver:         receiverInfo,
+			Receiver:         &receiverInfo,
 			PayingMethod:     string(o.PayingMethod.PayingMethod),
 			CreatedAt:        o.CreatedAt.Time.Format("02-01-2006 15:04"),
 			UpdatedAt:        o.UpdatedAt.Time.Format("02-01-2006 15:04"),
+		}
+	case *database.GetAllOrderBillsOfUserRow:
+		var skus []map[string]interface{}
+		err := json.Unmarshal(o.Skus, &skus)
+		if err != nil {
+			log.Fatalf("Lỗi giải mã JSON: %v", err)
+		}
+		return &OrderBillResponse{
+			ID:            o.ID.String(),
+			OrderStatus:   string(o.OrderStatus.OrderStatus),
+			TotalBill:     int(o.TotalBill),
+			UpdatedAt:     o.UpdatedAt.Time.Format("02-01-2006 15:04"),
+			Skus:          o.Skus,
+			StoreName:     o.StoreName,
+			NumberProduct: len(skus),
 		}
 	default:
 		return &OrderBillResponse{}

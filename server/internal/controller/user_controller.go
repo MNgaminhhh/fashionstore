@@ -8,6 +8,7 @@ import (
 	"backend/pkg/response"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
@@ -43,11 +44,26 @@ func (uc *UserController) Login(c echo.Context) error {
 
 	cookie := data["cookie"]
 	refreshCookie, ok := cookie.(*http.Cookie)
+	refreshCookie.Secure = false
 	if ok {
 		c.SetCookie(refreshCookie)
 	}
 
 	return response.SuccessResponse(c, response.SuccessCode, data)
+}
+
+func (uc *UserController) Logout(c echo.Context) error {
+	cookie := &http.Cookie{
+		Name:     "access_cookie",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+	}
+
+	c.SetCookie(cookie)
+
+	return response.SuccessResponse(c, response.SuccessCode, "Đăng xuất thành công!")
 }
 
 func (uc *UserController) UpdateUserStatus(c echo.Context) error {

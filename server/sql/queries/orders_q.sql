@@ -73,3 +73,43 @@ WHERE id = $1;
 DELETE FROM order_bills
 WHERE order_code = $1;
 
+-- name: GetAllOrderBillsOfUser :many
+SELECT o.id,
+       o.order_status,
+       v.store_name,
+       v.banner,
+       o.updated_at,
+       o.total_bill,
+       JSON_AGG(
+               JSON_BUILD_OBJECT(
+                       'product_name', p.name,
+                       'images', p.images,
+                       'variant_option', s.variant_option,
+                       'quantity', sob.quantity,
+                       'price', sob.price,
+                       'offer_price', sob.offer_price
+               )
+       ) AS skus
+FROM order_bills o
+         INNER JOIN skus_order_bills sob ON o.id = sob.order_id
+         INNER JOIN (SELECT s.id,
+                            s.product_id,
+                            JSON_AGG(
+                                    JSON_BUILD_OBJECT(
+                                            'product_variant', pv.name,
+                                            'variant_options', vo.name
+                                    )
+                            ) AS variant_option
+                     FROM skus s
+                              INNER JOIN skus_variant_options svo ON s.id = svo.sku_id
+                              INNER JOIN variant_options vo ON svo.variant_option = vo.id
+                              INNER JOIN product_variants pv ON pv.id = vo.product_variant_id
+                     GROUP BY s.id) s ON sob.sku_id = s.id
+         INNER JOIN products p ON p.id = s.product_id
+         INNER JOIN vendors v ON v.id = sob.vendor_id
+WHERE o.user_id = $1
+GROUP BY o.id,
+         o.updated_at,
+         o.order_status,
+         v.store_name,
+         v.banner;

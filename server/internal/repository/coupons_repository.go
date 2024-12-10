@@ -244,7 +244,10 @@ func (c CouponRepository) CreateCouponUser(couponId uuid.UUID, userId uuid.UUID,
 	param := database.CreateCouponUserParams{
 		CouponID: couponId,
 		UserID:   userId,
-		OrderID:  orderId,
+		OrderID: uuid.NullUUID{
+			UUID:  orderId,
+			Valid: true,
+		},
 	}
 	err := c.sqlc.CreateCouponUser(ctx, param)
 	return err

@@ -627,7 +627,7 @@ type Coupon struct {
 type CouponsUser struct {
 	CouponID  uuid.UUID
 	UserID    uuid.UUID
-	OrderID   uuid.UUID
+	OrderID   uuid.NullUUID
 	CreatedAt sql.NullTime
 }
 

@@ -50,9 +50,6 @@ func (fs *FlashSalesService) CreateFlashSale(startDateStr string, endDateStr str
 	if pareTimeErr != nil {
 		return response.ErrCodeInvalidDateTimeFormat
 	}
-	if time.Now().After(startDate) {
-		return response.ErrCodeInvalidFlashSaleStartDate
-	}
 	endDate, pareTimeErr := time.Parse("02-01-2006 15:04", endDateStr)
 	if pareTimeErr != nil {
 		return response.ErrCodeInvalidDateTimeFormat

@@ -64,9 +64,6 @@ func (sv *SkusService) CreateSku(customParam validator.CreateSkuValidator) int {
 		if parseErr != nil {
 			return response.ErrCodeInvalidDateTimeFormat
 		}
-		if time.Now().After(startDate) {
-			return response.ErrCodeInvalidFlashSaleStartDate
-		}
 		if customParam.OfferEndDate == nil {
 			return response.ErrCodeEndDateEmpty
 		}
@@ -194,9 +191,6 @@ func (sv *SkusService) UpdateSku(id string, customParam validator.UpdateSkuValid
 		endDate, parseErr := time.Parse("02-01-2006 15:04", endDateStr)
 		if parseErr != nil {
 			return response.ErrCodeInvalidDateTimeFormat
-		}
-		if time.Now().After(startDate) {
-			return response.ErrCodeInvalidFlashSaleStartDate
 		}
 		if endDate.Before(startDate) {
 			return response.ErrCodeInvalidEndDate

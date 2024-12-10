@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 )
 
 type OrderBillsController struct {
@@ -91,8 +92,19 @@ func (oc *OrderBillsController) GetAllOrderBillsOfAdmin(c echo.Context) error {
 	if err := c.Bind(&filterParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "get fail")
 	}
-	if err := c.Validate(&filterParam); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	if filterParam.PayingMethod != nil {
+		payingMethod := []string{"COD", "QR_CODE"}
+		_, isValid := slices.BinarySearch(payingMethod, *filterParam.PayingMethod)
+		if !isValid {
+			return response.ErrorResponse(c, response.ErrCodeInvalidPayingMethod, "get fail")
+		}
+	}
+	if filterParam.OrderCode != nil {
+		orderCode := []string{"pending", "paying", "shipping", "delivered", "cancel"}
+		_, isValid := slices.BinarySearch(orderCode, *filterParam.OrderCode)
+		if !isValid {
+			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
+		}
 	}
 	code, results := oc.orderBillService.GetAllOrderBillsOfAdmin(filterParam)
 	if code != response.SuccessCode {
@@ -160,4 +172,17 @@ func (oc *OrderBillsController) CancelPayment(c echo.Context) error {
 		return response.ErrorResponse(c, code, "delete fail")
 	}
 	return response.SuccessResponse(c, code, "Xóa đơn hàng thành công!")
+}
+
+func (oc *OrderBillsController) GetAllOrderBillsOfUser(c echo.Context) error {
+	userId := c.Get("uuid").(string)
+	var reqParam validator.FilterUpdateBillValidator
+	if err := c.Bind(&reqParam); err != nil {
+		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
+	}
+	code, results := oc.orderBillService.GetAllOrderBillOfUser(userId, reqParam)
+	if code != response.SuccessCode {
+		return response.ErrorResponse(c, code, "get fail")
+	}
+	return response.SuccessResponse(c, code, results)
 }
