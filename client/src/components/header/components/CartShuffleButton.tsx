@@ -21,14 +21,9 @@ const CustomBadge = styled(Badge)(({ theme }) => ({
 }));
 
 export default function NotificationButtons() {
-  const { sessionToken, cart } = useAppContext();
+  const { sessionToken } = useAppContext();
   const { state } = useCart();
-  const cartCount =
-    typeof cart !== "undefined" && cart !== null
-      ? cart
-      : Array.isArray(state.cart)
-      ? state.cart.length
-      : 0;
+  const cartCount = state?.cart?.length;
   return (
     <Box display="flex" justifyContent="center" alignItems="center" gap={3}>
       <Link href="/cart" passHref>

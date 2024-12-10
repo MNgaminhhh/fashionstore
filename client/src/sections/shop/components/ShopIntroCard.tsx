@@ -1,21 +1,10 @@
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Avatar from "@mui/material/Avatar";
-import Rating from "@mui/material/Rating";
-import Button from "@mui/material/Button";
-// MUI ICON COMPONENTS
 import Call from "@mui/icons-material/Call";
 import Place from "@mui/icons-material/Place";
-// GLOBAL CUSTOM COMPONENTS
-import { H3, Small, Span } from "components/Typography";
-import { FlexBetween, FlexBox } from "components/flex-box";
-// CUSTOM ICON COMPONENTS
-import TwitterFilled from "icons/TwitterFilled";
-import YoutubeFilled from "icons/YoutubeFilled";
-import FacebookFilled from "icons/FacebookFilled";
-import InstagramFilled from "icons/InstagramFilled";
-
-// =======================================================
+import { FlexBetween, FlexBox } from "../../../components/flexbox";
+import { H3, Small, Span } from "../../../components/Typography";
 interface Props {
   name: string;
   phone: string;
@@ -23,11 +12,9 @@ interface Props {
   coverPicture: string;
   profilePicture: string;
 }
-// =======================================================
 
 export default function ShopIntroCard(props: Props) {
   const { name, phone, address, coverPicture, profilePicture } = props || {};
-
   return (
     <Card sx={{ mb: 4, pb: 2.5 }}>
       <Box
@@ -35,7 +22,7 @@ export default function ShopIntroCard(props: Props) {
         sx={{ background: `url(${coverPicture}) center/cover` }}
       />
 
-      <FlexBox mt={-8} px={3.75} flexWrap="wrap">
+      <Box display="flex" mt={-8} px={3.75} flexWrap="wrap">
         <Avatar
           alt={name}
           src={profilePicture}
@@ -67,56 +54,29 @@ export default function ShopIntroCard(props: Props) {
                 {name}
               </H3>
             </Box>
-
-            <FlexBox my={1} gap={1.5}>
-              {socialLinks.map((item, ind) => (
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  key={ind}
-                >
-                  <item.icon sx={{ fontSize: 27 }} />
-                </a>
-              ))}
-            </FlexBox>
           </FlexBetween>
 
           <FlexBetween flexWrap="wrap">
             <div>
-              <FlexBox alignItems="center" gap={1} mb={2}>
-                <Rating color="warn" size="small" value={5} readOnly />
-                <Small color="grey.600" display="block">
-                  (45)
-                </Small>
-              </FlexBox>
-
-              <FlexBox color="grey.600" gap={1} mb={1} maxWidth={270}>
+              <Box
+                display="flex"
+                color="grey.600"
+                gap={1}
+                mb={1}
+                maxWidth={270}
+              >
                 <Place fontSize="small" sx={{ fontSize: 18, mt: "3px" }} />
                 <Span color="grey.600">{address}</Span>
-              </FlexBox>
+              </Box>
 
-              <FlexBox color="grey.600" gap={1} mb={1}>
+              <Box display="flex" color="grey.600" gap={1} mb={1}>
                 <Call fontSize="small" sx={{ fontSize: 18, mt: "2px" }} />
                 <Span color="grey.600">{phone}</Span>
-              </FlexBox>
+              </Box>
             </div>
-
-            <a href="mailto:scarletbeauty@xmail.com">
-              <Button variant="outlined" color="primary" sx={{ my: 1.5 }}>
-                Contact Vendor
-              </Button>
-            </a>
           </FlexBetween>
         </Box>
-      </FlexBox>
+      </Box>
     </Card>
   );
 }
-
-const socialLinks = [
-  { icon: FacebookFilled, url: "https://facebook.com" },
-  { icon: TwitterFilled, url: "https://twitter.com" },
-  { icon: YoutubeFilled, url: "https://youtube.com" },
-  { icon: InstagramFilled, url: "https://instagram.com" },
-];

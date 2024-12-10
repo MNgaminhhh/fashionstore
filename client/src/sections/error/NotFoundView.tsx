@@ -1,56 +1,33 @@
 "use client";
 
-import { m } from "framer-motion";
-
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { FlexBox, FlexCenterRow } from "../../components/flexbox";
 
-import CompactLayout from "src/layouts/compact";
+export default function NotFoundPageView() {
+  const router = useRouter();
 
-import Image from "src/components/image";
-import RouterLink from "@/routes/components/RouterLink";
-import MotionContainer from "@/components/animate/MotionContainer";
-import { VarBounce } from "@/components/animate/VarBounce";
+  return (
+    <FlexCenterRow px={2} minHeight="100vh" flexDirection="column">
+      <Box maxWidth={320} width="100%" mb={3}>
+        <Image
+          alt="Not Found!"
+          src={require("../../../public/assets/illustrations/404.svg")}
+          style={{ width: "100%", height: "auto" }}
+        />
+      </Box>
 
-export default function NotFoundView() {
-    return (
-        <CompactLayout>
-            <MotionContainer>
-                <m.div variants={VarBounce().in}>
-                    <Typography variant="h3" paragraph>
-                        Trang không tồn tại!
-                    </Typography>
-                </m.div>
-
-                <m.div variants={VarBounce().in}>
-                    <Typography sx={{ color: "text.secondary" }}>
-                        Xin lỗi, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm. Có
-                        thể bạn đã nhập sai URL? Hãy kiểm tra lại!!!
-                    </Typography>
-                </m.div>
-
-                <m.div variants={VarBounce().in}>
-                    <Image
-                        alt="404"
-                        src="/assets/illustrations/illustration_404.svg"
-                        sx={{
-                            mx: "auto",
-                            maxWidth: 320,
-                            my: { xs: 5, sm: 8 },
-                        }}
-                    />
-                </m.div>
-
-                <Button
-                    component={RouterLink}
-                    href="/"
-                    size="large"
-                    color="inherit"
-                    variant="contained"
-                >
-                    Về Trang Chủ
-                </Button>
-            </MotionContainer>
-        </CompactLayout>
-    );
+      <FlexBox flexWrap="wrap" gap={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => router.push("/")}
+        >
+          Trở về trang chủ
+        </Button>
+      </FlexBox>
+    </FlexCenterRow>
+  );
 }

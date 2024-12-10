@@ -9,34 +9,18 @@ interface cuCartModel {
   quantity: number;
 }
 
-class CartServer extends Base {
+class OrdersServer extends Base {
   constructor() {
     super({
-      url: "cart",
+      url: "order_bills",
     });
   }
-  async getCouponsCanUse(
-    token: string | undefined = undefined,
-    withCredentials: boolean = true
-  ) {
-    let url = `/coupons/can-use`;
-    const rs = await this.execute({
-      url,
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : undefined,
-      },
-      withCredentials: withCredentials,
-    });
 
-    return rs.data;
-  }
-  async getAllCart(
+  async getAllOrderByVendor(
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
-    let url = `/cart`;
+    let url = `/order_bills/vendor`;
     const rs = await this.execute({
       url,
       method: "get",
@@ -50,68 +34,70 @@ class CartServer extends Base {
     return rs.data;
   }
 
-  async create(
-    data: any,
+  async getAllOrderByAdmin(
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
+    let url = `/order_bills/admin`;
     const rs = await this.execute({
-      url: `/cart`,
-      method: "post",
+      url,
+      method: "get",
       headers: {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
-      data: data,
       withCredentials: withCredentials,
     });
-    return rs;
+
+    return rs.data;
   }
-  async orderBill(
-    data: cuCartModel,
-    token: string | undefined = undefined,
-    withCredentials: boolean = true
-  ) {
-    const rs = await this.execute({
-      url: `/order_bills`,
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : undefined,
-      },
-      data: data,
-      withCredentials: withCredentials,
-    });
-    return rs;
-  }
-  async cancelOrder(code: string) {
-    const rs = await this.execute({
-      url: `/order_bills/cancel/MTS${code}`,
-      method: "delete",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    return rs;
-  }
-  async delete(
+
+  async updateStatusByVendor(
     id: string,
+    status: boolean,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
+    const data = { is_active: status };
+    const url = `/order_bills/vendor/${id}/status`;
+
     const rs = await this.execute({
-      url: `/cart/${id}`,
-      method: "delete",
+      url,
+      method: "put",
       headers: {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : undefined,
       },
       withCredentials: withCredentials,
+      data: data,
     });
 
-    return rs;
+    return rs.data;
+  }
+
+  async updateStatusByAdmin(
+    id: string,
+    status: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    const data = { order_status: status };
+    const url = `/order_bills/admin/${id}/status`;
+
+    const rs = await this.execute({
+      url,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+      data: data,
+    });
+
+    return rs.data;
   }
 }
 
-const Cart = new CartServer();
-export default Cart;
+const Orders = new OrdersServer();
+export default Orders;

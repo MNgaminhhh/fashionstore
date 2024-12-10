@@ -54,8 +54,8 @@ CREATE TRIGGER set_updated_at
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS skus_order_bills;
-DROP TABLE IF EXISTS order_bills;
-DROP TYPE IF EXISTS paying_method;
-DROP TYPE IF EXISTS order_status;
+DROP TABLE IF EXISTS skus_order_bills CASCADE;
+DROP TABLE IF EXISTS order_bills CASCADE;
+DROP TYPE IF EXISTS order_status CASCADE;
+DROP TYPE IF EXISTS paying_method CASCADE;
 -- +goose StatementEnd

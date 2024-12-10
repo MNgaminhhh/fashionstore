@@ -78,7 +78,7 @@ export default function CategoryProductView({ data }: Props) {
             )}
 
             <NavLink3
-              href="/"
+              href="/product"
               text="Xem chi tiết"
               color="dark.main"
               hoverColor="dark.main"

@@ -90,7 +90,18 @@ class VendorServer extends Base {
     });
     return rs;
   }
-
+  async becomeVendor(data: any, token?: string) {
+    const rs = await this.execute({
+      url: `/vendors/new`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data,
+    });
+    return rs;
+  }
   async updateStatus(
     data: {
       user_id: string;

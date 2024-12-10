@@ -15,6 +15,10 @@ export interface MenuItem {
 }
 export const MENUS = [
   {
+    title: "BẢNG ĐIỀU KHIỂN",
+    list: [{ href: "/orders", title: "Danh sách đặt hàng", Icon: Person }],
+  },
+  {
     title: "CÀI ĐẶT TÀI KHOẢN",
     list: [
       { href: "/profile", title: "Thông tin cá nhân", Icon: Person },

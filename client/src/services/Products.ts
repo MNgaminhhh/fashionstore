@@ -96,7 +96,7 @@ class ProductsServer extends Base {
   }
 
   async getAllProduct(
-    limit: number = 10,
+    limit: number = 1,
     page: number = 1,
     filters: Filterss = {}
   ) {

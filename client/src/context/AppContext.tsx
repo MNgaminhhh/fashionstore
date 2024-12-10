@@ -24,8 +24,8 @@ export const useAppContext = () => {
 interface AppProviderProps {
   children: React.ReactNode;
   initialToken: string;
-  initialCategories: any[];
   initialCart: any;
+  initialCategories: any[];
 }
 
 export default function AppProvider({

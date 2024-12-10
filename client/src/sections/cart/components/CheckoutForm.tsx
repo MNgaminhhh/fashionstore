@@ -45,7 +45,9 @@ export default function CheckoutForm({ status = false }: Props) {
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
 
   const [openDialog, setOpenDialog] = useState(false);
-  const [payingMethod, setPayingMethod] = useState<"COD" | "QR_CODE">("COD");
+  const [payingMethod, setPayingMethod] = useState<"COD" | "QR_CODE" | null>(
+    null
+  );
 
   const getTotalPrice = () =>
     state.cart
@@ -100,6 +102,10 @@ export default function CheckoutForm({ status = false }: Props) {
       notifyError("Vui lòng chọn địa chỉ giao hàng");
       return;
     }
+    if (!payingMethod) {
+      notifyError("Vui lòng chọn phương thức thanh toán");
+      return;
+    }
 
     const skus = selectedItems.map((item) => ({
       sku_id: item.sku_id,
@@ -123,6 +129,12 @@ export default function CheckoutForm({ status = false }: Props) {
       const res = await Cart.orderBill(data, sessionToken);
       if (res?.success || res?.data?.success) {
         notifySuccess("Tạo đơn hàng thành công!");
+        // Lấy checkoutUrl từ response
+        const checkoutUrl = res?.data?.data?.checkoutUrl;
+        if (checkoutUrl) {
+          // Chuyển hướng sang trang checkoutUrl
+          router.push(checkoutUrl);
+        }
       } else {
         const errorMessage =
           res?.data?.message || res?.message || "Vui lòng thử lại.";
@@ -141,6 +153,11 @@ export default function CheckoutForm({ status = false }: Props) {
       router.push("/checkout");
     }
   };
+
+  // Điều kiện disable nút thanh toán
+  const isDisabled =
+    state.cart.filter((item) => item.selected).length === 0 ||
+    (status && (!selectedAddressId || !payingMethod));
 
   return (
     <Card sx={{ padding: 3 }}>
@@ -256,7 +273,7 @@ export default function CheckoutForm({ status = false }: Props) {
         fullWidth
         color="primary"
         variant="contained"
-        disabled={state.cart.filter((item) => item.selected).length === 0}
+        disabled={isDisabled}
         onClick={handlePaymentClick}
       >
         Thanh toán

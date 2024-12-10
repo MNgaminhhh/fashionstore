@@ -125,6 +125,8 @@ const CartProvider = ({ children }: PropsWithChildren) => {
     try {
       const response = await Cart.delete(itemId, sessionToken);
       if (response?.success || response?.data?.success) {
+        notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
+        dispatch({ type: "REMOVE_ITEM", payload: itemId });
         const res = await Cart.getAllCart(sessionToken);
         if (res?.success || res?.data?.success) {
           const cartWithSelection = res.data.map((item: CartItem) => ({
@@ -134,11 +136,9 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           dispatch({ type: "SET_CART", payload: cartWithSelection });
           setCart(cartWithSelection.length);
         }
-        notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
       }
     } catch (error) {}
   };
-
   const toggleSelectItem = (itemId: string) => {
     dispatch({ type: "TOGGLE_SELECT_ITEM", payload: itemId });
   };

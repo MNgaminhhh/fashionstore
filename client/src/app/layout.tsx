@@ -8,6 +8,7 @@ import ThemeProvider from "../theme/ThemeProvider";
 import CartProvider from "../context/CartContext";
 import Categories from "../services/Categories";
 import { get } from "lodash";
+import Cart from "../services/Cart";
 
 export const inter = Open_Sans({ subsets: ["latin"] });
 
@@ -26,7 +27,8 @@ export default async function RootLayout({
 
   const listCate = await Categories.getFullCate();
   const categories = get(listCate, "data", []);
-
+  const cartCount = await Cart.getAllCart(sessionToken?.value);
+  const cartItemCount = cartCount?.data?.length || 0;
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -34,6 +36,7 @@ export default async function RootLayout({
           <AppProvider
             initialToken={sessionToken?.value}
             initialCategories={categories}
+            initialCart={cartItemCount}
           >
             <CartProvider>
               <Toaster />

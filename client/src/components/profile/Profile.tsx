@@ -10,16 +10,15 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  Divider,
 } from "@mui/material";
 import {
-  School as IconCourses,
-  Dashboard as IconDashboard,
   Person as IconProfile,
-  MenuBook as IconLearning,
-  History as IconHistory,
   ShoppingCart as IconShoppingCart,
-  Chat as IconChat,
+  History as IconHistory,
   Logout as IconLogout,
+  Dashboard as IconDashboard,
+  Home as IconHome,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { notifyError, notifySuccess } from "../../utils/ToastNotification";
@@ -28,11 +27,11 @@ import User from "../../services/User";
 import { H5 } from "../Typography";
 
 export default function Profile() {
-  const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const open = Boolean(anchorEl2);
+  const open = Boolean(anchorEl);
   const { setSessionToken, sessionToken } = useAppContext();
 
   const fetchUserProfile = async (token: string) => {
@@ -54,15 +53,15 @@ export default function Profile() {
   }, [sessionToken]);
 
   const avatarSrc = useMemo(() => {
-    return userProfile?.avt;
+    return userProfile?.avt || "/default-avatar.png";
   }, [userProfile]);
 
-  const handleClick2 = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl2(event.currentTarget);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleClose2 = () => {
-    setAnchorEl2(null);
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   const handleLogout = async () => {
@@ -79,22 +78,19 @@ export default function Profile() {
     <Box>
       <IconButton
         aria-expanded={open ? "true" : undefined}
-        aria-controls={open ? "account-menu" : undefined}
+        aria-controls={open ? "profile-menu" : undefined}
         aria-haspopup="true"
+        onClick={handleClick}
         sx={{
           padding: 0,
           display: "flex",
           gap: 1,
           alignItems: "center",
-          ...(anchorEl2 && {
-            color: "primary.main",
-          }),
           "&:hover": {
             backgroundColor: "transparent",
             opacity: 0.8,
           },
         }}
-        onClick={handleClick2}
       >
         <Box sx={{ position: "relative", width: "48px", height: "48px" }}>
           <Avatar
@@ -107,122 +103,81 @@ export default function Profile() {
             }}
           />
         </Box>
-        <H5 color="white">{userProfile?.full_name || "Tên người dùng"}</H5>
+        <H5 color="white" fontWeight={600}>
+          {userProfile?.full_name || "Tên người dùng"}
+        </H5>
       </IconButton>
 
       <Menu
         id="profile-menu"
-        anchorEl={anchorEl2}
+        anchorEl={anchorEl}
         keepMounted
-        open={Boolean(anchorEl2)}
-        onClose={handleClose2}
+        open={open}
+        onClose={handleClose}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         sx={{
+          marginTop: "8px",
           "& .MuiMenu-paper": {
-            width: "200px",
-            p: "3",
+            width: "220px",
+            padding: "8px",
           },
         }}
       >
-        <Link href="/dashboard/" passHref legacyBehavior>
+        <Link href="/profile" passHref>
           <MenuItem
             component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
-          >
-            <ListItemIcon>
-              <IconDashboard fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Bảng điều khiển</ListItemText>
-          </MenuItem>
-        </Link>
-        <Link href="/my-courses" passHref legacyBehavior>
-          <MenuItem
-            component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
-          >
-            <ListItemIcon>
-              <IconCourses fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Khóa học của tôi</ListItemText>
-          </MenuItem>
-        </Link>
-        <Link href="/profile" passHref legacyBehavior>
-          <MenuItem
-            component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
+            onClick={handleClose}
+            sx={{ "&:hover": { backgroundColor: "primary.light" } }}
           >
             <ListItemIcon>
               <IconProfile fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Hồ sơ cá nhân</ListItemText>
+            <ListItemText primary="Thông tin cá nhân" />
           </MenuItem>
         </Link>
 
-        <Link href="/mylearning" passHref legacyBehavior>
+        <Divider sx={{ my: 1 }} />
+        <Link href="/orders" passHref>
           <MenuItem
             component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
-          >
-            <ListItemIcon>
-              <IconLearning fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Học tập</ListItemText>
-          </MenuItem>
-        </Link>
-
-        <Link href="/history" passHref legacyBehavior>
-          <MenuItem
-            component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
+            onClick={handleClose}
+            sx={{ "&:hover": { backgroundColor: "primary.light" } }}
           >
             <ListItemIcon>
               <IconHistory fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Lịch sử mua hàng</ListItemText>
+            <ListItemText primary="Lịch sử đơn hàng" />
           </MenuItem>
         </Link>
-        <Link href="/chat" passHref legacyBehavior>
+        <Link href="/cart" passHref>
           <MenuItem
             component="a"
-            onClick={handleClose2}
-            sx={{
-              "&:hover": {
-                backgroundColor: "primary.light",
-              },
-            }}
+            onClick={handleClose}
+            sx={{ "&:hover": { backgroundColor: "primary.light" } }}
           >
             <ListItemIcon>
-              <IconChat fontSize="small" />
+              <IconShoppingCart fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Trò Chuyện</ListItemText>
+            <ListItemText primary="Giỏ hàng của tôi" />
           </MenuItem>
         </Link>
+
+        <Link href="/my-address" passHref>
+          <MenuItem
+            component="a"
+            onClick={handleClose}
+            sx={{ "&:hover": { backgroundColor: "primary.light" } }}
+          >
+            <ListItemIcon>
+              <IconHome fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Địa chỉ của tôi" />
+          </MenuItem>
+        </Link>
+
+        <Divider sx={{ my: 1 }} />
+
         <Box mt={1} py={1} px={2}>
           <Button
             onClick={handleLogout}
