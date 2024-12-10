@@ -10,18 +10,26 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"time"
 )
 
 type CartItemResponseData struct {
-	Id              string          `json:"id"`
-	SkuId           string          `json:"sku_id,omitempty"`
-	Quantity        int             `json:"quantity,omitempty"`
-	Price           int             `json:"price,omitempty"`
-	OfferPrice      int             `json:"offer_price,omitempty"`
-	TotalPrice      int             `json:"total_price,omitempty"`
-	TotalOfferPrice int             `json:"total_offer_price,omitempty"`
-	ProductImages   json.RawMessage `json:"product_image,omitempty"`
-	Banner          string          `json:"banner,omitempty"`
+	Id             string          `json:"id"`
+	SkuId          string          `json:"sku_id,omitempty"`
+	Quantity       int             `json:"quantity,omitempty"`
+	Price          int             `json:"price,omitempty"`
+	OfferPrice     int             `json:"offer_price,omitempty"`
+	TotalPrice     int             `json:"total_price,omitempty"`
+	ProductImages  json.RawMessage `json:"product_image,omitempty"`
+	VariantOptions json.RawMessage `json:"variant_image,omitempty"`
+	StoreName      string          `json:"store_name,omitempty"`
+	Banner         string          `json:"banner,omitempty"`
+	Slug           string          `json:"slug,omitempty"`
+}
+
+type SkuItem struct {
+	CartItem database.GetAllSkuItemInCartByUserIdRow
+	SkuInfo  database.GetSkuByIdRow
 }
 
 type ICartService interface {
@@ -63,6 +71,7 @@ func (c CartService) AddNewSku(userId string, customParam validator.CreateCartIt
 
 func (c CartService) GetAllSkuItemInCartByUserId(userId string) (int, []CartItemResponseData) {
 	userUUID, _ := uuid.Parse(userId)
+	skusRepo := repository.NewSkusRepository()
 	cartItems, err := c.cartRepo.GetAllSkuItemInCartByUserId(userUUID)
 	if err != nil {
 		var pqErr *pq.Error
@@ -73,7 +82,12 @@ func (c CartService) GetAllSkuItemInCartByUserId(userId string) (int, []CartItem
 	}
 	var resData []CartItemResponseData
 	for _, cartItem := range cartItems {
-		resData = append(resData, *mapCartItemToResponseData(cartItem))
+		sku, _ := skusRepo.GetSkuById(cartItem.SkuID)
+		skuItem := SkuItem{
+			CartItem: cartItem,
+			SkuInfo:  *sku,
+		}
+		resData = append(resData, *mapCartItemToResponseData(skuItem))
 	}
 	return response.SuccessCode, resData
 }
@@ -91,18 +105,33 @@ func (c CartService) RemoveSkuItem(id string) int {
 	return response.SuccessCode
 }
 
-func mapCartItemToResponseData(cartItem database.GetAllSkuItemInCartByUserIdRow) *CartItemResponseData {
-	return &CartItemResponseData{
-		Id:              cartItem.ID.String(),
-		SkuId:           cartItem.SkuID.String(),
-		Quantity:        int(cartItem.Quantity),
-		Price:           int(cartItem.Price),
-		OfferPrice:      int(cartItem.OfferPrice),
-		TotalPrice:      int(cartItem.Price) * int(cartItem.Quantity),
-		TotalOfferPrice: int(cartItem.OfferPrice) * int(cartItem.Quantity),
-		ProductImages:   cartItem.Images,
-		Banner:          cartItem.Banner,
+func mapCartItemToResponseData(data SkuItem) *CartItemResponseData {
+	cartItem := data.CartItem
+	skuInfo := data.SkuInfo
+
+	item := &CartItemResponseData{
+		Id:             cartItem.ID.String(),
+		SkuId:          cartItem.SkuID.String(),
+		Quantity:       int(cartItem.Quantity),
+		Price:          int(cartItem.Price),
+		OfferPrice:     0,
+		TotalPrice:     int(cartItem.Price) * int(cartItem.Quantity),
+		ProductImages:  cartItem.Images,
+		VariantOptions: skuInfo.VariantOptions,
+		StoreName:      cartItem.StoreName,
+		Banner:         cartItem.Banner,
+		Slug:           cartItem.Slug,
 	}
+	offerStartDate := skuInfo.OfferStartDate.Time
+	offerEndDate := skuInfo.OfferEndDate.Time
+
+	if time.Now().After(offerStartDate) && time.Now().Before(offerEndDate) {
+		item.OfferPrice = int(cartItem.OfferPrice)
+	}
+	if item.OfferPrice != 0 {
+		item.TotalPrice = int(cartItem.OfferPrice) * int(cartItem.Quantity)
+	}
+	return item
 }
 
 func NewCartService(cartRepo repository.ICartRepository) ICartService {

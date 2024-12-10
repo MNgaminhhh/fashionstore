@@ -2,7 +2,8 @@
 INSERT INTO cart (user_id, sku_id, quantity) VALUES ($1, $2, $3);
 
 -- name: GetAllSkuItemInCartByUserId :many
-SELECT c.*, s.price, (s.price*(100-s.offer)/100) AS offer_price, p.id AS product_id, p.images,
+SELECT c.*, s.price, (s.price*(100-s.offer)/100) AS offer_price, p.id AS product_id,
+       p.images, p.name, p.slug,
        v.store_name, v.banner
 FROM cart c
 INNER JOIN skus s ON c.sku_id = s.id
