@@ -70,14 +70,14 @@ const VendorInfoCard: React.FC = () => {
       setError("Không có session token.");
       setLoading(false);
     }
-  }, [sessionToken]);
+  }, []);
 
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
       store_name: vendor?.store_name || "",
       phone_number: vendor?.phone_number || "",
-      email: vendor?.user_email || "", // Thêm trường email
+      email: vendor?.user_email || "",
       description: vendor?.description || "",
       address: vendor?.address || "",
       banner: null as File | null,
@@ -141,16 +141,14 @@ const VendorInfoCard: React.FC = () => {
       try {
         const response = await VendorService.update(updateData, sessionToken);
         if (response?.success || response?.data.success) {
-          notifySuccess("Thông tin Vendor đã được cập nhật thành công.");
-          setVendor(response.data);
-          router.refresh();
+          notifySuccess("Thông tin nhà bán hàng đã được cập nhật thành công");
         } else {
           notifyError(
-            response.data.message || "Cập nhật thông tin Vendor thất bại."
+            response.data.message || "Cập nhật thông tin nhà bán hàng thất bại"
           );
         }
       } catch (err: any) {
-        notifyError(err.message || "Đã xảy ra lỗi khi cập nhật Vendor.");
+        notifyError(err.message || "Đã xảy ra lỗi khi cập nhật nhà bán hàng");
       } finally {
         setUploading(false);
       }

@@ -4,43 +4,27 @@ interface Filters {
   startDate?: string;
   endDate?: string;
 }
-interface cuCartModel {
-  sku_id: string;
-  quantity: number;
+interface cuReviewModel {
+  rating: number;
+  sku_id: number;
+  order_id: number;
+  comment: any;
 }
 
 class ReviewServer extends Base {
   constructor() {
     super({
-      url: "cart",
+      url: "reviews",
     });
-  }
-
-  async getAllCart(
-    token: string | undefined = undefined,
-    withCredentials: boolean = true
-  ) {
-    let url = `/cart`;
-    const rs = await this.execute({
-      url,
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : undefined,
-      },
-      withCredentials: withCredentials,
-    });
-
-    return rs.data;
   }
 
   async create(
-    data: cuCartModel,
+    data: cuReviewModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/cart`,
+      url: `/reviews`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
@@ -52,13 +36,31 @@ class ReviewServer extends Base {
     return rs;
   }
 
+  async update(
+    id: string,
+    token: string | undefined = undefined,
+    withCredentials: boolean = true
+  ) {
+    const rs = await this.execute({
+      url: `/reviews/${id}`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      withCredentials: withCredentials,
+    });
+
+    return rs;
+  }
+
   async delete(
     id: string,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/cart/${id}`,
+      url: `/reviews/${id}`,
       method: "delete",
       headers: {
         "Content-Type": "application/json",

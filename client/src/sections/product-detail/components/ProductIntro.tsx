@@ -22,6 +22,7 @@ import { notifySuccess } from "../../../utils/ToastNotification";
 type Props = { product: ProductModel };
 
 export default function ProductIntro({ product }: Props) {
+  console.log(product);
   const {
     id,
     lowest_price,
@@ -104,7 +105,7 @@ export default function ProductIntro({ product }: Props) {
           <ImageWithHoverZoom
             src={images[selectedImage]}
             alt={name}
-            width={550}
+            width={610}
             height={550}
           />
           {images.length > 1 && (

@@ -48,7 +48,7 @@ export default function ProductTabs({ product, vendor, reviews }: Props) {
           <ProductDescription long_description={product.long_description} />
         )}
         {selectedOption === 1 && <ProductVendorInfo vendor={vendor} />}
-        {selectedOption === 2 && <ProductReview reviews />}
+        {selectedOption === 2 && <ProductReview reviews={reviews} />}
       </Box>
     </>
   );
