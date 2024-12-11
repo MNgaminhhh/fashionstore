@@ -166,6 +166,7 @@ SELECT o.id,
                JSON_BUILD_OBJECT(
                        'product_name', p.name,
                        'images', p.images,
+                       'id', s.id,
                        'variant_option', s.variant_option,
                        'quantity', sob.quantity,
                        'price', sob.price,
