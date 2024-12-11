@@ -113,7 +113,7 @@ func (rc *ReviewsController) UpdateComment(c echo.Context) error {
 func (rc *ReviewsController) DeleteComment(c echo.Context) error {
 	userId := c.Get("uuid").(string)
 	id := c.Param("id")
-	code := rc.reviewService.DeleteComment(userId, id)
+	code := rc.reviewService.DeleteComment(id, userId)
 	if code != response.SuccessCode {
 		return response.ErrorResponse(c, code, "comment fail")
 	}
