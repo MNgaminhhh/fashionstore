@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7bc9a988-d7d0-482e-a16b-ee0e77c4ddf6" name="Changes" comment="update: product vendor and admin">
+      <change beforePath="$PROJECT_DIR$/server/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/server/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/dbconfig.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/dbconfig.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/sql/schema/20241114115640_products.sql" beforeDir="false" afterPath="$PROJECT_DIR$/server/sql/schema/20241114115640_products.sql" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="module" />
+    </option>
+  </component>
+  <component name="GOROOT" url="file://C:/Program Files/Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="MTanTai" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/client/src/app/(layout1)/(landingpage)/public/vendor/page.tsx" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2obwNkIEcSqt98gvl5Gxlhr4ORq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "minh",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "E:/fashionstore/client/src/app/dashboard/admin",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "E:\\ADOBE\\IntelliJ IDEA 2023.2\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\fashionstore\client\src\app\dashboard\admin" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\fashionstore\client\src\app\dashboard\admin" />
+      <recent name="E:\fashionstore\client\src\components\image\components" />
+      <recent name="E:\fashionstore\server\sql\schema" />
+      <recent name="E:\fashionstore\client\src\sections\landing\component" />
+      <recent name="E:\fashionstore\client\src\sections\landing\component\vendorpage" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <working_directory value="$PROJECT_DIR$" />
+      <kind />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <working_directory value="$PROJECT_DIR$" />
+      <kind />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7bc9a988-d7d0-482e-a16b-ee0e77c4ddf6" name="Changes" comment="" />
+      <created>1731151544314</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1731151544314</updated>
+      <workItem from="1731151545394" duration="17439000" />
+      <workItem from="1731228526722" duration="2090000" />
+      <workItem from="1731233370813" duration="4709000" />
+      <workItem from="1731286892431" duration="4175000" />
+      <workItem from="1731335557149" duration="2541000" />
+      <workItem from="1731344350903" duration="611000" />
+      <workItem from="1731374317629" duration="27799000" />
+      <workItem from="1731465108153" duration="16692000" />
+      <workItem from="1731563464807" duration="21568000" />
+      <workItem from="1731722159654" duration="5881000" />
+      <workItem from="1731737107367" duration="8776000" />
+      <workItem from="1731750355516" duration="26875000" />
+      <workItem from="1731862697878" duration="786000" />
+      <workItem from="1731895076275" duration="7375000" />
+      <workItem from="1731980417207" duration="1326000" />
+      <workItem from="1731982839263" duration="1532000" />
+      <workItem from="1732027257256" duration="40000" />
+      <workItem from="1732189277821" duration="1399000" />
+      <workItem from="1732201299269" duration="598000" />
+      <workItem from="1732345716596" duration="346000" />
+      <workItem from="1732355568168" duration="4088000" />
+      <workItem from="1732416138755" duration="15093000" />
+      <workItem from="1732466237195" duration="6106000" />
+      <workItem from="1732502641542" duration="8929000" />
+      <workItem from="1732549014490" duration="6584000" />
+      <workItem from="1732673218991" duration="995000" />
+      <workItem from="1732683281934" duration="14000" />
+    </task>
+    <task id="LOCAL-00001" summary="update: something">
+      <option name="closed" value="true" />
+      <created>1731172119253</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1731172119253</updated>
+    </task>
+    <task id="LOCAL-00002" summary="create: public vendor page">
+      <option name="closed" value="true" />
+      <created>1731230588248</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1731230588248</updated>
+    </task>
+    <task id="LOCAL-00003" summary="create: categories sub child and fix vendor">
+      <option name="closed" value="true" />
+      <created>1731512044847</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1731512044847</updated>
+    </task>
+    <task id="LOCAL-00004" summary="create: product api">
+      <option name="closed" value="true" />
+      <created>1731810396495</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1731810396495</updated>
+    </task>
+    <task id="LOCAL-00005" summary="create: product api">
+      <option name="closed" value="true" />
+      <created>1731810440483</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1731810440483</updated>
+    </task>
+    <task id="LOCAL-00006" summary="create: something">
+      <option name="closed" value="true" />
+      <created>1731981750372</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1731981750372</updated>
+    </task>
+    <task id="LOCAL-00007" summary="update: something">
+      <option name="closed" value="true" />
+      <created>1731982997052</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1731982997052</updated>
+    </task>
+    <task id="LOCAL-00008" summary="update: logo to header">
+      <option name="closed" value="true" />
+      <created>1732419242611</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1732419242611</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update: logo to header">
+      <option name="closed" value="true" />
+      <created>1732419687567</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1732419687567</updated>
+    </task>
+    <task id="LOCAL-00010" summary="update: product vendor and admin">
+      <option name="closed" value="true" />
+      <created>1732677254100</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1732677254100</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="MTanTai" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="create: public vendor page" />
+    <MESSAGE value="create: categories sub child and fix vendor" />
+    <MESSAGE value="create: product api" />
+    <MESSAGE value="create: something" />
+    <MESSAGE value="update: something" />
+    <MESSAGE value="update: logo to header" />
+    <MESSAGE value="update: product vendor and admin" />
+    <option name="LAST_COMMIT_MESSAGE" value="update: product vendor and admin" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/client/src/theme/ThemeOptions.ts</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/server/internal/repository/product_repository.go</url>
+          <line>33</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
