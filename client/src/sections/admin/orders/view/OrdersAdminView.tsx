@@ -102,16 +102,7 @@ export default function OrdersAdminView({ initialOrders, token }: Props) {
   const handleDelete = async () => {
     if (selectedOrderId) {
       try {
-        const response = await Orders.deleteOrder(selectedOrderId, token);
-        if (response.success) {
-          notifySuccess("Đơn hàng đã được xoá thành công.");
-          await applyFilters(currentPage, currentLimit);
-        } else {
-          notifyError(
-            "Xoá đơn hàng thất bại: " +
-              (response.message || "Vui lòng thử lại.")
-          );
-        }
+        notifyError("Có lỗi xảy ra khi xoá đơn hàng.");
       } catch (error: any) {
         notifyError("Có lỗi xảy ra khi xoá đơn hàng.");
       } finally {

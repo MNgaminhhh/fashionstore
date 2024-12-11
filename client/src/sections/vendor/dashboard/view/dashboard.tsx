@@ -1,6 +1,8 @@
+"use client";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
 import WelcomeCard from "../components/WelcomeCard";
+import SalesChart from "../components/SalesChart";
 
 export default function DashboardPageView() {
   return (
@@ -10,6 +12,7 @@ export default function DashboardPageView() {
           <WelcomeCard />
         </Grid>
       </Grid>
+      <SalesChart />
     </Container>
   );
 }

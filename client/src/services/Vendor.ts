@@ -120,6 +120,18 @@ class VendorServer extends Base {
     });
     return rs.data;
   }
+  async update(data: any, token?: string): Promise<any> {
+    const rs = await this.execute({
+      url: `vendors`,
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      data,
+    });
+    return rs.data;
+  }
 }
 const Vendor = new VendorServer();
 export default Vendor;

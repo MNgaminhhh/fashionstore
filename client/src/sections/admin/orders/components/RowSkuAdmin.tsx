@@ -7,7 +7,13 @@ import { Tooltip, Chip, Box, Typography } from "@mui/material";
 type Props = {
   sku: any;
 };
-
+const mappingType: { [key: string]: string } = {
+  pending: "Đang Chuẩn Bị Hàng",
+  paying: "Chờ Thanh Toán",
+  shipping: "Đang Vận Chuyển",
+  delivered: "Đã Giao Hàng",
+  canceled: "Hủy",
+};
 export default function RowSkuAdmin({ sku }: Props) {
   const formatCurrency = (amount: number): string => {
     return amount.toLocaleString("vi-VN") + "₫";

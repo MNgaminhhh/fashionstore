@@ -55,19 +55,23 @@ export default function RowOrdersAdmin({ order, onDelete }: Props) {
     switch (status.toLowerCase()) {
       case "pending":
         color = "warning";
-        label = "Chờ xử lý";
+        label = "Đang Chuẩn Bị Hàng";
+        break;
+      case "pending":
+        pending = "paying";
+        label = "Chờ Thanh Toán";
         break;
       case "shipping":
         color = "info";
         label = "Đang vận chuyển";
         break;
-      case "completed":
+      case "delivered":
         color = "success";
-        label = "Hoàn thành";
+        label = "Đã Giao Hàng";
         break;
-      case "cancelled":
+      case "canceled":
         color = "error";
-        label = "Đã hủy";
+        label = "Hủy";
         break;
       default:
         color = "default";

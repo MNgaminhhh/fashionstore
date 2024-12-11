@@ -18,7 +18,7 @@ export default function WelcomeCard() {
       }}
     >
       <H5 color="info.main" mb={0.5}>
-        Xin Chào
+        Xin chào, nhà bán hàng đã đến với trang quản trị
       </H5>
     </Card>
   );

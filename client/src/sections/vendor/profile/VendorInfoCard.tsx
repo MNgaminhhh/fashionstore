@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Card,
-  CardMedia,
   CardContent,
   Typography,
   Box,
@@ -13,17 +12,16 @@ import {
   TextField,
   Button,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  FormControl,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import Vendor from "../../../services/Vendor";
+import VendorService from "../../../services/Vendor";
+import File from "../../../services/File";
 import { useAppContext } from "../../../context/AppContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
+import MTDropZone from "../../../components/MTDropZone";
+import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -31,17 +29,18 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const VendorInfoCard: React.FC = () => {
-  const { sessionToken, setSessionToken, setCart } = useAppContext();
-  const [vendor, setVendor] = useState<any>(null);
+  const { sessionToken } = useAppContext();
+  const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchVendor = async () => {
       try {
-        const decode: any = jwtDecode(sessionToken);
-        const vendorId = decode?.vendorId;
+        const decoded = jwtDecode(sessionToken);
+        const vendorId = decoded.vendorId;
 
         if (!vendorId) {
           setError("Không tìm thấy thông tin Vendor.");
@@ -49,11 +48,14 @@ const VendorInfoCard: React.FC = () => {
           return;
         }
 
-        const data = await Vendor.findOne(vendorId);
-        if (data.data.success) {
-          setVendor(data.data.data);
+        const response = await VendorService.findOne(vendorId, sessionToken);
+        console.log(response.data.data);
+        if (response.data.success) {
+          setVendor(response.data.data);
         } else {
-          setError(data.message || "Đã xảy ra lỗi khi lấy thông tin Vendor.");
+          setError(
+            response.data.message || "Đã xảy ra lỗi khi lấy thông tin Vendor."
+          );
         }
       } catch (err: any) {
         setError(err.message || "Đã xảy ra lỗi khi lấy thông tin Vendor.");
@@ -62,7 +64,12 @@ const VendorInfoCard: React.FC = () => {
       }
     };
 
-    fetchVendor();
+    if (sessionToken) {
+      fetchVendor();
+    } else {
+      setError("Không có session token.");
+      setLoading(false);
+    }
   }, [sessionToken]);
 
   const formik = useFormik({
@@ -70,9 +77,10 @@ const VendorInfoCard: React.FC = () => {
     initialValues: {
       store_name: vendor?.store_name || "",
       phone_number: vendor?.phone_number || "",
+      email: vendor?.user_email || "", // Thêm trường email
       description: vendor?.description || "",
       address: vendor?.address || "",
-      banner: null,
+      banner: null as File | null,
     },
     validationSchema: Yup.object({
       store_name: Yup.string().required("Tên cửa hàng là bắt buộc"),
@@ -82,37 +90,63 @@ const VendorInfoCard: React.FC = () => {
           "Số điện thoại phải chứa từ 10 đến 15 chữ số"
         )
         .required("Số điện thoại là bắt buộc"),
+      email: Yup.string()
+        .email("Email không hợp lệ")
+        .required("Email là bắt buộc"),
       description: Yup.string(),
       address: Yup.string().required("Địa chỉ là bắt buộc"),
       banner: Yup.mixed().nullable(),
     }),
     onSubmit: async (values) => {
-      const decode: any = jwtDecode(sessionToken);
-      const vendorId = decode?.vendorId;
+      const decode = jwtDecode(sessionToken);
+      const vendorId = decode.vendorId;
 
       if (!vendorId) {
         notifyError("Không tìm thấy thông tin Vendor.");
         return;
       }
 
-      const formData = new FormData();
-      formData.append("store_name", values.store_name);
-      formData.append("phone_number", values.phone_number);
-      formData.append("description", values.description);
-      formData.append("address", values.address);
+      let imageUrl = vendor?.banner || "";
       if (values.banner) {
-        formData.append("banner", values.banner);
+        const formData = new FormData();
+        formData.append("file", values.banner);
+        try {
+          const uploadRes = await File.upload(formData, sessionToken);
+          if (
+            uploadRes.data.success &&
+            uploadRes.data.data.files &&
+            uploadRes.data.data.files.length > 0
+          ) {
+            imageUrl = uploadRes.data.data.files[0];
+          } else {
+            notifyError("Tải ảnh lên thất bại");
+            return;
+          }
+        } catch (err: any) {
+          notifyError(err.message || "Đã xảy ra lỗi khi tải ảnh lên.");
+          return;
+        }
       }
+
+      const updateData = {
+        store_name: values.store_name,
+        phone_number: values.phone_number,
+        user_email: values.email,
+        description: values.description,
+        address: values.address,
+        banner: imageUrl,
+      };
 
       setUploading(true);
       try {
-        const response = await Vendor.update(vendorId, formData, sessionToken);
-        if (response.success) {
+        const response = await VendorService.update(updateData, sessionToken);
+        if (response?.success || response?.data.success) {
           notifySuccess("Thông tin Vendor đã được cập nhật thành công.");
-          setVendor(response.data.data);
+          setVendor(response.data);
+          router.refresh();
         } else {
           notifyError(
-            response.message || "Cập nhật thông tin Vendor thất bại."
+            response.data.message || "Cập nhật thông tin Vendor thất bại."
           );
         }
       } catch (err: any) {
@@ -169,7 +203,6 @@ const VendorInfoCard: React.FC = () => {
                 }
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -188,7 +221,21 @@ const VendorInfoCard: React.FC = () => {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                id="email"
+                name="email"
+                label="Email"
+                type="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 id="address"
@@ -215,66 +262,18 @@ const VendorInfoCard: React.FC = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Button variant="contained" component="label">
-                Upload Banner
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(event) => {
-                    if (
-                      event.currentTarget.files &&
-                      event.currentTarget.files[0]
-                    ) {
-                      formik.setFieldValue(
-                        "banner",
-                        event.currentTarget.files[0]
-                      );
-                    }
-                  }}
-                />
-              </Button>
-              {formik.values.banner && (
-                <Typography variant="body2" sx={{ marginTop: 1 }}>
-                  {formik.values.banner.name}
-                </Typography>
-              )}
-              {!formik.values.banner && vendor.banner && (
-                <Typography variant="body2" sx={{ marginTop: 1 }}>
-                  Banner hiện tại
-                </Typography>
-              )}
+              <MTDropZone
+                onChange={(files: File[]) => {
+                  if (files.length > 0) {
+                    formik.setFieldValue("banner", files[0]);
+                  }
+                }}
+                initialImage={vendor.banner}
+                title="Kéo & thả hình ảnh banner vào đây hoặc chọn tệp"
+                imageSize="Tải lên ảnh banner kích thước tối thiểu 1024x1024"
+              />
             </Grid>
           </Grid>
-
-          <Box display="flex" alignItems="center" gap={1} mt={2}>
-            <Typography variant="body1" fontWeight="bold">
-              Trạng thái:
-            </Typography>
-            <Chip
-              label={
-                vendor.status === "accepted" ? "Đã xác nhận" : "Chưa xác nhận"
-              }
-              color={vendor.status === "accepted" ? "success" : "warning"}
-            />
-          </Box>
-
-          <Box mt={2}>
-            <Typography variant="h6">Thông tin người dùng</Typography>
-            <Typography variant="body1">
-              <strong>Tên đầy đủ:</strong> {vendor.user_full_name}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Email:</strong> {vendor.user_email}
-            </Typography>
-            <Box mt={1}>
-              <img
-                src={vendor.user_avatar || "/default-avatar.png"}
-                alt={`${vendor.user_full_name} Avatar`}
-                style={{ width: "100px", height: "100px", borderRadius: "50%" }}
-              />
-            </Box>
-          </Box>
         </CardContent>
         <Box
           display="flex"
@@ -283,14 +282,16 @@ const VendorInfoCard: React.FC = () => {
           p={2}
           pt={0}
         >
-          <Button
-            color="primary"
-            variant="contained"
-            type="submit"
-            disabled={uploading}
-          >
-            {uploading ? <CircularProgress size={24} /> : "Cập nhật"}
-          </Button>
+          {formik.dirty && (
+            <Button
+              color="primary"
+              variant="contained"
+              type="submit"
+              disabled={uploading}
+            >
+              {uploading ? <CircularProgress size={24} /> : "Cập nhật"}
+            </Button>
+          )}
         </Box>
       </form>
     </StyledCard>
