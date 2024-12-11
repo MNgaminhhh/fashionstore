@@ -26,6 +26,16 @@ class AuthServer extends Base {
     });
     return rs;
   }
+  async logout() {
+    const rs = await this.execute({
+      url: "/auth/logout",
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return rs;
+  }
   async register(email?: string, password?: string, confirm_password?: string) {
     const rs = await this.execute({
       url: "auth/register",
@@ -69,8 +79,7 @@ class AuthServer extends Base {
     });
     return rs;
   }
-  // "new_password": "ad123",
-  // "confirm_password": "ad123"
+
   async resetPassword(
     new_password: string,
     confirm_password: string,

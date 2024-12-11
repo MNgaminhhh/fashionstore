@@ -11,7 +11,7 @@ function renderProductCount(
   perPageProduct: number,
   totalProduct: number
 ): string {
-  let startNumber = (page - 1) * perPageProduct + 1; // Thêm 1 để không có chỉ số 0
+  let startNumber = (page - 1) * perPageProduct + 1;
   let endNumber = page * perPageProduct;
 
   if (endNumber > totalProduct) {

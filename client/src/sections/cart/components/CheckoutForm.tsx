@@ -129,10 +129,8 @@ export default function CheckoutForm({ status = false }: Props) {
       const res = await Cart.orderBill(data, sessionToken);
       if (res?.success || res?.data?.success) {
         notifySuccess("Tạo đơn hàng thành công!");
-        // Lấy checkoutUrl từ response
         const checkoutUrl = res?.data?.data?.checkoutUrl;
         if (checkoutUrl) {
-          // Chuyển hướng sang trang checkoutUrl
           router.push(checkoutUrl);
         }
       } else {
@@ -154,7 +152,6 @@ export default function CheckoutForm({ status = false }: Props) {
     }
   };
 
-  // Điều kiện disable nút thanh toán
   const isDisabled =
     state.cart.filter((item) => item.selected).length === 0 ||
     (status && (!selectedAddressId || !payingMethod));

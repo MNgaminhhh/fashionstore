@@ -23,17 +23,29 @@ const CustomBadge = styled(Badge)(({ theme }) => ({
 export default function NotificationButtons() {
   const { sessionToken } = useAppContext();
   const { state } = useCart();
-  const cartCount = state?.cart?.length;
+  const cartCount = state?.cart ? state.cart.length : null;
   return (
     <Box display="flex" justifyContent="center" alignItems="center" gap={3}>
-      <Link href="/cart" passHref>
-        <CustomBadge badgeContent={cartCount}>
-          <IconButton aria-label="shopping-bag" style={{ color: "white" }}>
-            <ShoppingBagIcon style={{ fontSize: "30px" }} />
-          </IconButton>
-        </CustomBadge>
-      </Link>
-      {!sessionToken ? null : <Profile />}
+      {!sessionToken ? (
+        <>
+          <CustomBadge badgeContent={0}>
+            <IconButton aria-label="shopping-bag" style={{ color: "white" }}>
+              <ShoppingBagIcon style={{ fontSize: "30px" }} />
+            </IconButton>
+          </CustomBadge>
+        </>
+      ) : (
+        <>
+          <Link href="/cart" passHref>
+            <CustomBadge badgeContent={cartCount}>
+              <IconButton aria-label="shopping-bag" style={{ color: "white" }}>
+                <ShoppingBagIcon style={{ fontSize: "30px" }} />
+              </IconButton>
+            </CustomBadge>
+          </Link>
+          <Profile />
+        </>
+      )}
     </Box>
   );
 }

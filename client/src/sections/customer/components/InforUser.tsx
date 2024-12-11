@@ -1,7 +1,7 @@
 import Card from "@mui/material/Card";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { FlexBox } from "../../../components/flexbox";
-import { Small, Span } from "../../../components/Typography"; // Đã sửa lại import từ Typography đúng component
+import { Small, Span } from "../../../components/Typography";
 import UserModel from "../../../models/User.model";
 import * as moment from "moment";
 type Props = { user: UserModel };

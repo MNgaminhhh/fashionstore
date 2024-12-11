@@ -1,5 +1,3 @@
-// components/CartItem.tsx
-
 import React from "react";
 import {
   Card,
@@ -64,7 +62,7 @@ interface CartItemProps {
   variantImage: Record<string, string>;
   storeName: string;
   selected: boolean;
-  readOnly?: boolean; // Thêm prop này
+  readOnly?: boolean;
 }
 
 const CartItem: React.FC<CartItemProps> = ({

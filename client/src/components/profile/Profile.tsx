@@ -66,9 +66,8 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      setSessionToken(null);
-      notifySuccess("Đã đăng xuất thành công!");
       router.push("/logout");
+      router.refresh();
     } catch (error) {
       notifyError("Đã xảy ra lỗi khi đăng xuất.");
     }

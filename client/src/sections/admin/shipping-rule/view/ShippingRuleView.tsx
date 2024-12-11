@@ -230,7 +230,6 @@ export default function ShippingRuleView({ shippingRulesData, token }: Props) {
               <TableContainer component={Scrollbar}>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
-                    {/* Header Row */}
                     <TableRow>
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
@@ -242,7 +241,6 @@ export default function ShippingRuleView({ shippingRulesData, token }: Props) {
                         </StyledTableCell>
                       ))}
                     </TableRow>
-                    {/* Search/Filter Row */}
                     <TableRow>
                       {tableHeading.map((headCell) => (
                         <StyledTableCell

@@ -4,7 +4,6 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import { alpha, styled } from "@mui/material/styles";
 
-// STYLED COMPONENT
 export const ContentWrapper = styled("div", {
   shouldForwardProp: (prop) => prop !== "img",
 })<{ img: string }>(({ theme, img }) => ({

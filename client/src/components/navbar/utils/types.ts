@@ -12,4 +12,5 @@ export type NavList = {
   child: Nav[];
   megaMenu: boolean;
   megaMenuWithSub: boolean;
+  allowedRoles: string[];
 };

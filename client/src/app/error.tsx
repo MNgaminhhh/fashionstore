@@ -41,8 +41,7 @@ export default function Error({ error, reset }: Props) {
           Đã xảy ra sự cố!
         </H1>
         <H6 mb={3} color="text.secondary">
-          Rất tiếc, chúng tôi đã gặp lỗi khi tải trang. Vui lòng thử lại hoặc
-          quay trở về trang chủ.
+          Rất tiếc, chúng tôi đã gặp lỗi khi tải trang. Vui lòng thử lại!
         </H6>
         <Button
           color="primary"

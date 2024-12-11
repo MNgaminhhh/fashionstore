@@ -29,11 +29,11 @@ export default function RowVendors({ vendor, onDelete }: Props) {
       null: "-",
     }[vendor.status as keyof typeof statusLabel] || "-";
   const handleEdit = (id: string) => {
-    router.push(`/admin/vendors/${id}`);
+    router.push(`/dashboard/admin/vendors/${id}`);
   };
-    const handleStatusChange = (newStatus: string) => {
-        onUpdateStatus(vendor.id, newStatus);
-    };
+  const handleStatusChange = (newStatus: string) => {
+    onUpdateStatus(vendor.id, newStatus);
+  };
   return (
     <StyledTableRow tabIndex={-1} role="checkbox">
       <StyledTableCell align="left" sx={{ fontWeight: 400 }}>

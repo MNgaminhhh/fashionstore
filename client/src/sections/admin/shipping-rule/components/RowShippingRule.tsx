@@ -5,7 +5,7 @@ import {
   StyledIconButton,
   StyledTableCell,
   StyledTableRow,
-} from "../../../styles"; // Adjust the import path as necessary
+} from "../../../styles";
 import { useRouter } from "next/navigation";
 import { Box, Tooltip } from "@mui/material";
 import MTSwitch from "../../../../components/MTSwitch";

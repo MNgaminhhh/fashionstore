@@ -31,7 +31,7 @@ import DialogBox from "../../../../components/dialog/DialogBox";
 import RowFlashSale from "../components/RowFlashSale";
 import FlashSaleModel from "../../../../models/FlashSale.model";
 import FlashSale from "../../../../services/FlashSale";
-import dayjs from "dayjs"; // Import dayjs
+import dayjs from "dayjs";
 import { tableHeading } from "../components/data";
 
 type Props = {

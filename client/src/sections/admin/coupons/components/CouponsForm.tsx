@@ -144,7 +144,6 @@ export default function CouponsForm({ coupon, token }: Props) {
                     label="Kiểu"
                     onChange={handleFieldChange(handleChange, setFieldValue)}
                   >
-                    {/* <MenuItem value="shipping_cost">Phí vận chuyển</MenuItem> */}
                     <MenuItem value="price">Giá trị đơn hàng</MenuItem>
                   </Select>
                   {touched.field && errors.field && (

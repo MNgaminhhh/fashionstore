@@ -50,25 +50,6 @@ const VALIDATION_SCHEMA = yup.object().shape({
     .string()
     .max(500, "Mô tả ngắn không được vượt quá 500 ký tự"),
   long_description: yup.string(),
-  // offer: yup
-  //   .number()
-  //   .min(0, "Ưu đãi phải không âm")
-  //   .max(100, "Ưu đãi không được vượt quá 100%"),
-  // offer_start_date: yup.date().nullable(),
-  // offer_end_date: yup
-  //   .date()
-  //   .nullable()
-  //   .when("offer", {
-  //     is: (offer: number) => offer > 0,
-  //     then: (schema: yup.DateSchema<Date | null>) =>
-  //       schema
-  //         .min(
-  //           yup.ref("offer_start_date"),
-  //           "Ngày kết thúc ưu đãi phải sau ngày bắt đầu"
-  //         )
-  //         .required("Ngày kết thúc ưu đãi là bắt buộc khi có ưu đãi"),
-  //     otherwise: (schema: yup.DateSchema<Date | null>) => schema.nullable(),
-  //   }),
 });
 
 type Props = {

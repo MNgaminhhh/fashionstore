@@ -1,3 +1,4 @@
+// LevelMuiltiMenu.tsx
 
 import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
@@ -14,11 +15,12 @@ import {
 import { useLayout } from "../../../context/LayoutContext";
 import Scrollbar from "../../../../../scrollbar";
 import Accordion from "./Accordion";
+import { useAppContext } from "../../../../../../context/AppContext";
 
 export default function LevelMuiltiMenu() {
   const router = useRouter();
   const pathname = usePathname();
-
+  const { role } = useAppContext();
   const { isCompact, topNavbarHeight } = useLayout();
 
   const activeRoute = (path: string) => pathname === path;
@@ -26,9 +28,20 @@ export default function LevelMuiltiMenu() {
   const handleNavigation = (path: string) => {
     router.push(path);
   };
-  const menuData = navigation;
-  const renderLevels = (data: any) => {
-    return data.map((item: any, index: number) => {
+
+  const menuData: any[] = navigation;
+
+  const hasAccess = (item: any): boolean => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) return false;
+    return item.allowedRoles.includes(role);
+  };
+
+  const renderLevels = (data: any[], isRoot = false) => {
+    return data.map((item, index) => {
+      if (!hasAccess(item)) {
+        return null;
+      }
+
       if (item.type === "label") {
         return (
           <ListLabel key={index} compact={isCompact}>
@@ -37,10 +50,16 @@ export default function LevelMuiltiMenu() {
         );
       }
 
-      if (item.children) {
+      if (item.children && item.children.length > 0) {
+        const accessibleChildren = item.children.filter(hasAccess);
+
+        if (accessibleChildren.length === 0) {
+          return null;
+        }
+
         return (
           <Accordion key={index} item={item}>
-            {renderLevels(item.children)}
+            {renderLevels(accessibleChildren)}
           </Accordion>
         );
       }

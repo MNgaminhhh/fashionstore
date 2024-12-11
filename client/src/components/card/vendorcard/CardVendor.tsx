@@ -35,7 +35,7 @@ export default function CardVendor({
     <StyledCard
       sx={{
         transition: "transform 0.3s, box-shadow 0.3s",
-        borderRadius: "8px", // Góc bo tròn
+        borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         "&:hover": {
           transform: "scale(1.05)",

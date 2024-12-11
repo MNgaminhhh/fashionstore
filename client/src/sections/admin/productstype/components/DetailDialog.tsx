@@ -223,9 +223,8 @@ export default function DetailDialog(props: Props) {
                     variant="outlined"
                   />
                 )}
-                // To ensure the dropdown is rendered within the dialog
                 disablePortal
-                popupIcon={<></>} // Optional: Remove the dropdown icon if desired
+                popupIcon={<></>}
                 sx={{ mb: 2 }}
               />
               <Button

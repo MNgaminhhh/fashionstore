@@ -15,6 +15,7 @@ import ProductModel from "../../../models/Product.model";
 import { Pagination, Select, MenuItem } from "@mui/material";
 import { get } from "lodash";
 import Products from "../../../services/Products";
+import { useAppContext } from "../../../context/AppContext";
 
 const initialFilters: ProductFilters = {
   productType: [],
@@ -40,7 +41,7 @@ export default function ProductSearchPageView({ initialProducts }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const pageSizes = [5, 10, 20, 50];
-
+  const { role } = useAppContext();
   const handleChangeFilters = (
     key: ProductFilterKeys,
     values: ProductFilterValues
