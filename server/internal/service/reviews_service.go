@@ -16,10 +16,76 @@ type IReviewsService interface {
 	UserReviewProduct(userId string, customParam validator.CreateReviewValidator) int
 	UpdateReview(userId string, id string, customParam validator.UpdateReviewValidator) int
 	DeleteReview(id string, userId string) int
+
+	UserComment(userId string, customParam validator.CreateCommentValidator) int
+	UpdateComment(userId string, commentId string, customParam validator.UpdateComment) int
+	DeleteComment(id string, userId string) int
 }
 
 type ReviewsService struct {
 	reviewsRepo repository.IReviewsRepository
+}
+
+func (r ReviewsService) UserComment(userId string, customParam validator.CreateCommentValidator) int {
+	userUUID, _ := uuid.Parse(userId)
+	err := r.reviewsRepo.CreateComment(userUUID, customParam)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (r ReviewsService) UpdateComment(userId string, commentId string, customParam validator.UpdateComment) int {
+	userUUID, _ := uuid.Parse(userId)
+	commentUUID, _ := uuid.Parse(commentId)
+	comment, findEr := r.reviewsRepo.GetCommentById(commentUUID)
+	if findEr != nil {
+		var pqErr *pq.Error
+		if errors.As(findEr, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeNoContent
+	}
+	if comment.UserID != userUUID {
+		return response.ErrCodeInvalidRole
+	}
+	if customParam.Comment != nil {
+		commentJSON, _ := json.Marshal(customParam.Comment)
+		comment.Comment = commentJSON
+	}
+	err := r.reviewsRepo.UpdateComment(comment)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
+}
+
+func (r ReviewsService) DeleteComment(id string, userId string) int {
+	commentId, _ := uuid.Parse(id)
+	comment, findErr := r.reviewsRepo.GetCommentById(commentId)
+	if findErr != nil {
+		return response.ErrCodeNoContent
+	}
+	if comment.UserID.String() != userId {
+		return response.ErrCodeInvalidRole
+	}
+	err := r.reviewsRepo.DeleteComment(commentId)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return pg_error.GetMessageError(pqErr)
+		}
+		return response.ErrCodeInternal
+	}
+	return response.SuccessCode
 }
 
 func (r ReviewsService) UserReviewProduct(userId string, customParam validator.CreateReviewValidator) int {

@@ -14,7 +14,7 @@ CREATE TABLE reviews(
 
 CREATE TABLE comments(
      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id UUID NOT NULL REFERENCES skus(id) ON DELETE CASCADE,
+     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
      review_id UUID NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
      comment JSONB NOT NULL,
      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -17,3 +17,12 @@ type UpdateReviewValidator struct {
 	Rating  *float64     `json:"rating"`
 	Comment []CommentObj `json:"comment" validate:"min=1,dive,required"`
 }
+
+type CreateCommentValidator struct {
+	ReviewId string       `json:"review_id" validate:"required"`
+	Comment  []CommentObj `json:"comment" validate:"required,min=1,dive,required"`
+}
+
+type UpdateComment struct {
+	Comment []CommentObj `json:"comment" validate:"min=1,dive,required"`
+}
