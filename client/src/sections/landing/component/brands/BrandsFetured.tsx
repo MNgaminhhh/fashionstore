@@ -35,29 +35,23 @@ export default function BrandsFeatured({ brands = [] }: Props) {
       >
         <Slider slidesToShow={6} arrows={true} responsive={responsive} autoplay>
           {loopedBrands.map((brand, index) => (
-            <Link href={`/vendor/${brand.store_id}`}>
-              <FlexCenterRow
-                key={`${brand.id}-${index}`}
-                height={150}
-                width="100%"
-                sx={{
-                  position: "relative",
-                  overflow: "hidden",
-                  borderRadius: 2,
-                  transition: "transform 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.05)",
-                    boxShadow: 3,
-                  },
-                }}
-              >
-                <MTImage
-                  alt={`Thương hiệu ${brand.id}`}
-                  src={brand.image}
-                  fill
-                />
-              </FlexCenterRow>
-            </Link>
+            <FlexCenterRow
+              key={`${brand.id}-${index}`}
+              height={150}
+              width="100%"
+              sx={{
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: 2,
+                transition: "transform 0.3s",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  boxShadow: 3,
+                },
+              }}
+            >
+              <MTImage alt={`Thương hiệu ${brand.id}`} src={brand.image} fill />
+            </FlexCenterRow>
           ))}
         </Slider>
       </Box>

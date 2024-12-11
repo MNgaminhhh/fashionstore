@@ -4,6 +4,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import ProductComment from "./ProductComment";
 import ReviewModel from "../../../models/Review.model";
+import { Typography } from "@mui/material";
 
 interface Props {
   vendorid: string;
@@ -22,7 +23,7 @@ export default function ProductReview({
   return (
     <>
       <Box>
-        {reviews.length > 0 ? (
+        {reviews?.length > 0 ? (
           reviews.map((review) => (
             <ProductComment
               idV={vendorid}

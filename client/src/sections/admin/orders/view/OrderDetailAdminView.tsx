@@ -76,7 +76,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
 
   const formik = useFormik({
     initialValues: {
-      order_status: order.order_status,
+      order_status: order?.order_status,
     },
     validationSchema: Yup.object({
       order_status: Yup.string()
