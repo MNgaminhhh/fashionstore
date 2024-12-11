@@ -597,6 +597,8 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			skusRes = append(skusRes, mapData)
 		}
 		var reviewsRes []map[string]interface{}
+		var totalRatings float64
+		totalRatings = 0
 		for _, review := range reviews {
 			allRepliesOfReviews, _ := reviewsRepo.GetAllCommentsByReviewId(review.ID)
 			var repliesMap []map[string]interface{}
@@ -624,6 +626,10 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 				"replies":           repliesMap,
 				"number_of_replies": len(repliesMap),
 			})
+			totalRatings += review.Rating
+		}
+		if len(reviews) != 0 {
+			totalRatings = totalRatings / float64(len(reviews))
 		}
 		lowest, highest := getLowestHighestPrice(skus)
 		return &ProductResponse{
@@ -647,8 +653,9 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 				"address":      product.VendorAddress,
 				"banner":       product.VendorBanner,
 			},
-			Skus:    skusRes,
-			Reviews: reviewsRes,
+			Skus:        skusRes,
+			Reviews:     reviewsRes,
+			RatingPoint: totalRatings,
 		}, nil
 	default:
 		return &ProductResponse{}, nil
