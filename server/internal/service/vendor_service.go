@@ -7,6 +7,7 @@ import (
 	"backend/internal/repository"
 	"backend/internal/validator"
 	"backend/pkg/response"
+	"database/sql"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -107,7 +108,10 @@ func (vs *VendorService) UpdateVendor(userId string, customParam validator.Updat
 		vendor.Address = *customParam.Address
 	}
 	if customParam.Description != nil {
-		vendor.Description.String = *customParam.Description
+		vendor.Description = sql.NullString{
+			String: *customParam.Description,
+			Valid:  true,
+		}
 	}
 	if customParam.Email != nil {
 		vendor.Email = *customParam.Email
