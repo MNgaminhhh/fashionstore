@@ -22,3 +22,26 @@ WHERE id = $3;
 -- name: DeleteReviewById :exec
 DELETE FROM reviews
 WHERE id = $1 AND user_id = $2;
+
+-- name: CreateComments :exec
+INSERT INTO comments (user_id, review_id, comment) VALUES ($1, $2, $3);
+
+-- name: GetAllCommentsByReviewId :many
+SELECT c.*, u.full_name, u.avt
+FROM comments c
+INNER JOIN users u ON u.id = c.user_id
+WHERE c.review_id = $1;
+
+-- name: GetCommentById :one
+SELECT *
+FROM comments
+WHERE id = $1;
+
+-- name: UpdateComment :exec
+UPDATE comments
+SET comment = $1
+WHERE id = $2;
+
+-- name: DeleteComment :exec
+DELETE FROM comments
+WHERE id = $1;

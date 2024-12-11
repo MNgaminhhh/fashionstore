@@ -572,6 +572,7 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 			ShowFlashSale:   &p.Show.Bool,
 		}, nil
 	case *ProductWithSkus:
+		reviewsRepo := repository.NewReviewsRepository()
 		product := p.Product
 		skus := p.Skus
 		reviews := p.Reviews
@@ -597,16 +598,31 @@ func mapProductToResponseData[T any](data *T) (*ProductResponse, error) {
 		}
 		var reviewsRes []map[string]interface{}
 		for _, review := range reviews {
+			allRepliesOfReviews, _ := reviewsRepo.GetAllCommentsByReviewId(review.ID)
+			var repliesMap []map[string]interface{}
+			for _, reply := range allRepliesOfReviews {
+				replyMap := map[string]interface{}{
+					"id":         reply.ID,
+					"user_name":  reply.FullName.String,
+					"avt":        reply.Avt.String,
+					"comment":    reply.Comment,
+					"created_at": reply.CreatedAt.Time.Format("02-01-2006 15:04"),
+					"updated_at": reply.UpdatedAt.Time.Format("02-01-2006 15:04"),
+				}
+				repliesMap = append(repliesMap, replyMap)
+			}
 			reviewsRes = append(reviewsRes, map[string]interface{}{
-				"id":         review.ID,
-				"sku_id":     review.SkuID,
-				"user_id":    review.UserID,
-				"user_name":  review.FullName,
-				"avt":        review.Avt,
-				"created_at": review.CreatedAt.Time.Format("02-01-2006 15:04"),
-				"updated_at": review.UpdatedAt.Time.Format("02-01-2006 15:04"),
-				"comment":    review.Comment,
-				"rating":     review.Rating,
+				"id":                review.ID,
+				"sku_id":            review.SkuID,
+				"user_id":           review.UserID,
+				"user_name":         review.FullName,
+				"avt":               review.Avt,
+				"created_at":        review.CreatedAt.Time.Format("02-01-2006 15:04"),
+				"updated_at":        review.UpdatedAt.Time.Format("02-01-2006 15:04"),
+				"comment":           review.Comment,
+				"rating":            review.Rating,
+				"replies":           repliesMap,
+				"number_of_replies": len(repliesMap),
 			})
 		}
 		lowest, highest := getLowestHighestPrice(skus)

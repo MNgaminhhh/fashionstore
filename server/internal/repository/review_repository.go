@@ -14,6 +14,12 @@ type IReviewsRepository interface {
 	GetReviewById(id uuid.UUID) (*database.Review, error)
 	UpdateReview(review *database.Review) error
 	DeleteReview(id uuid.UUID, userId uuid.UUID) error
+
+	CreateComment(userId uuid.UUID, customParam validator.CreateCommentValidator) error
+	GetAllCommentsByReviewId(reviewId uuid.UUID) ([]database.GetAllCommentsByReviewIdRow, error)
+	GetCommentById(id uuid.UUID) (*database.Comment, error)
+	UpdateComment(comment *database.Comment) error
+	DeleteComment(id uuid.UUID) error
 }
 
 type ReviewsRepository struct {
@@ -68,6 +74,49 @@ func (r ReviewsRepository) DeleteReview(id uuid.UUID, userId uuid.UUID) error {
 		UserID: userId,
 	}
 	err := r.sqlc.DeleteReviewById(ctx, param)
+	return err
+}
+
+func (r ReviewsRepository) CreateComment(userId uuid.UUID, customParam validator.CreateCommentValidator) error {
+	reviewId, _ := uuid.Parse(customParam.ReviewId)
+	comments := customParam.Comment
+	commentJSON, _ := json.Marshal(comments)
+	param := database.CreateCommentsParams{
+		UserID:   userId,
+		ReviewID: reviewId,
+		Comment:  commentJSON,
+	}
+	err := r.sqlc.CreateComments(ctx, param)
+	return err
+}
+
+func (r ReviewsRepository) GetAllCommentsByReviewId(reviewId uuid.UUID) ([]database.GetAllCommentsByReviewIdRow, error) {
+	results, err := r.sqlc.GetAllCommentsByReviewId(ctx, reviewId)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func (r ReviewsRepository) GetCommentById(id uuid.UUID) (*database.Comment, error) {
+	result, err := r.sqlc.GetCommentById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r ReviewsRepository) UpdateComment(comment *database.Comment) error {
+	param := database.UpdateCommentParams{
+		Comment: comment.Comment,
+		ID:      comment.ID,
+	}
+	err := r.sqlc.UpdateComment(ctx, param)
+	return err
+}
+
+func (r ReviewsRepository) DeleteComment(id uuid.UUID) error {
+	err := r.sqlc.DeleteOrderBill(ctx, id)
 	return err
 }
 
