@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import East from "@mui/icons-material/East";
-import Star from "@mui/icons-material/Star";
+import Star from "@mui/icons-material/Star"; // Thêm biểu tượng sao
 import { parse, format } from "date-fns";
 import { TableRow } from "../../customer/styles";
 import { Paragraph, H5 } from "../../../components/Typography";
@@ -28,14 +28,13 @@ const mappingType: { [key: string]: string } = {
 };
 
 type SKU = {
-  sku_id: string;
+  id: string;
   product_name: string;
 };
 
 type Props = { order: any };
 
 export default function OrderRow({ order }: Props) {
-  console.log(order);
   const router = useRouter();
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
@@ -68,7 +67,7 @@ export default function OrderRow({ order }: Props) {
   };
 
   const parsedDate = parse(order.updated_at, "dd-MM-yyyy HH:mm", new Date());
-  const formattedDate = format(parsedDate, " HH:mm dd/MM/yyyy");
+  const formattedDate = format(parsedDate, "HH:mm dd/MM/yyyy");
 
   const isDelivered = order.order_status.toLowerCase() === "delivered";
 
@@ -83,9 +82,15 @@ export default function OrderRow({ order }: Props) {
       <Link href={`/orders/${order.id}`} passHref>
         <TableRow
           sx={{
+            display: "grid",
             gridTemplateColumns: isDelivered
               ? "2fr 1fr 1fr 1fr 1fr 1fr"
               : "2fr 1fr 1fr 1fr 1fr",
+            alignItems: "center",
+            padding: "16px",
+            "&:hover": {
+              backgroundColor: "grey.100",
+            },
             cursor: "pointer",
           }}
         >
@@ -124,7 +129,11 @@ export default function OrderRow({ order }: Props) {
             </Box>
           )}
 
-          <Box display={{ sm: "inline-flex", xs: "none" }} justifyContent="end">
+          <Box
+            display={{ sm: "inline-flex", xs: "none" }}
+            justifyContent="end"
+            alignItems="center"
+          >
             <IconButton>
               <East
                 fontSize="small"
@@ -144,7 +153,7 @@ export default function OrderRow({ order }: Props) {
           onClose={() => setIsReviewOpen(false)}
           orderId={order.id}
           skus={order.skus}
-          orderIdForReview={order.order_id}
+          orderIdForReview={order.id}
         />
       )}
     </>

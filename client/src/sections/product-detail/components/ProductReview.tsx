@@ -1,103 +1,45 @@
 "use client";
 
+import React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Rating from "@mui/material/Rating";
-import TextField from "@mui/material/TextField";
-import * as yup from "yup";
-import { useFormik } from "formik";
 import ProductComment from "./ProductComment";
-import { H2, H5 } from "../../../components/Typography";
-import { useAppContext } from "../../../context/AppContext";
 import ReviewModel from "../../../models/Review.model";
 
-type Props = { reviews: ReviewModel };
-export default function ProductReview({ reviews }: Props) {
+interface Props {
+  vendorid: string;
+  reviews: ReviewModel[];
+  onDeleteReview: (deletedReviewId: string) => void;
+  onUpdateReview: (updatedReview: ReviewModel) => void;
+}
+
+export default function ProductReview({
+  vendorid,
+  reviews,
+  onDeleteReview,
+  onUpdateReview,
+}: Props) {
   console.log(reviews);
-  const initialValues = {
-    rating: 0,
-    comment: "",
-    date: new Date().toISOString(),
-  };
-  const { sessionToken } = useAppContext();
-  const validationSchema = yup.object().shape({
-    rating: yup.number().required("required"),
-    comment: yup.string().required("required"),
-  });
-
-  const {
-    dirty,
-    values,
-    errors,
-    touched,
-    isValid,
-    handleBlur,
-    handleChange,
-    handleSubmit,
-    setFieldValue,
-  } = useFormik({
-    initialValues,
-    validationSchema,
-    onSubmit: async (values, { resetForm }) => {
-      resetForm();
-    },
-  });
-
   return (
-    <div>
-      {reviews?.map((item, ind) => (
-        <ProductComment {...item} key={ind} />
-      ))}
-      {sessionToken ? (
-        <>
-          <H2 fontWeight="600" mt={7} mb={2.5}>
-            Viết đánh giá cho sản phẩm này
-          </H2>
-
-          <form onSubmit={handleSubmit}>
-            <Box mb={2.5}>
-              <Box display="flex" mb={1.5} gap={0.5}>
-                <H5 color="grey.700">Đánh giá của bạn</H5>
-                <H5 color="error.main">*</H5>
-              </Box>
-
-              <Rating
-                color="warn"
-                size="medium"
-                value={values.rating}
-                onChange={(_, value: any) => setFieldValue("rating", value)}
-              />
-            </Box>
-
-            <Box mb={3}>
-              <TextField
-                rows={8}
-                multiline
-                fullWidth
-                name="comment"
-                variant="outlined"
-                onBlur={handleBlur}
-                value={values.comment}
-                onChange={handleChange}
-                placeholder="Write a review here..."
-                error={!!touched.comment && !!errors.comment}
-                helperText={(touched.comment && errors.comment) as string}
-              />
-            </Box>
-
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              disabled={!(dirty && isValid)}
-            >
-              Gửi
-            </Button>
-          </form>
-        </>
-      ) : (
-        <></>
-      )}
-    </div>
+    <>
+      <Box>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <ProductComment
+              idV={vendorid}
+              key={review.id}
+              review={review}
+              onDelete={onDeleteReview}
+              onUpdate={onUpdateReview}
+            />
+          ))
+        ) : (
+          <Box textAlign="center" mt={4}>
+            <Typography variant="body1" color="textSecondary">
+              Chưa có đánh giá nào.
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </>
   );
 }

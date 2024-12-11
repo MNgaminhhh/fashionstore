@@ -23,6 +23,7 @@ import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import MTDropZone from "../../../components/MTDropZone";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import Vendor from "../../../services/Vendor";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(4),
@@ -48,8 +49,7 @@ const VendorInfoCard: React.FC = () => {
           return;
         }
 
-        const response = await VendorService.findOne(vendorId, sessionToken);
-        console.log(response.data.data);
+        const response = await Vendor.findOne(vendorId);
         if (response.data.success) {
           setVendor(response.data.data);
         } else {

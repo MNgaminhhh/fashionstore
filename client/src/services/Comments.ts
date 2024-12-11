@@ -1,30 +1,24 @@
 import Base from "./Base";
 
-interface Filters {
-  startDate?: string;
-  endDate?: string;
-}
-interface cuReviewModel {
-  rating: number;
-  sku_id: number;
-  order_id: number;
+interface cuCmtModel {
+  review_id: number;
   comment: any;
 }
 
-class ReviewServer extends Base {
+class CommentsServer extends Base {
   constructor() {
     super({
-      url: "reviews",
+      url: "comments",
     });
   }
 
   async create(
-    data: cuReviewModel,
+    data: cuCmtModel,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/reviews`,
+      url: `/comments`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
@@ -43,7 +37,7 @@ class ReviewServer extends Base {
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/reviews/${id}`,
+      url: `/comments/${id}`,
       method: "put",
       headers: {
         "Content-Type": "application/json",
@@ -62,7 +56,7 @@ class ReviewServer extends Base {
     withCredentials: boolean = true
   ) {
     const rs = await this.execute({
-      url: `/reviews/${id}`,
+      url: `/comments/${id}`,
       method: "delete",
       headers: {
         "Content-Type": "application/json",
@@ -75,5 +69,5 @@ class ReviewServer extends Base {
   }
 }
 
-const Review = new ReviewServer();
-export default Review;
+const Comments = new CommentsServer();
+export default Comments;

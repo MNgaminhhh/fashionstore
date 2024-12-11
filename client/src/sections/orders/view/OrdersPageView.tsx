@@ -44,8 +44,6 @@ type OrdersData = {
 type Props = { orders: OrdersData };
 
 export default function OrdersPageView({ orders }: Props) {
-  console.log(orders);
-
   const LIST_ORDER = [
     { title: orders.total_results.toString(), subtitle: "Tất cả đơn hàng" },
     { title: orders.pending_count.toString(), subtitle: "Đang chuẩn bị hàng" },

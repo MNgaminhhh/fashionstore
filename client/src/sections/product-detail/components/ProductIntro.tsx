@@ -19,10 +19,9 @@ import { Typography } from "@mui/material";
 import ImageWithHoverZoom from "./ImageWithHoverZoom";
 import { notifySuccess } from "../../../utils/ToastNotification";
 
-type Props = { product: ProductModel };
+type Props = { product: any };
 
 export default function ProductIntro({ product }: Props) {
-  console.log(product);
   const {
     id,
     lowest_price,

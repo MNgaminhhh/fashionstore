@@ -1,16 +1,18 @@
+// components/ProductTabs.tsx
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import styled from "@mui/material/styles/styled";
 import ProductDescription from "./ProductDescription";
+import ProductVendorInfo from "./ProductVendorInfo";
+import ProductReview from "./ProductReview";
 import ProductModel from "../../../models/Product.model";
 import VendorModel from "../../../models/Vendor.model";
-import ProductVendorInfo from "./ProductVendorInfo";
 import ReviewModel from "../../../models/Review.model";
-import ProductReview from "./ProductReview";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   minHeight: 0,
@@ -22,14 +24,43 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     textTransform: "capitalize",
   },
 }));
+
 type Props = {
   product: ProductModel;
   vendor: VendorModel;
-  reviews: ReviewModel;
+  reviews: ReviewModel[];
 };
+
 export default function ProductTabs({ product, vendor, reviews }: Props) {
   const [selectedOption, setSelectedOption] = useState(0);
+  const [currentReviews, setCurrentReviews] = useState<ReviewModel[]>(reviews);
+
+  useEffect(() => {
+    setCurrentReviews(reviews);
+  }, [reviews]);
+
   const handleOptionClick = (_, value: number) => setSelectedOption(value);
+
+  // Hàm xử lý xóa đánh giá
+  const handleDeleteReview = (deletedReviewId: string) => {
+    setCurrentReviews((prevReviews) =>
+      prevReviews.filter((review) => review.id !== deletedReviewId)
+    );
+  };
+
+  // Hàm xử lý cập nhật đánh giá
+  const handleUpdateReview = (updatedReview: ReviewModel) => {
+    if (!updatedReview || !updatedReview.id) {
+      console.error("Updated review is undefined or missing 'id'");
+      return;
+    }
+    setCurrentReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review.id === updatedReview.id ? updatedReview : review
+      )
+    );
+  };
+
   return (
     <>
       <StyledTabs
@@ -48,7 +79,14 @@ export default function ProductTabs({ product, vendor, reviews }: Props) {
           <ProductDescription long_description={product.long_description} />
         )}
         {selectedOption === 1 && <ProductVendorInfo vendor={vendor} />}
-        {selectedOption === 2 && <ProductReview reviews={reviews} />}
+        {selectedOption === 2 && (
+          <ProductReview
+            vendorid={product?.vendor.vendorId || ""}
+            reviews={currentReviews}
+            onDeleteReview={handleDeleteReview}
+            onUpdateReview={handleUpdateReview}
+          />
+        )}
       </Box>
     </>
   );

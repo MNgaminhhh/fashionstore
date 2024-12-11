@@ -54,7 +54,6 @@ type Props = {
 };
 
 const DetailOrderPageView = ({ orderData }: Props) => {
-  console.log(orderData);
   const { orderBill, skus } = orderData;
   const mappingType: { [key: string]: string } = {
     pending: "Đang Chuẩn Bị Hàng",

@@ -101,7 +101,6 @@ const OrderDetail: React.FC<Props> = ({ orderDetail }) => {
     setUpdateError(null);
     try {
       const newStatus = !skus[0].is_prepared;
-      console.log(newStatus);
       const response = await Orders.updateStatusByVendor(
         orderBill.id,
         newStatus,
