@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"sort"
 )
 
 type OrderBillsController struct {
@@ -101,6 +102,7 @@ func (oc *OrderBillsController) GetAllOrderBillsOfAdmin(c echo.Context) error {
 	}
 	if filterParam.OrderStatus != nil {
 		orderStatus := []string{"pending", "paying", "shipping", "delivered", "cancel"}
+		sort.Strings(orderStatus)
 		_, isValid := slices.BinarySearch(orderStatus, *filterParam.OrderStatus)
 		if !isValid {
 			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
@@ -125,7 +127,9 @@ func (oc *OrderBillsController) UpdateOrderStatusByAdmin(c echo.Context) error {
 	}
 	if reqParam.OrderStatus != nil {
 		orderStatus := []string{"pending", "paying", "shipping", "delivered", "cancel"}
-		_, isValid := slices.BinarySearch(orderStatus, *reqParam.OrderStatus)
+		sort.Strings(orderStatus)
+		ind, isValid := slices.BinarySearch(orderStatus, *reqParam.OrderStatus)
+		log.Println(ind, isValid)
 		if !isValid {
 			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
 		}
