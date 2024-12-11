@@ -34,11 +34,12 @@ import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
-import { tableHeading } from "../components/data";
+import { tableHeading2 } from "../components/data";
+import { H1, H3, H4 } from "../../../../components/Typography";
 
 const mappingType: { [key: string]: string } = {
   pending: "Đang Chuẩn Bị Hàng",
-  paying: "Đang Thanh Toán",
+  paying: "Chờ Thanh Toán",
   shipping: "Đang Vận Chuyển",
   delivered: "Đã Giao Hàng",
   canceled: "Hủy",
@@ -158,9 +159,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
 
   return (
     <Box p={4}>
-      <Typography variant="h4" gutterBottom>
-        Chi Tiết Đơn Hàng
-      </Typography>
+      <H1 marginBottom={2}>Chi Tiết Đơn Hàng</H1>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -172,34 +171,32 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Mã đơn hàng:</Typography>
-              <Typography variant="body1" color="#1976d2" gutterBottom>
+              <H4>Mã đơn hàng:</H4>
+              <H4 color="#1976d2" gutterBottom>
                 #{order.id}
-              </Typography>
+              </H4>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Trạng thái:</Typography>
+              <H4>Trạng thái:</H4>
               {getStatusChip(order.order_status)}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Phương thức thanh toán:</Typography>
-              <Typography variant="body1">
+              <H4>Phương thức thanh toán:</H4>
+              <H4>
                 {order.paying_method === "QR_CODE"
                   ? "QR Code"
                   : order.paying_method}
-              </Typography>
+              </H4>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Tổng tiền:</Typography>
-              <Typography variant="body1">
-                {formatCurrency(order.total_bill)}
-              </Typography>
+              <H4>Tổng tiền:</H4>
+              <H4>{formatCurrency(order.total_bill)}</H4>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Ngày tạo:</Typography>
+              <H4>Ngày tạo:</H4>
               <Typography variant="body1">
                 {formatDate(order.created_at)}
               </Typography>
@@ -217,9 +214,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Thông Tin Người Nhận
-          </Typography>
+          <H3 marginBottom={3}>Thông Tin Người Nhận</H3>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1">
@@ -251,14 +246,12 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Danh Sách Sản Phẩm
-          </Typography>
+          <H3>Danh Sách Sản Phẩm</H3>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  {tableHeading.map((headCell) => (
+                  {tableHeading2.map((headCell) => (
                     <StyledTableCell
                       key={headCell.id}
                       align={headCell.align}
@@ -274,10 +267,6 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
                   <TableRow key={sku.sku_id}>
                     <TableCell align="left">
                       {formatDate(sku.updated_at)}
-                    </TableCell>
-
-                    <TableCell align="left">
-                      {formatDate(sku.created_at)}
                     </TableCell>
 
                     <TableCell align="left">
@@ -309,31 +298,11 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
                     <TableCell align="left">
                       {sku.store_name || "Không có thông tin"}
                     </TableCell>
-
-                    <TableCell align="left">
-                      {getStatusChip(sku.order_status)}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Tooltip title="Xem chi tiết" arrow>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          startIcon={<VisibilityIcon />}
-                          onClick={() =>
-                            router.push(`/dashboard/admin/orders/${order.id}`)
-                          }
-                        >
-                          Xem
-                        </Button>
-                      </Tooltip>
-                    </TableCell>
                   </TableRow>
                 ))}
                 {skus.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={tableHeading.length} align="center">
+                    <TableCell colSpan={tableHeading2.length} align="center">
                       Không tìm thấy sản phẩm nào trong đơn hàng này.
                     </TableCell>
                   </TableRow>
@@ -346,9 +315,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Cập Nhật Trạng Thái Đơn Hàng
-          </Typography>
+          <H3 marginBottom={4}>Cập Nhật Trạng Thái Đơn Hàng</H3>
           <form onSubmit={formik.handleSubmit}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={6}>

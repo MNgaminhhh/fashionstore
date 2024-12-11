@@ -3,24 +3,23 @@ import { Heading, StyledLink } from "../styles";
 
 type AboutLinksProps = { isDark?: boolean };
 export const ABOUT_LINKS = [
-    "Careers",
-    "Our Stores",
-    "Our Cares",
-    "Terms & Conditions",
-    "Privacy Policy"
+  "Cửa hàng",
+  "Chúng tôi",
+  "Điều khoản & Điều kiện",
+  "Chính sách bảo mật",
 ];
 export default function AboutLinks({ isDark }: AboutLinksProps) {
-    return (
-        <Fragment>
-            <Heading>About Us</Heading>
+  return (
+    <Fragment>
+      <Heading>Về chúng tôi</Heading>
 
-            <div>
-                {ABOUT_LINKS.map((item, ind) => (
-                    <StyledLink isDark={isDark} href="/" key={ind}>
-                        {item}
-                    </StyledLink>
-                ))}
-            </div>
-        </Fragment>
-    );
+      <div>
+        {ABOUT_LINKS.map((item, ind) => (
+          <StyledLink isDark={isDark} href="/" key={ind}>
+            {item}
+          </StyledLink>
+        ))}
+      </div>
+    </Fragment>
+  );
 }

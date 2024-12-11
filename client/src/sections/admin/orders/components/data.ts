@@ -16,3 +16,13 @@ export const tableHeading = [
   },
   { id: "action", label: "Hành động", align: "center", width: "150px" },
 ];
+export const tableHeading2 = [
+  { id: "created_at", label: "Ngày tạo", align: "left", width: "150px" },
+  {
+    id: "paying_method",
+    label: "Ảnh",
+    align: "left",
+    width: "200px",
+  },
+  { id: "total_bill", label: "Shop", align: "left", width: "150px" },
+];

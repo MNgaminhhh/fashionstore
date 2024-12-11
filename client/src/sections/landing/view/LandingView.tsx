@@ -9,6 +9,8 @@ import Products from "../../../services/Products";
 import Categories from "../../../services/Categories";
 import ServiceListView from "../component/service/ServiceListView";
 import SelectedProductsView from "../component/product/SelectedProductsView";
+import SectionFlashSale from "../component/flashsale";
+import FlashSale from "../../../services/FlashSale";
 
 export default async function LandingView() {
   const brands = await Brand.getAllBrands();
@@ -16,6 +18,10 @@ export default async function LandingView() {
 
   const listCate = await Categories.getFullCate();
   const categories = get(listCate, "data", []);
+
+  const filters = { show: true };
+  const listFs = await FlashSale.getFlashDeals(10, 1, filters);
+  const infoFs = get(listFs, "data.products", []);
 
   const categoryData = await Promise.all(
     categories.map(async (category) => {
@@ -35,6 +41,7 @@ export default async function LandingView() {
     <Fragment>
       <SliderSection />
       <ServiceListView />
+      <SectionFlashSale products={infoFs} />
       <SelectedProductsView />
 
       <BrandsFetured brands={infoBrands} />

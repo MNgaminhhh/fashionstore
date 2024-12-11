@@ -60,7 +60,29 @@ class FlashSaleServer extends Base {
 
     return rs.data;
   }
+  async getFlashDeals(limit: number = 10, page: number = 1, filters: any = {}) {
+    let url = `/products/flash-sale/all?limit=${encodeURIComponent(
+      limit
+    )}&page=${encodeURIComponent(page)}`;
 
+    const queryParams: string[] = [];
+
+    if (filters.show) {
+      queryParams.push(`show=${encodeURIComponent(filters.show)}`);
+    }
+    if (queryParams.length > 0) {
+      url += `&${queryParams.join("&")}`;
+    }
+    const rs = await this.execute({
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return rs.data;
+  }
   async create(
     data: cuFSModel,
     token: string | undefined = undefined,

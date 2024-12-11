@@ -29,23 +29,7 @@ export default function ShopDetailsPageView({ shop, vendor, name }: Props) {
       />
 
       <Grid container spacing={3}>
-        <Grid item md={3} xs={12} sx={{ display: { md: "block", xs: "none" } }}>
-          <ProductFilterCard />
-        </Grid>
-
-        <Grid item md={9} xs={12}>
-          {isDownMd && (
-            <SideNav
-              position="left"
-              handler={(close) => (
-                <IconButton sx={{ float: "right" }} onClick={close}>
-                  <FilterList fontSize="small" />
-                </IconButton>
-              )}
-            >
-              <ProductFilterCard />
-            </SideNav>
-          )}
+        <Grid item md={12} xs={12}>
           <ProductsGridView initialProducts={shop} storeName={name} />
         </Grid>
       </Grid>

@@ -38,10 +38,6 @@ export default function Footer() {
           </Grid>
 
           <Grid item lg={3} md={6} sm={6} xs={12}>
-            <AboutLinks />
-          </Grid>
-
-          <Grid item lg={3} md={6} sm={6} xs={12}>
             <SocialLinks />
           </Grid>
         </Grid>

@@ -22,7 +22,7 @@ export default function SectionHeader({ title, seeMoreLink, icon }: Props) {
       {seeMoreLink ? (
         <Link href={seeMoreLink}>
           <FlexBox alignItems="center" color="grey.600">
-            View all
+            Xem nhiều hơn
             <ArrowLeft fontSize="small" color="inherit" />
           </FlexBox>
         </Link>

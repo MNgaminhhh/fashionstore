@@ -10,7 +10,8 @@ import React, {
 import Cart from "../services/Cart";
 import { useAppContext } from "./AppContext";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { notifySuccess } from "../utils/ToastNotification";
+import { notifyError, notifySuccess } from "../utils/ToastNotification";
+import { useRouter } from "next/navigation";
 
 type CartItem = {
   id: string;
@@ -71,7 +72,10 @@ const reducer = (state: { cart: CartItem[] }, action: CartActionType) => {
     case "SELECT_ALL":
       return {
         ...state,
-        cart: state.cart.map((item) => ({ ...item, selected: action.payload })),
+        cart: state?.cart?.map((item) => ({
+          ...item,
+          selected: action.payload,
+        })),
       };
     default:
       return state;
@@ -82,7 +86,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [loading, setLoading] = useState(true);
   const { sessionToken, setCart } = useAppContext();
-
+  const router = useRouter();
   useEffect(() => {
     const fetchCart = async () => {
       try {
@@ -100,44 +104,52 @@ const CartProvider = ({ children }: PropsWithChildren) => {
       }
     };
     fetchCart();
-  }, [sessionToken]);
+  }, []);
 
   const addItemToCart = async (sku_id: string, quantity: number) => {
-    try {
-      const data = { sku_id, quantity };
-      const response = await Cart.create(data, sessionToken);
-      if (response?.success || response?.data?.success) {
-        const res = await Cart.getAllCart(sessionToken);
-        if (res?.success || res?.data?.success) {
-          const cartWithSelection = res.data.map((item: CartItem) => ({
-            ...item,
-            selected: false,
-          }));
-          dispatch({ type: "SET_CART", payload: cartWithSelection });
-          setCart(cartWithSelection.length);
-        }
-        notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
+    if (!sessionToken) {
+      notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      router.push("/login");
+      return;
+    }
+
+    const data = { sku_id, quantity };
+    const response = await Cart.create(data, sessionToken);
+    if (response?.success || response?.data?.success) {
+      const res = await Cart.getAllCart(sessionToken);
+      if (res?.success || res?.data?.success) {
+        const cartWithSelection = res?.data?.map((item: CartItem) => ({
+          ...item,
+          selected: false,
+        }));
+        dispatch({ type: "SET_CART", payload: cartWithSelection });
+        setCart(cartWithSelection.length);
       }
-    } catch (error) {}
+      notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
+    }
   };
 
   const removeItemFromCart = async (itemId: string) => {
-    try {
-      const response = await Cart.delete(itemId, sessionToken);
-      if (response?.success || response?.data?.success) {
-        notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
-        dispatch({ type: "REMOVE_ITEM", payload: itemId });
-        const res = await Cart.getAllCart(sessionToken);
-        if (res?.success || res?.data?.success) {
-          const cartWithSelection = res.data.map((item: CartItem) => ({
-            ...item,
-            selected: false,
-          }));
-          dispatch({ type: "SET_CART", payload: cartWithSelection });
-          setCart(cartWithSelection.length);
-        }
+    if (!sessionToken) {
+      notifyError("Bạn cần đăng nhập để xóa sản phẩm khỏi giỏ hàng.");
+      router.push("/login");
+      return;
+    }
+
+    const response = await Cart.delete(itemId, sessionToken);
+    if (response?.success || response?.data?.success) {
+      notifySuccess(`Xóa sản phẩm khỏi giỏ hàng thành công`);
+      dispatch({ type: "REMOVE_ITEM", payload: itemId });
+      const res = await Cart.getAllCart(sessionToken);
+      if (res?.success || res?.data?.success) {
+        const cartWithSelection = res?.data?.map((item: CartItem) => ({
+          ...item,
+          selected: false,
+        }));
+        dispatch({ type: "SET_CART", payload: cartWithSelection });
+        setCart(cartWithSelection?.length || 0);
       }
-    } catch (error) {}
+    }
   };
   const toggleSelectItem = (itemId: string) => {
     dispatch({ type: "TOGGLE_SELECT_ITEM", payload: itemId });

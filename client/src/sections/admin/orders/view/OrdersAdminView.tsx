@@ -143,24 +143,6 @@ export default function OrdersAdminView({ initialOrders, token }: Props) {
 
   return (
     <WrapperPage title="Danh Sách Đơn Hàng">
-      <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
-        <Button
-          href={`/dashboard/admin/orders/create`}
-          color="primary"
-          variant="contained"
-          startIcon={<Add />}
-          LinkComponent={Link}
-          sx={{
-            minHeight: 44,
-            textTransform: "none",
-            borderRadius: 1,
-            px: 3,
-          }}
-        >
-          Thêm Đơn Hàng
-        </Button>
-      </Box>
-
       <Card>
         <Formik
           initialValues={{

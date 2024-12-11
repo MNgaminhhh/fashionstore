@@ -1,4 +1,5 @@
-export default function AdminPage() {
+import AdminDashboardView from "../../../sections/admin/AdminDashboardView";
 
-    return <div>Không có quyền truy cập hoặc role không hợp lệ.</div>;
+export default function AdminPage() {
+  return <AdminDashboardView />;
 }

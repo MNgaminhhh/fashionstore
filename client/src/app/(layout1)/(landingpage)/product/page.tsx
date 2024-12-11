@@ -28,7 +28,13 @@ const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
     const productResponse = await Products.getAllProduct(10, 1, params);
     const initialProducts = get(productResponse, "data.data", []);
 
-    return <ProductSearchPageView initialProducts={initialProducts} />;
+    return (
+      <ProductSearchPageView
+        initialProducts={initialProducts}
+        showfilter
+        title="Tất Cả Sản Phẩm"
+      />
+    );
   } catch (error) {
     notFound();
   }

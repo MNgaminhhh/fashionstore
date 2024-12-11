@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
-import { Paragraph, Span } from "../../../components/Typography";
+import { H3, Paragraph, Span } from "../../../components/Typography";
 import {
   ProductFilterKeys,
   ProductFilterValues,
@@ -16,6 +16,7 @@ import { Pagination, Select, MenuItem } from "@mui/material";
 import { get } from "lodash";
 import Products from "../../../services/Products";
 import { useAppContext } from "../../../context/AppContext";
+import { boolean } from "yup";
 
 const initialFilters: ProductFilters = {
   productType: [],
@@ -27,9 +28,13 @@ const initialFilters: ProductFilters = {
   },
 };
 
-type Props = { initialProducts: any };
+type Props = { initialProducts: any; showfilter?: boolean; title?: string };
 
-export default function ProductSearchPageView({ initialProducts }: Props) {
+export default function ProductSearchPageView({
+  initialProducts,
+  showfilter = true,
+  title,
+}: Props) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<ProductFilters>({ ...initialFilters });
   const [products, setProducts] = useState<any>(initialProducts.products);
@@ -93,18 +98,23 @@ export default function ProductSearchPageView({ initialProducts }: Props) {
   return (
     <div className="bg-white pt-2 pb-4">
       <Container>
+        {title ? <H3 marginBottom={3}>{title}</H3> : <></>}
         <Grid container spacing={4}>
-          <Grid
-            item
-            xl={2}
-            md={3}
-            sx={{ display: { md: "block", xs: "none" } }}
-          >
-            <ProductFilterCard
-              filters={filters}
-              changeFilters={handleChangeFilters}
-            />
-          </Grid>
+          {showfilter ? (
+            <Grid
+              item
+              xl={2}
+              md={3}
+              sx={{ display: { md: "block", xs: "none" } }}
+            >
+              <ProductFilterCard
+                filters={filters}
+                changeFilters={handleChangeFilters}
+              />
+            </Grid>
+          ) : (
+            <></>
+          )}
 
           <Grid item xl={10} md={9} xs={12}>
             {error && <Paragraph color="error">{error}</Paragraph>}
@@ -125,32 +135,38 @@ export default function ProductSearchPageView({ initialProducts }: Props) {
               </Grid>
             )}
 
-            <Grid
-              container
-              justifyContent="space-between"
-              alignItems="center"
-              mt={4}
-            >
-              <Select
-                value={itemsPerPage}
-                onChange={handlePageSizeChange}
-                size="small"
-                sx={{ minWidth: 120 }}
-              >
-                {pageSizes.map((size) => (
-                  <MenuItem key={size} value={size}>
-                    {size} mục/trang
-                  </MenuItem>
-                ))}
-              </Select>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                variant="outlined"
-                color="primary"
-              />
-            </Grid>
+            {showfilter ? (
+              <>
+                <Grid
+                  container
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mt={4}
+                >
+                  <Select
+                    value={itemsPerPage}
+                    onChange={handlePageSizeChange}
+                    size="small"
+                    sx={{ minWidth: 120 }}
+                  >
+                    {pageSizes.map((size) => (
+                      <MenuItem key={size} value={size}>
+                        {size} mục/trang
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    variant="outlined"
+                    color="primary"
+                  />
+                </Grid>
+              </>
+            ) : (
+              <></>
+            )}
           </Grid>
         </Grid>
       </Container>

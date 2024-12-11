@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { get } from "lodash";
 import { notFound } from "next/navigation";
 import Products from "../../../../../../services/Products";
-import ProductSearchPageView from "../../../../../../sections/product-detail/view/ProductSearchPageView";
 import { ShopDetailsPageView } from "../../../../../../sections/shop/view";
 import Vendor from "../../../../../../services/Vendor";
 

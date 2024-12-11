@@ -16,7 +16,7 @@ export default function CartPageView() {
 
   useEffect(() => {
     const allSelected =
-      state.cart.length > 0 && state.cart.every((item) => item.selected);
+      state?.cart?.length > 0 && state.cart.every((item) => item.selected);
     setIsAllSelected(allSelected);
   }, [state.cart]);
 
@@ -30,7 +30,7 @@ export default function CartPageView() {
     router.push("/checkout");
   };
 
-  const isCartEmpty = state.cart.length === 0;
+  const isCartEmpty = state?.cart?.length === 0;
 
   return (
     <Box sx={{ padding: { xs: 2, md: 4 } }}>
@@ -68,7 +68,7 @@ export default function CartPageView() {
                   label="Chọn tất cả"
                 />
               </Box>
-              {state.cart.map((item) => (
+              {state?.cart?.map((item) => (
                 <CartItem
                   key={item.id}
                   id={item.id}

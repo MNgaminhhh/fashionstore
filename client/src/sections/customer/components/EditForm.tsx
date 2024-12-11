@@ -16,6 +16,7 @@ import File from "../../../services/File";
 import { get } from "../../../hooks/useLocalStorage";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import { useAppContext } from "../../../context/AppContext";
+import { useRouter } from "next/navigation";
 
 type Props = { user: UserModel };
 
@@ -24,7 +25,7 @@ export default function ProfileEditForm({ user }: Props) {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isFormChanged, setIsFormChanged] = useState(false);
   const { sessionToken } = useAppContext();
-
+  const router = useRouter();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -68,6 +69,8 @@ export default function ProfileEditForm({ user }: Props) {
       if (res.data.success) {
         notifySuccess("Thay đổi thông tin hồ sơ thành công!");
         setIsFormChanged(false);
+        router.push("/profile");
+        router.refresh();
       } else {
         notifyError(res.data.message);
       }

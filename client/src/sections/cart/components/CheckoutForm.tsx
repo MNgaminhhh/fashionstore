@@ -50,8 +50,8 @@ export default function CheckoutForm({ status = false }: Props) {
   );
 
   const getTotalPrice = () =>
-    state.cart
-      .filter((item) => item.selected)
+    state?.cart
+      ?.filter((item) => item.selected)
       .reduce((acc, item) => acc + item.total_price, 0);
 
   const fetchData = async () => {
@@ -153,7 +153,7 @@ export default function CheckoutForm({ status = false }: Props) {
   };
 
   const isDisabled =
-    state.cart.filter((item) => item.selected).length === 0 ||
+    state?.cart?.filter((item) => item.selected).length === 0 ||
     (status && (!selectedAddressId || !payingMethod));
 
   return (
