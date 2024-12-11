@@ -99,9 +99,9 @@ func (oc *OrderBillsController) GetAllOrderBillsOfAdmin(c echo.Context) error {
 			return response.ErrorResponse(c, response.ErrCodeInvalidPayingMethod, "get fail")
 		}
 	}
-	if filterParam.OrderCode != nil {
-		orderCode := []string{"pending", "paying", "shipping", "delivered", "cancel"}
-		_, isValid := slices.BinarySearch(orderCode, *filterParam.OrderCode)
+	if filterParam.OrderStatus != nil {
+		orderStatus := []string{"pending", "paying", "shipping", "delivered", "cancel"}
+		_, isValid := slices.BinarySearch(orderStatus, *filterParam.OrderStatus)
 		if !isValid {
 			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
 		}
@@ -123,8 +123,12 @@ func (oc *OrderBillsController) UpdateOrderStatusByAdmin(c echo.Context) error {
 	if err := c.Bind(&reqParam); err != nil {
 		return response.ErrorResponse(c, response.ErrCodeParamInvalid, "update fail")
 	}
-	if err := c.Validate(&reqParam); err != nil {
-		return response.ValidationResponse(c, response.ErrCodeParamInvalid, err)
+	if reqParam.OrderStatus != nil {
+		orderStatus := []string{"pending", "paying", "shipping", "delivered", "cancel"}
+		_, isValid := slices.BinarySearch(orderStatus, *reqParam.OrderStatus)
+		if !isValid {
+			return response.ErrorResponse(c, response.ErrCodeInvalidOrderStatus, "get fail")
+		}
 	}
 	code := oc.orderBillService.UpdateOrderBillOfAdmin(orderId, *reqParam.OrderStatus)
 	if code != response.SuccessCode {

@@ -678,7 +678,7 @@ func mapOrderBillToResponseData[T any](data *T) *OrderBillResponse {
 			Name:        o.ReceiverName,
 			PhoneNumber: o.PhoneNumber,
 			Address:     o.Address,
-			Email:       o.Address,
+			Email:       o.Email,
 		}
 		shippingFee := int(o.ShippingFee)
 		return &OrderBillResponse{
