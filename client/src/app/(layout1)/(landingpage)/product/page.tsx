@@ -18,21 +18,21 @@ interface ProductSearchProps {
 
 const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
   try {
-    const params: { [key: string]: string } = {};
+    const params: { [key: string]: string | string[] } = {};
     Object.keys(searchParams).forEach((key) => {
       const value = searchParams[key];
-      if (typeof value === "string") {
+      if (typeof value === "string" || Array.isArray(value)) {
         params[key] = value;
       }
     });
-    const productResponse = await Products.getAllProduct(10, 1, params);
+    const productResponse = await Products.getAllProduct(100, 1, params);
     const initialProducts = get(productResponse, "data.data", []);
 
     return (
       <ProductSearchPageView
         initialProducts={initialProducts}
-        showfilter
         title="Tất Cả Sản Phẩm"
+        showfilter
       />
     );
   } catch (error) {

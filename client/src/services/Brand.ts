@@ -70,7 +70,7 @@ class BrandsServer extends Base {
 
   async update(
     id: string,
-    data: BrandUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
@@ -88,7 +88,7 @@ class BrandsServer extends Base {
   }
 
   async create(
-    data: BrandUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {

@@ -1,10 +1,5 @@
 import Base from "./Base";
 
-interface cuCmtModel {
-  review_id: number;
-  comment: any;
-}
-
 class CommentsServer extends Base {
   constructor() {
     super({
@@ -13,7 +8,7 @@ class CommentsServer extends Base {
   }
 
   async create(
-    data: cuCmtModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {

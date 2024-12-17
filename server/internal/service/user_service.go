@@ -10,12 +10,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type IUserService interface {
@@ -166,13 +167,13 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 	}
 
 	emailService := NewEmailService(SMTPServer{
-		Host:     "sandbox.smtp.mailtrap.io",
-		Port:     2525,
-		Username: "75450a29e28cd1",
-		Password: "4835aafc0d3d8e",
+		Host:     "smtp.gmail.com",
+		Port:     465,
+		Username: "minhngltt@gmail.com",
+		Password: "vpwq qqar wpyy zgmn",
 	})
 
-	link := fmt.Sprintf("http://localhost:8080%s?token=%s", linkPath, token)
+	link := fmt.Sprintf("http://localhost:3000%s?token=%s", linkPath, token)
 	content := fmt.Sprintf(`
 	<html>
 		<body>
@@ -192,11 +193,11 @@ func (us *userService) SendEmailWithToken(email, purpose, linkPath, subject stri
 }
 
 func (us *userService) SendEmailResetPassword(email string) int {
-	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/api/v1/auth/reset-password", "MTShop Reset Password", time.Minute*5, os.Getenv("RESET_PASSWORD_SECRET"))
+	return us.SendEmailWithToken(email, "Đặt lại mật khẩu", "/reset-password", "MTShop Reset Password", time.Minute*5, os.Getenv("RESET_PASSWORD_SECRET"))
 }
 
 func (us *userService) SendEmailVerify(email string) int {
-	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/api/v1/auth/verify-email", "MTShop Verify Email", time.Minute*5, os.Getenv("ACTIVE_SECRET"))
+	return us.SendEmailWithToken(email, "kích hoạt tài khoản", "/verify-account", "MTShop Verify Email", time.Minute*5, os.Getenv("ACTIVE_SECRET"))
 }
 
 func HashPassword(password string) (string, error) {

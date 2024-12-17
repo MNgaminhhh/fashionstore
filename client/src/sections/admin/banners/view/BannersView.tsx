@@ -29,7 +29,7 @@ import {
 } from "../../../../utils/ToastNotification";
 
 interface Props {
-  banners: any[];
+  banners: any;
   token: string;
 }
 
@@ -165,7 +165,14 @@ export default function BannersView({ banners: initialBanners, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                           sx={{ backgroundColor: "grey.200" }}
                         >
@@ -185,7 +192,14 @@ export default function BannersView({ banners: initialBanners, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                           sx={{ backgroundColor: "grey.100" }}
                         >
@@ -247,7 +261,6 @@ export default function BannersView({ banners: initialBanners, token }: Props) {
                       <RowBanner
                         banner={banner}
                         key={banner.id}
-                        tableHeading={tableHeading}
                         onDelete={() => {
                           openDeleteDialog(banner.id);
                         }}
@@ -295,7 +308,7 @@ export default function BannersView({ banners: initialBanners, token }: Props) {
       <DialogBox
         open={dialogOpen}
         onClose={closeDeleteDialog}
-        onConfirm={() => handleDelete(currentPage, currentLimit)}
+        onConfirm={() => handleDelete()}
       />
     </WrapperPage>
   );

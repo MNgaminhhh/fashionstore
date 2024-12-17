@@ -139,7 +139,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
         color = "warning";
         break;
       case "paying":
-        color = "info";
+        color = "warning";
         break;
       case "shipping":
         color = "primary";
@@ -172,9 +172,7 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <H4>Mã đơn hàng:</H4>
-              <H4 color="#1976d2" gutterBottom>
-                #{order.id}
-              </H4>
+              <H4 color="#1976d2">#{order.id}</H4>
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -254,7 +252,14 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
                   {tableHeading2.map((headCell) => (
                     <StyledTableCell
                       key={headCell.id}
-                      align={headCell.align}
+                      align={
+                        headCell.align as
+                          | "left"
+                          | "center"
+                          | "right"
+                          | "justify"
+                          | "inherit"
+                      }
                       width={headCell.width}
                     >
                       {headCell.label}
@@ -339,8 +344,8 @@ export default function OrderDetailAdminView({ orderData, token }: Props) {
                       </MenuItem>
                     ))}
                   </Select>
-                  {formik.touched.order_status &&
-                    formik.errors.order_status && (
+                  {formik.errors.order_status &&
+                    typeof formik.errors.order_status === "string" && (
                       <Typography variant="caption" color="error">
                         {formik.errors.order_status}
                       </Typography>

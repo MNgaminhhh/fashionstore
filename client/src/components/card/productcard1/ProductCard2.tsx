@@ -15,8 +15,8 @@ interface Props {
   off?: number;
   slug: string;
   title: string;
-  price: number;
-  discountPrice: number;
+  price: any;
+  discountPrice: any;
   imgUrl: string;
   rating: number;
   hideReview?: boolean;

@@ -19,9 +19,10 @@ import { ProductDiscount2 } from "../ProductDiscount";
 type Props = { product: any };
 
 export default function CardProduct2({ product }: Props) {
-  if (!product) return null;
   const router = useRouter();
-  const { openModal, toggleDialog } = useProduct(product.slug);
+  const { openModal, toggleDialog } = useProduct(product?.slug);
+
+  if (!product) return null;
 
   const handleView = () => {
     router.push(`/product/${product.slug}`);

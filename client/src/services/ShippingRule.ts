@@ -79,7 +79,7 @@ class ShippingRuleServer extends Base {
   }
 
   async create(
-    data: cuShippingRuleModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
@@ -98,7 +98,7 @@ class ShippingRuleServer extends Base {
 
   async update(
     id: string,
-    data: cuShippingRuleModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {

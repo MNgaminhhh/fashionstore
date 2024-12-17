@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikErrors, FormikTouched } from "formik";
 import * as Yup from "yup";
 import {
   Button,
@@ -18,6 +18,7 @@ import {
   Autocomplete,
   TextField as MUITextField,
   InputAdornment,
+  FormHelperText,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FlashSaleItemModel from "../../../../models/FlashSaleItem.model";
@@ -27,6 +28,14 @@ import {
   notifyError,
   notifySuccess,
 } from "../../../../utils/ToastNotification";
+import { SelectChangeEvent } from "@mui/material/Select";
+
+interface FormValues {
+  id: string;
+  flash_sale_id: string;
+  product_id: string;
+  show: boolean;
+}
 
 type Props = {
   flashSaleItem?: FlashSaleItemModel;
@@ -39,12 +48,16 @@ const FlashSaleItemSchema = Yup.object().shape({
   show: Yup.boolean().required("Trạng thái hiển thị là bắt buộc"),
 });
 
-const INITIAL_VALUES = (flashSaleItem?: FlashSaleItemModel) => ({
-  id: flashSaleItem?.id || "",
-  flash_sale_id: flashSaleItem?.flash_sale_id || "",
-  product_id: flashSaleItem?.product_id || "",
-  show: flashSaleItem?.show || false,
-});
+const getHelperText = (
+  touched: FormikTouched<FormValues>,
+  errors: FormikErrors<FormValues>,
+  field: keyof FormValues
+): string => {
+  if (touched[field] && typeof errors[field] === "string") {
+    return errors[field];
+  }
+  return "";
+};
 
 export default function FlashSaleItemForm({
   flashSaleItem,
@@ -58,13 +71,20 @@ export default function FlashSaleItemForm({
   const [loading, setLoading] = useState(false);
   const flashSaleId = Array.isArray(id) ? id[0] : id;
 
+  const INITIAL_VALUES: FormValues = {
+    id: flashSaleItem?.id || "",
+    flash_sale_id: flashSaleItem?.flash_sale_id || "",
+    product_id: flashSaleItem?.product_id || "",
+    show: flashSaleItem?.show || false,
+  };
+
   const handleSubmit = async (
-    values: typeof INITIAL_VALUES,
+    values: FormValues,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     setLoading(true);
     try {
-      const flashSaleItemData: Omit<FlashSaleItemModel, "id"> = {
+      const flashSaleItemData = {
         flash_sale_id: flashSaleId,
         product_id: values.product_id,
         show: values.show,
@@ -114,8 +134,8 @@ export default function FlashSaleItemForm({
 
   return (
     <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
-      <Formik
-        initialValues={INITIAL_VALUES(flashSaleItem)}
+      <Formik<FormValues>
+        initialValues={INITIAL_VALUES}
         validationSchema={FlashSaleItemSchema}
         onSubmit={handleSubmit}
         enableReinitialize
@@ -157,7 +177,12 @@ export default function FlashSaleItemForm({
                         variant="outlined"
                         onBlur={handleBlur}
                         error={Boolean(touched.product_id && errors.product_id)}
-                        helperText={touched.product_id && errors.product_id}
+                        helperText={
+                          touched.product_id &&
+                          typeof errors.product_id === "string"
+                            ? errors.product_id
+                            : ""
+                        }
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
@@ -200,18 +225,18 @@ export default function FlashSaleItemForm({
                     labelId="show-label"
                     id="show"
                     name="show"
-                    value={values.show}
+                    value={values.show ? "true" : "false"}
                     label="Hiển Thị"
-                    onChange={(e) => {
-                      setFieldValue("show", e.target.value as boolean);
+                    onChange={(event: SelectChangeEvent<string>) => {
+                      setFieldValue("show", event.target.value === "true");
                       setIsFormChanged(true);
                     }}
                     onBlur={handleBlur}
                   >
-                    <MenuItem value={true}>Hiển Thị</MenuItem>
-                    <MenuItem value={false}>Không Hiển Thị</MenuItem>
+                    <MenuItem value="true">Hiển Thị</MenuItem>
+                    <MenuItem value="false">Không Hiển Thị</MenuItem>
                   </Select>
-                  {touched.show && errors.show && (
+                  {touched.show && typeof errors.show === "string" && (
                     <Typography color="error" variant="caption">
                       {errors.show}
                     </Typography>
@@ -219,6 +244,8 @@ export default function FlashSaleItemForm({
                 </FormControl>
               </Grid>
             </Grid>
+
+            {/* Action Buttons */}
             <Box
               display="flex"
               justifyContent="flex-end"

@@ -10,7 +10,7 @@ import { FlexCenterRow } from "../../../flexbox";
 
 interface MegaMenuProps {
   title: string;
-  menuList: Array<NavChild[]>;
+  menuList: Array<any>;
 }
 
 const gridSize = (length: number) => {

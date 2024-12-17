@@ -34,7 +34,7 @@ import VariantModel from "../../../../models/Variant.model";
 type Props = {
   sku?: SkuModel;
   variOp: VariantModel[];
-  token: string;
+  token?: string;
 };
 
 const SkuSchema = Yup.object().shape({
@@ -127,10 +127,7 @@ export default function SkuForm({ sku, variOp, token }: Props) {
     if (sku && sku.variant_options.length > 0 && variOp) {
       sku.variant_options.forEach(async (variantOptionId, index) => {
         try {
-          const response = await OptionVariant.getVariantByOptionId(
-            variantOptionId,
-            token
-          );
+          const response = await OptionVariant.findOne(variantOptionId);
           if (response.success && response.data.variant_option) {
             setVariantOptions((prev) => ({
               ...prev,
@@ -177,9 +174,13 @@ export default function SkuForm({ sku, variOp, token }: Props) {
         variant_options: variantOptionIds,
         status: values.status,
         offer_start_date:
-          values.offer > 0 ? formatDate(values.offer_start_date) : undefined,
+          Number(values.offer) > 0
+            ? formatDate(values.offer_start_date)
+            : undefined,
         offer_end_date:
-          values.offer > 0 ? formatDate(values.offer_end_date) : undefined,
+          Number(values.offer) > 0
+            ? formatDate(values.offer_end_date)
+            : undefined,
         product_id: productId,
       };
 
@@ -318,7 +319,11 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                           handleChange(e);
                           setIsFormChanged(true);
                         }}
-                        helperText={touched.price && errors.price}
+                        helperText={
+                          touched.price && typeof errors.price === "string"
+                            ? errors.price
+                            : ""
+                        }
                         error={Boolean(touched.price && errors.price)}
                         disabled={loading}
                         inputProps={{ min: 0, step: 0.01 }}
@@ -405,11 +410,13 @@ export default function SkuForm({ sku, variOp, token }: Props) {
                         max={100}
                         disabled={loading}
                       />
-                      {touched.offer && errors.offer && (
-                        <Typography color="error" variant="caption">
-                          {errors.offer}
-                        </Typography>
-                      )}
+                      {touched.offer &&
+                        errors.offer &&
+                        typeof errors.offer === "string" && (
+                          <Typography color="error" variant="caption">
+                            {errors.offer}
+                          </Typography>
+                        )}
                     </Grid>
 
                     {values.offer > 0 && (

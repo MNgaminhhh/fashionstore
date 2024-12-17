@@ -35,7 +35,7 @@ interface ReviewModalProps {
   open: boolean;
   onClose: () => void;
   orderId: string;
-  skus: SKU[];
+  skus: any;
   orderIdForReview: string;
 }
 

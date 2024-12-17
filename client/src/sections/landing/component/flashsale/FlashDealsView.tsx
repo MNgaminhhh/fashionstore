@@ -37,7 +37,10 @@ export default function SectionFlashSale({ products }: Props) {
             item.images && item.images.length > 0
               ? item.images[0]
               : "/placeholder.png";
-          const off = calculateOff(item.highest_price, item.lowest_price);
+          const off = calculateOff(
+            Number(item.highest_price),
+            Number(item.lowest_price)
+          );
 
           return (
             <ProductCard2

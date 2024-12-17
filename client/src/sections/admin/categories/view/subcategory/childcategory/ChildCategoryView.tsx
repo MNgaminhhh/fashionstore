@@ -41,7 +41,7 @@ export default function ChildCategoryView({
   childCategories: initialChildCategories,
   token,
 }: Props) {
-  const [childCategories, setChildCategories] = useState<ChildCategoryModel[]>(
+  const [childCategories, setChildCategories] = useState<any>(
     initialChildCategories?.child_categories || []
   );
   const [totalPages, setTotalPages] = useState<number>(
@@ -122,12 +122,11 @@ export default function ChildCategoryView({
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     try {
-      const updatedStatus = currentStatus === 1 ? 1 : 0;
+      const updatedStatus = currentStatus === "1" ? 1 : 0;
       const response = await ChildCategory.update(
         id,
         { status: updatedStatus },
-        token,
-        true
+        token
       );
 
       if (response.success) {
@@ -190,7 +189,14 @@ export default function ChildCategoryView({
                       {childCategoryTableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -201,7 +207,14 @@ export default function ChildCategoryView({
                       {childCategoryTableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.id !== "action" &&
@@ -250,7 +263,6 @@ export default function ChildCategoryView({
                       <RowChildCategory
                         key={childCategory.id}
                         childCategory={childCategory}
-                        tableHeading={childCategoryTableHeading}
                         onDelete={openDeleteDialog}
                         onToggleVisibility={handleToggleStatus}
                       />
@@ -297,8 +309,6 @@ export default function ChildCategoryView({
         open={dialogOpen}
         onClose={closeDeleteDialog}
         onConfirm={handleDelete}
-        title="Xác nhận xóa"
-        content="Bạn có chắc chắn muốn xóa danh mục con này không?"
       />
     </WrapperPage>
   );

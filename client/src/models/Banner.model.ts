@@ -5,8 +5,10 @@ interface BannerModel {
   description: string;
   buttonText: string;
   buttonLink: string;
+  button_link: string;
+  button_text: string;
   serial: string;
-  status: string;
+  status: any;
 }
 
 export default BannerModel;

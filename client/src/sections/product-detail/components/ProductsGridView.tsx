@@ -47,9 +47,7 @@ export default function ProductsGridView({
     fetchProducts(value, itemsPerPage);
   };
 
-  const handlePageSizeChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  const handlePageSizeChange = (event: any) => {
     const newPageSize = Number(event.target.value);
     setItemsPerPage(newPageSize);
     setCurrentPage(1);

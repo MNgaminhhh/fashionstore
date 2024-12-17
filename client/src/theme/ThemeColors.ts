@@ -1,15 +1,16 @@
 interface CustomPaletteColor {
-  50: string;
-  100: string;
-  200: string;
-  300: string;
-  400: string;
-  600: string;
-  700: string;
-  800: string;
-  900: string;
-  main: string;
-  contrastText: string;
+  50?: string;
+  100?: string;
+  200?: string;
+  300?: string;
+  400?: string;
+  500?: string;
+  600?: string;
+  700?: string;
+  800?: string;
+  900?: string;
+  main?: string;
+  contrastText?: string;
 }
 
 declare module "@mui/material/styles" {
@@ -115,19 +116,20 @@ export const marron = {
   200: "#F8DBD1",
   300: "#EBBCB3",
   400: "#D89C98",
+  500: "#4BB4B4",
   600: "#A3545C",
   700: "#883948",
   800: "#6E2438",
   900: "#5B162F",
   main: "#BE7374",
 };
-
 export const paste = {
   50: "#F5F5F5",
   100: "#DDFBF1",
   200: "#BDF7E8",
   300: "#97E8DA",
   400: "#76D2CA",
+  500: "#4BB4B4",
   600: "#36929A",
   700: "#257181",
   800: "#175368",
@@ -174,13 +176,48 @@ export const warning = {
   contrastText: "#FFFFFF",
 };
 
-export const gold = {
+export const gold: CustomPaletteColor = {
+  50: "#F9F1C3",
+  100: "#F2E083",
+  200: "#E5C41F",
+  300: "#D4A217",
+  400: "#BB9C36",
+  500: "#A58D2F",
+  600: "#8D7A28",
+  700: "#746222",
+  800: "#5B4A1B",
+  900: "#423217",
   main: "#BB9C36",
+  contrastText: "#FFFFFF",
 };
-
-export const dark = { main: "#1F2937" };
-export const white = { main: "#fff" };
-
+export const dark: CustomPaletteColor = {
+  50: "#F9F1C3",
+  100: "#F2E083",
+  200: "#E5C41F",
+  300: "#D4A217",
+  400: "#BB9C36",
+  500: "#A58D2F",
+  600: "#8D7A28",
+  700: "#746222",
+  800: "#5B4A1B",
+  900: "#423217",
+  main: "#1F2937",
+  contrastText: "#FFFFFF",
+};
+export const white: CustomPaletteColor = {
+  50: "#F9F1C3",
+  100: "#F2E083",
+  200: "#E5C41F",
+  300: "#D4A217",
+  400: "#BB9C36",
+  500: "#A58D2F",
+  600: "#8D7A28",
+  700: "#746222",
+  800: "#5B4A1B",
+  900: "#423217",
+  main: "#fff",
+  contrastText: "#000",
+};
 export const themeColors = {
   dark,
   grey,

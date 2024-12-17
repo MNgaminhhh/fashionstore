@@ -9,6 +9,14 @@ interface CouponModel {
   discount: string;
   max_price: string;
   status: string;
+  totalUsed: any;
+  endDate: any;
+  startDate: any;
+  Description: any;
+  Value: any;
+  Operator: any;
+  Field: any;
+  ID: any;
 }
 interface CouponResModel {
   ID: string;

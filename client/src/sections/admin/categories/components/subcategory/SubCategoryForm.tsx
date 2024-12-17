@@ -148,7 +148,15 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                       color="info"
                       size="medium"
                       error={Boolean(touched.cate_name && errors.cate_name)}
-                      helperText={touched.cate_name && errors.cate_name}
+                      helperText={
+                        touched.cate_name && errors.cate_name
+                          ? typeof errors.cate_name === "string"
+                            ? errors.cate_name
+                            : Array.isArray(errors.cate_name)
+                            ? errors.cate_name.join(", ")
+                            : ""
+                          : ""
+                      }
                     />
                   )}
                 />
@@ -163,7 +171,15 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   value={values.name}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name && errors.name}
+                  helperText={
+                    touched.name && errors.name
+                      ? typeof errors.name === "string"
+                        ? errors.name
+                        : Array.isArray(errors.name)
+                        ? errors.name.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -177,7 +193,15 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   value={values.name_code}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name_code && errors.name_code}
+                  helperText={
+                    touched.name_code && errors.name_code
+                      ? typeof errors.name_code === "string"
+                        ? errors.name_code
+                        : Array.isArray(errors.name_code)
+                        ? errors.name_code.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.name_code && errors.name_code)}
                 />
               </Grid>
@@ -191,7 +215,15 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   value={values.url}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.url && errors.url}
+                  helperText={
+                    touched.url && errors.url
+                      ? typeof errors.url === "string"
+                        ? errors.url
+                        : Array.isArray(errors.url)
+                        ? errors.url.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.url && errors.url)}
                 />
               </Grid>

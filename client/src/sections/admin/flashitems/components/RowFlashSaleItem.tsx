@@ -14,7 +14,7 @@ import MTSwitch from "../../../../components/MTSwitch";
 type Props = {
   flashSaleItem: FlashSaleItemModel;
   onDelete: (id: string) => void;
-  handleToggleShow: (id: string, newStatus: string) => void;
+  handleToggleShow: (id: string, newStatus: any) => void;
 };
 
 export default function RowFlashSaleItem({
@@ -35,7 +35,7 @@ export default function RowFlashSaleItem({
   };
   const handleSwitchChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    checked: boolean
+    checked: any
   ) => {
     handleToggleShow(flashSaleItem.id, checked);
   };

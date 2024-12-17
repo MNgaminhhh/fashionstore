@@ -42,9 +42,9 @@ type Props = {
   vendor: any;
   brand?: BrandsModel;
 };
-
+type PreviewFile = File & { preview?: string };
 export default function BrandForm({ brand, vendor }: Props) {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<PreviewFile[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(
     brand?.image || null
   );
@@ -105,7 +105,7 @@ export default function BrandForm({ brand, vendor }: Props) {
     }
   };
 
-  const handleChangeDropZone = (files: File[], setFieldValue: any) => {
+  const handleChangeDropZone = (files: PreviewFile[], setFieldValue: any) => {
     if (files.length > 0) {
       files.forEach((file) =>
         Object.assign(file, { preview: URL.createObjectURL(file) })

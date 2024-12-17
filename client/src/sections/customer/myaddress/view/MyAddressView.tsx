@@ -105,7 +105,7 @@ export default function MyAddressView({ addressList }: Props) {
           ))
         ) : (
           <Box mt={4}>
-            <H5 align="center">Không có địa chỉ nào. Hãy thêm địa chỉ mới!</H5>
+            <H5>Không có địa chỉ nào. Hãy thêm địa chỉ mới!</H5>
           </Box>
         )}
 
@@ -121,11 +121,6 @@ export default function MyAddressView({ addressList }: Props) {
         open={dialogOpen}
         onClose={closeDeleteDialog}
         onConfirm={handleAddressDelete}
-        title="Xác nhận xoá"
-        description="Bạn có chắc chắn muốn xoá địa chỉ này?"
-        confirmText="Xoá"
-        cancelText="Hủy"
-        loading={isDeleting}
       />
     </>
   );

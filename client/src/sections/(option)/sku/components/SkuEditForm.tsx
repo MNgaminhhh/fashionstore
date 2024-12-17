@@ -104,9 +104,13 @@ export default function SkuEditForm({
         in_stock: values.in_stock,
         status: values.status,
         offer_start_date:
-          values.offer > 0 ? formatDate(values.offer_start_date) : undefined,
+          Number(values.offer) > 0
+            ? formatDate(values.offer_start_date)
+            : undefined,
         offer_end_date:
-          values.offer > 0 ? formatDate(values.offer_end_date) : undefined,
+          Number(values.offer) > 0
+            ? formatDate(values.offer_end_date)
+            : undefined,
       };
 
       const res = await Skus.update(initialData.id, payload, sessionToken);
@@ -139,7 +143,7 @@ export default function SkuEditForm({
               <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
                 {key}:
               </Typography>
-              <Typography variant="body2">{value}</Typography>
+              <Typography variant="body2">{String(value)}</Typography>
             </Box>
           ))}
         </Paper>
@@ -189,7 +193,11 @@ export default function SkuEditForm({
                     handleChange(e);
                     setIsFormChanged(true);
                   }}
-                  helperText={touched.price && errors.price}
+                  helperText={
+                    touched.price && typeof errors.price === "string"
+                      ? errors.price
+                      : ""
+                  }
                   error={Boolean(touched.price && errors.price)}
                   disabled={loading}
                 />
@@ -207,7 +215,11 @@ export default function SkuEditForm({
                     handleChange(e);
                     setIsFormChanged(true);
                   }}
-                  helperText={touched.offer && errors.offer}
+                  helperText={
+                    touched.offer && typeof errors.offer === "string"
+                      ? errors.offer
+                      : ""
+                  }
                   error={Boolean(touched.offer && errors.offer)}
                   disabled={loading}
                 />
@@ -252,7 +264,7 @@ export default function SkuEditForm({
                 </TextField>
               </Grid>
 
-              {values.offer > 0 && (
+              {Number(values.offer) > 0 && (
                 <>
                   <Grid item sm={6} xs={12}>
                     <TextField

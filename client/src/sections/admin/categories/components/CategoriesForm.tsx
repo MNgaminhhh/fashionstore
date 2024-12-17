@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import { Formik } from "formik";
+import { Formik, getIn } from "formik";
 import * as yup from "yup";
 import Divider from "@mui/material/Divider";
 import * as Icons from "react-icons/fa";
@@ -122,7 +122,9 @@ export default function CategoriesForm({ category }: Props) {
                   value={values.name}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name && errors.name}
+                  helperText={
+                    touched.name && errors.name ? (errors.name as string) : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -136,7 +138,11 @@ export default function CategoriesForm({ category }: Props) {
                   value={values.name_code}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name_code && errors.name_code}
+                  helperText={
+                    touched.name_code && errors.name_code
+                      ? (errors.name_code as string)
+                      : ""
+                  }
                   error={Boolean(touched.name_code && errors.name_code)}
                 />
               </Grid>
@@ -150,7 +156,7 @@ export default function CategoriesForm({ category }: Props) {
                   value={values.url}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.url && errors.url}
+                  helperText={touched.url ? getIn(errors, "url") : ""}
                   error={Boolean(touched.url && errors.url)}
                 />
               </Grid>
@@ -167,7 +173,7 @@ export default function CategoriesForm({ category }: Props) {
                     setFieldValue("icon", e.target.value);
                     setIsFormChanged(true);
                   }}
-                  helperText={touched.icon && errors.icon}
+                  helperText={touched.icon ? getIn(errors, "icon") : ""}
                   error={Boolean(touched.icon && errors.icon)}
                 >
                   {availableIcons.map((iconKey) => {

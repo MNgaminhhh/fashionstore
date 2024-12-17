@@ -18,6 +18,11 @@ import {
 import BannerModel from "../../../../models/Banner.model";
 import { useAppContext } from "../../../../context/AppContext";
 
+// Tạo interface mới với thuộc tính `preview`
+interface FileWithPreview extends File {
+  preview?: string;
+}
+
 const VALIDATION_SCHEMA = yup.object().shape({
   serial: yup.number().required("Thứ tự là bắt buộc"),
   title: yup
@@ -45,7 +50,7 @@ const VALIDATION_SCHEMA = yup.object().shape({
 type Props = { banner?: BannerModel };
 
 export default function BannerForm({ banner }: Props) {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(
     banner?.banner_image || null
   );
@@ -57,7 +62,7 @@ export default function BannerForm({ banner }: Props) {
     description: banner?.description || "",
     button_text: banner?.button_text || "",
     button_link: banner?.button_link || "",
-    status: banner?.status === "1" || banner?.status === 1 ? 1 : 0,
+    status: banner?.status === 1 ? 1 : 0,
     banner_image: banner?.banner_image || "",
   };
   const { sessionToken } = useAppContext();
@@ -111,11 +116,11 @@ export default function BannerForm({ banner }: Props) {
   };
 
   const handleChangeDropZone = (files: File[]) => {
-    files.forEach((file) =>
-      Object.assign(file, { preview: URL.createObjectURL(file) })
-    );
-    setFiles(files);
-    setPreviewImage(files[0]?.preview || null);
+    const filesWithPreview: FileWithPreview[] = files.map((file) => {
+      return Object.assign(file, { preview: URL.createObjectURL(file) });
+    });
+    setFiles(filesWithPreview);
+    setPreviewImage(filesWithPreview[0]?.preview || null);
     setIsFormChanged(true);
   };
 
@@ -235,42 +240,32 @@ export default function BannerForm({ banner }: Props) {
               </Grid>
               <Grid item sm={6} xs={12}>
                 <TextField
-                  select
                   fullWidth
+                  select
+                  name="status"
+                  label="Trạng thái"
                   color="info"
                   size="medium"
-                  name="status"
-                  value={values.status === 1 ? "1" : "0"}
-                  onChange={(e) => {
-                    setFieldValue("status", e.target.value === "1" ? 1 : 0);
-                    setIsFormChanged(true);
-                  }}
-                  label="Trạng thái"
+                  value={values.status}
+                  onBlur={handleBlur}
+                  onChange={handleFieldChange(handleChange, setFieldValue)}
+                  helperText={touched.status && errors.status}
+                  error={Boolean(touched.status && errors.status)}
                 >
-                  <MenuItem value="1">Hiển thị</MenuItem>
-                  <MenuItem value="0">Ẩn</MenuItem>
+                  <MenuItem value={1}>Hiển thị</MenuItem>
+                  <MenuItem value={0}>Ẩn</MenuItem>
                 </TextField>
               </Grid>
-              <Grid item xs={12} mt={3} textAlign="center">
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => router.push("/dashboard/admin/banners")}
-                  sx={{ px: 4, py: 1, mr: 2, textTransform: "none" }}
-                >
-                  Trở về
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  disabled={!isFormChanged}
-                  sx={{ px: 4, py: 1, textTransform: "none" }}
-                >
-                  {banner ? "Lưu thông tin" : "Tạo banner"}
-                </Button>
-              </Grid>
             </Grid>
+            <Button
+              sx={{ mt: 3 }}
+              variant="contained"
+              color="info"
+              fullWidth
+              type="submit"
+            >
+              {banner ? "Cập nhật banner" : "Tạo banner mới"}
+            </Button>
           </form>
         )}
       </Formik>

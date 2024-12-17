@@ -128,7 +128,7 @@ export default function ProductTypeAdminView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={headCell.align as 'left' | 'center' | 'right' | 'justify' | 'inherit'}
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -139,7 +139,7 @@ export default function ProductTypeAdminView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={headCell.align as 'left' | 'center' | 'right' | 'justify' | 'inherit'}
                           width={headCell.width}
                         >
                           {headCell.id !== "action" &&

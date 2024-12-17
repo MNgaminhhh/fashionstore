@@ -7,7 +7,7 @@ import { FlexCenterRow } from "../../../flexbox";
 import Categories from "./components/Categories";
 
 type Props = {
-  menuList: MenuList[];
+  menuList: any;
   title: string;
 };
 

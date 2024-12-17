@@ -12,7 +12,7 @@ import {
   Person as SellerIcon,
 } from "@mui/icons-material";
 
-type Props = { vendor: VendorModel };
+type Props = { vendor: any };
 
 export default function ProductVendorInfo({ vendor }: Props) {
   return (

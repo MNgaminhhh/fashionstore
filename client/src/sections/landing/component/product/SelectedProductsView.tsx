@@ -42,7 +42,7 @@ export default function SelectedProductsView() {
       setLoading(true);
       setError(null);
       try {
-        let filter: any = {};
+        let filter: any = { is_approved: true };
 
         if (selected !== "view") {
           filter.product_type = selected;

@@ -136,7 +136,7 @@ const OrderDetail: React.FC<Props> = ({ orderDetail }) => {
 
   return (
     <Box sx={{ padding: 4 }}>
-      <H2 gutterBottom>Chi tiết Đơn hàng</H2>
+      <H2>Chi tiết Đơn hàng</H2>
 
       <Card sx={{ mb: 4 }}>
         <CardContent>

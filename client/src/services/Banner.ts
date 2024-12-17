@@ -39,7 +39,7 @@ class BannerServer extends Base {
   }
 
   async create(
-    data: BannerUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
@@ -137,7 +137,7 @@ class BannerServer extends Base {
 
   async update(
     id: string,
-    data: BannerUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {

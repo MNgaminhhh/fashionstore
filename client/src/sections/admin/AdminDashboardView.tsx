@@ -141,7 +141,7 @@ const AdminDashboardView: React.FC = () => {
 
   return (
     <Box p={3}>
-      <H3 gutterBottom>Dashboard Quản Trị</H3>
+      <H3>Dashboard Quản Trị</H3>
 
       {/* Summary Cards */}
       <Grid container spacing={3} mb={4}>

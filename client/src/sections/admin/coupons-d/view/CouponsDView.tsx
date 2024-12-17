@@ -55,9 +55,7 @@ const selectOptions: { [key: string]: { value: string; label: string }[] } = {
 };
 export default function CouponsDView({ couponsData, token }: Props) {
   const router = useRouter();
-  const [coupons, setCoupons] = useState<CouponModel[]>(
-    couponsData.coupons || []
-  );
+  const [coupons, setCoupons] = useState<any>(couponsData.coupons || []);
   const [totalPages, setTotalPages] = useState<number>(
     couponsData.totalPages || 1
   );
@@ -181,7 +179,14 @@ export default function CouponsDView({ couponsData, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -192,7 +197,14 @@ export default function CouponsDView({ couponsData, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.id !== "action" &&

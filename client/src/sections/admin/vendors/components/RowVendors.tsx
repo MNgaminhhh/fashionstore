@@ -16,10 +16,10 @@ type Props = {
     status: string;
     id: string;
   };
-  onUpdateStatus: (id: string, newStatus: string) => void;
+  onUpdateStatus?: (id: string, newStatus: string) => void;
 };
 
-export default function RowVendors({ vendor, onDelete }: Props) {
+export default function RowVendors({ vendor, onUpdateStatus }: Props) {
   const router = useRouter();
   const statusLabel =
     {

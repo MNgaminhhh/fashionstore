@@ -27,7 +27,7 @@ class FlashSaleItemServer extends Base {
     return rs.data;
   }
   async getFlashSaleItems(
-    id: string,
+    id: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true,
     limit: number = 10,

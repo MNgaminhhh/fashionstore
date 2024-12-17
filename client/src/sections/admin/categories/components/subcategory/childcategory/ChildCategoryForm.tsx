@@ -42,7 +42,7 @@ const VALIDATION_SCHEMA = yup.object().shape({
 });
 
 type Props = {
-  childCategory?: ChildCategoryModel;
+  childCategory?: any;
   categories: CategoriesModel[];
 };
 
@@ -144,7 +144,11 @@ export default function ChildCategoryForm({
                       color="info"
                       size="medium"
                       error={Boolean(touched.parent && errors.parent)}
-                      helperText={touched.parent && errors.parent}
+                      helperText={
+                        touched.parent && errors.parent
+                          ? String(errors.parent)
+                          : ""
+                      }
                     />
                   )}
                 />
@@ -160,7 +164,9 @@ export default function ChildCategoryForm({
                   value={values.name}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name && errors.name}
+                  helperText={
+                    touched.name && errors.name ? String(errors.name) : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -175,7 +181,11 @@ export default function ChildCategoryForm({
                   value={values.name_code}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name_code && errors.name_code}
+                  helperText={
+                    touched.name_code && errors.name_code
+                      ? String(errors.name_code)
+                      : ""
+                  }
                   error={Boolean(touched.name_code && errors.name_code)}
                 />
               </Grid>
@@ -190,7 +200,15 @@ export default function ChildCategoryForm({
                   value={values.url}
                   onBlur={handleBlur}
                   onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.url && errors.url}
+                  helperText={
+                    touched.url && errors.url
+                      ? typeof errors.url === "string"
+                        ? errors.url
+                        : Array.isArray(errors.url)
+                        ? errors.url.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.url && errors.url)}
                 />
               </Grid>

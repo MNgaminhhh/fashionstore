@@ -35,7 +35,7 @@ const VariantSchema = Yup.object().shape({
     .required("Trạng thái là bắt buộc"),
 });
 
-const INITIAL_VALUES = (variant?: VariantModel) => ({
+const INITIAL_VALUES = (variant?: any) => ({
   id: variant?.id || "",
   name: variant?.name || "",
   status: variant?.status || "active",
@@ -50,12 +50,12 @@ export default function VariantForm({ variant, token }: Props) {
   const productId = Array.isArray(id) ? id[0] : id;
 
   const handleSubmit = async (
-    values: typeof INITIAL_VALUES,
+    values: any,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     setLoading(true);
     try {
-      const variantData: VariantModel = {
+      const variantData: any = {
         name: values.name,
         product_id: productId,
         status: values.status,
@@ -145,7 +145,15 @@ export default function VariantForm({ variant, token }: Props) {
                 value={values.name}
                 onBlur={handleBlur}
                 onChange={handleFieldChange(handleChange, setFieldValue)}
-                helperText={touched.name && errors.name}
+                helperText={
+                  touched.name && errors.name
+                    ? typeof errors.name === "string"
+                      ? errors.name
+                      : Array.isArray(errors.name)
+                      ? errors.name.join(", ")
+                      : undefined
+                    : undefined
+                }
                 error={Boolean(touched.name && errors.name)}
                 disabled={loading}
               />
@@ -174,11 +182,13 @@ export default function VariantForm({ variant, token }: Props) {
                   <MenuItem value="active">Hoạt Động</MenuItem>
                   <MenuItem value="inactive">Không Hoạt Động</MenuItem>
                 </Select>
-                {touched.status && errors.status && (
-                  <Typography color="error" variant="caption">
-                    {errors.status}
-                  </Typography>
-                )}
+                {touched.status &&
+                  errors.status &&
+                  typeof errors.status === "string" && (
+                    <Typography color="error" variant="caption">
+                      {errors.status}
+                    </Typography>
+                  )}
               </FormControl>
             </Box>
             <Box

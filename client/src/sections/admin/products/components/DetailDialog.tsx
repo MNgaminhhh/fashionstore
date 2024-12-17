@@ -27,7 +27,7 @@ interface Props {
   isApprov: boolean;
   handleCloseDialog: () => void;
   token?: string;
-  onApprovalChange?: (newStatus: boolean) => void;
+  onApprovalChange?: (id: string, newType: any) => void;
 }
 
 const mappingTypeProduct: { [key: string]: string } = {
@@ -63,7 +63,7 @@ export default function DetailDialog(props: Props) {
       if (response.data.success) {
         setIsApproved(newStatus);
         if (onApprovalChange) {
-          onApprovalChange(newStatus);
+          await onApprovalChange(product.id, newStatus.toString());
         }
         handleCloseDialog();
       }

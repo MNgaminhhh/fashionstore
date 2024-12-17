@@ -14,7 +14,7 @@ export const VerifyAccountView = () => {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [resend, setResend] = useState(false);
   const router = useRouter();
 
@@ -23,19 +23,22 @@ export const VerifyAccountView = () => {
 
     if (tokenFromUrl) {
       const { valid, email: emailFromToken } = decodeToken(tokenFromUrl);
+      console.log("Token valid:", valid);
+      console.log("Email from token:", emailFromToken);
 
       if (!valid) {
-        setEmail(emailFromToken);
+        setEmail(emailFromToken); // Set email even if token is invalid
         setMessage("URL đã hết hạn hoặc không hợp lệ!");
-        setResend(true);
+        setResend(true); // Allow resend if invalid
         setLoading(false);
         return;
       }
+
       setEmail(emailFromToken);
       verifyAccount(emailFromToken);
     } else {
       setMessage("Không tìm thấy đường dẫn phù hợp...");
-      setResend(true);
+      setResend(true); // Allow resend if no token
       setLoading(false);
     }
   }, [searchParams]);

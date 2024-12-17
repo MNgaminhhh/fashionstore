@@ -57,12 +57,12 @@ export default function RowOrdersAdmin({ order, onDelete }: Props) {
         color = "warning";
         label = "Đang Chuẩn Bị Hàng";
         break;
-      case "pending":
-        pending = "paying";
+      case "paying":
+        color = "warning";
         label = "Chờ Thanh Toán";
         break;
       case "shipping":
-        color = "info";
+        color = "default";
         label = "Đang vận chuyển";
         break;
       case "delivered":

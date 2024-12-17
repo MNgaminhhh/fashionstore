@@ -41,10 +41,8 @@ export default function ProductIntro({ product }: Props) {
   const [selectedVariants, setSelectedVariants] = useState<{
     [key: string]: string;
   }>({});
-  const [availableSkus, setAvailableSkus] = useState<ProductModel["skus"]>([]);
-  const [currentSku, setCurrentSku] = useState<ProductModel["skus"][0] | null>(
-    null
-  );
+  const [availableSkus, setAvailableSkus] = useState<any>([]);
+  const [currentSku, setCurrentSku] = useState<any>(null);
   const [cartQty, setCartQty] = useState(1);
   const variantOptions: { [key: string]: string[] } = {};
 

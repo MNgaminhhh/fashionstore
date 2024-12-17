@@ -24,16 +24,16 @@ import {
 } from "../../../../utils/ToastNotification";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Coupons from "../../../../services/Coupons";
 import CouponModel from "../../../../models/Coupon.model";
 import ConditionModel from "../../../../models/Condition.model";
+import { DatePicker } from "@mui/x-date-pickers";
 
 dayjs.extend(customParseFormat);
 dayjs.locale("vi");
 
 type Props = {
-  coupon?: CouponModel;
+  coupon?: any;
   cond?: ConditionModel[];
   token: string;
 };
@@ -90,13 +90,7 @@ const VALIDATION_SCHEMA = yup.object().shape({
   discount: yup
     .number()
     .required("Giảm giá là bắt buộc")
-    .min(0, "Giảm giá không thể âm")
-    .when("type", (type: string, schema: any) => {
-      if (type === "percentage" || type === "shipping_percentage") {
-        return schema.max(100, "Giảm giá không thể vượt quá 100%");
-      }
-      return schema;
-    }),
+    .min(0, "Giảm giá không thể âm"),
   status: yup.boolean().required("Trạng thái là bắt buộc"),
   condition: yup.array().min(1, "Ít nhất một điều kiện phải được chọn"),
 });
@@ -105,7 +99,7 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
   const router = useRouter();
   const [conditionsOptions, setConditionsOptions] = useState(cond || []);
   const [loading, setLoading] = useState<boolean>(false);
-  const [initialValues, setInitialValues] = useState<CouponModel>({
+  const [initialValues, setInitialValues] = useState<any>({
     code: "",
     quantity: 1,
     start_date: dayjs().format("DD-MM-YYYY"),
@@ -140,7 +134,7 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
     }
   }, [coupon]);
 
-  const handleFormSubmit = async (values: CouponModel) => {
+  const handleFormSubmit = async (values: any) => {
     try {
       setLoading(true);
       const formattedData = {
@@ -216,7 +210,9 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                   value={values.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  helperText={touched.name && errors.name}
+                  helperText={
+                    touched.name && errors.name ? String(errors.name) : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -230,7 +226,9 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                   value={values.code}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  helperText={touched.code && errors.code}
+                  helperText={
+                    touched.code && errors.code ? (errors.code as string) : ""
+                  }
                   error={Boolean(touched.code && errors.code)}
                 />
               </Grid>
@@ -245,7 +243,13 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                   value={values.quantity}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  helperText={touched.quantity && errors.quantity}
+                  helperText={
+                    touched.quantity && errors.quantity
+                      ? typeof errors.quantity === "string"
+                        ? errors.quantity
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.quantity && errors.quantity)}
                   InputProps={{ inputProps: { min: 1 } }}
                 />
@@ -276,7 +280,13 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                     </MenuItem>
                   </Select>
                   {touched.type && errors.type && (
-                    <FormHelperText>{errors.type}</FormHelperText>
+                    <FormHelperText>
+                      {typeof errors.type === "string"
+                        ? errors.type
+                        : Array.isArray(errors.type)
+                        ? errors.type.join(", ")
+                        : ""}
+                    </FormHelperText>
                   )}
                 </FormControl>
               </Grid>
@@ -291,7 +301,15 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                   value={values.max_price}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  helperText={touched.max_price && errors.max_price}
+                  helperText={
+                    touched.max_price && errors.max_price
+                      ? typeof errors.max_price === "string"
+                        ? errors.max_price
+                        : Array.isArray(errors.max_price)
+                        ? errors.max_price.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.max_price && errors.max_price)}
                   InputProps={{ inputProps: { min: 0 } }}
                 />
@@ -312,7 +330,15 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                   value={values.discount}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  helperText={touched.discount && errors.discount}
+                  helperText={
+                    touched.discount && errors.discount
+                      ? typeof errors.discount === "string"
+                        ? errors.discount
+                        : Array.isArray(errors.discount)
+                        ? errors.discount.join(", ")
+                        : ""
+                      : ""
+                  }
                   error={Boolean(touched.discount && errors.discount)}
                   InputProps={{
                     inputProps:
@@ -370,7 +396,7 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
               <Grid item sm={6} xs={12}>
                 <DatePicker
                   label="Ngày Bắt Đầu"
-                  inputFormat="DD/MM/YYYY"
+                  format="DD-MM-YYYY"
                   value={dayjs(values.start_date, "DD-MM-YYYY")}
                   onChange={(date) => {
                     if (date && date.isValid()) {
@@ -380,41 +406,48 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                       setFieldValue("start_date", "");
                     }
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      name="start_date"
-                      onBlur={handleBlur}
-                      helperText={touched.start_date && errors.start_date}
-                      error={Boolean(touched.start_date && errors.start_date)}
-                    />
-                  )}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      name: "start_date",
+                      onBlur: handleBlur,
+                      helperText:
+                        touched.start_date && errors.start_date === "string"
+                          ? errors.start_date
+                          : "",
+                      error: Boolean(touched.start_date && errors.start_date),
+                    },
+                  }}
                 />
               </Grid>
               <Grid item sm={6} xs={12}>
                 <DatePicker
                   label="Ngày Kết Thúc"
-                  inputFormat="DD/MM/YYYY"
-                  value={dayjs(values.end_date, "DD-MM-YYYY")}
+                  format="DD-MM-YYYY"
+                  value={
+                    values.end_date
+                      ? dayjs(values.end_date, "DD-MM-YYYY")
+                      : null
+                  }
                   onChange={(date) => {
                     if (date && date.isValid()) {
-                      const formattedDate = date.format("DD-MM-YYYY");
-                      setFieldValue("end_date", formattedDate);
+                      setFieldValue("end_date", date.format("DD-MM-YYYY"));
                     } else {
                       setFieldValue("end_date", "");
                     }
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      name="end_date"
-                      onBlur={handleBlur}
-                      helperText={touched.end_date && errors.end_date}
-                      error={Boolean(touched.end_date && errors.end_date)}
-                    />
-                  )}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      name: "end_date",
+                      onBlur: handleBlur,
+                      helperText:
+                        touched.end_date && typeof errors.end_date === "string"
+                          ? errors.end_date
+                          : "",
+                      error: Boolean(touched.end_date && errors.end_date),
+                    },
+                  }}
                 />
               </Grid>
               <Grid item sm={12} xs={12}>
@@ -429,16 +462,16 @@ export default function CouponsDForm({ coupon, cond, token }: Props) {
                     labelId="status-label"
                     id="status"
                     name="status"
-                    value={values.status}
+                    value={values.status ? "true" : "false"}
                     label="Trạng Thái"
                     onChange={(e) => {
-                      setFieldValue("status", e.target.value === true);
+                      setFieldValue("status", e.target.value === "true");
                     }}
                   >
-                    <MenuItem value={true}>Hoạt động</MenuItem>
-                    <MenuItem value={false}>Không hoạt động</MenuItem>
+                    <MenuItem value="true">Hoạt động</MenuItem>
+                    <MenuItem value="false">Không hoạt động</MenuItem>
                   </Select>
-                  {touched.status && errors.status && (
+                  {touched.status && typeof errors.status === "string" && (
                     <FormHelperText>{errors.status}</FormHelperText>
                   )}
                 </FormControl>

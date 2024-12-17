@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -12,6 +12,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  SelectChangeEvent,
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -203,7 +204,26 @@ export default function ShippingRuleForm({ shippingRule, token }: Props) {
                     name="status"
                     value={values.status}
                     label="Trạng Thái"
-                    onChange={handleFieldChange(handleChange, setFieldValue)}
+                    onChange={(
+                      event: SelectChangeEvent<string>,
+                      child: ReactNode
+                    ) => {
+                      const syntheticEvent = {
+                        target: {
+                          name: event.target.name,
+                          value: event.target.value,
+                        },
+                      } as React.ChangeEvent<
+                        | HTMLInputElement
+                        | HTMLTextAreaElement
+                        | { name?: string; value: unknown }
+                      >;
+
+                      handleFieldChange(
+                        handleChange,
+                        setFieldValue
+                      )(syntheticEvent);
+                    }}
                   >
                     <MenuItem value="true">Hiển thị</MenuItem>
                     <MenuItem value="false">Ẩn</MenuItem>

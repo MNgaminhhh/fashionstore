@@ -14,9 +14,7 @@ import DetailDialog from "./DetailDialog";
 import { useAppContext } from "../../../../context/AppContext";
 type Props = {
   product: ProductModel;
-  onDelete: (id: string) => void;
-  onToggleApproval: (id: string, isApproved: boolean) => void;
-  onToggleStatus: (id: string, status: boolean) => void;
+  onToggleApproval: (id: string, isApproved: any) => void;
 };
 const mappingTypeProduct: { [key: string]: string } = {
   none: "Không Có",
@@ -46,9 +44,10 @@ export default function RowProductAdmin({ product, onToggleApproval }: Props) {
     onToggleApproval(product.id, newApprovalStatus);
   };
 
-  const handleApprovalChange = (newStatus: boolean) => {
-    setIsApproved(newStatus);
-    onToggleApproval(product.id, newStatus);
+  const handleApprovalChange = (id: string, newStatus: any) => {
+    const newApprovalStatus = !isApproved;
+    setIsApproved(newApprovalStatus);
+    onToggleApproval(id, newApprovalStatus);
   };
 
   return (

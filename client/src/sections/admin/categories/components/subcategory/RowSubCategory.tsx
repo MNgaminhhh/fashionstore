@@ -19,7 +19,7 @@ type Props = {
     parent: string;
     url: string;
     icon: string;
-    status: string;
+    status: any;
   };
   onDelete: (id: string) => void;
   onToggleVisibility: (id: string, status: number) => void;
