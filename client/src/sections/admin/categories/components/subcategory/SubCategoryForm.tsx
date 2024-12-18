@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Formik } from "formik";
+import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import {
   Box,
@@ -21,7 +21,40 @@ import {
 } from "../../../../../utils/ToastNotification";
 import SubCategory from "../../../../../services/SubCategory";
 import { useAppContext } from "../../../../../context/AppContext";
+import { slugify } from "../../../../../utils/slugify";
+type SubCategoryFormEffectProps = {
+  categories: any;
+  setIsFormChanged: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
+const SubCategoryFormEffect: React.FC<SubCategoryFormEffectProps> = ({
+  categories,
+  setIsFormChanged,
+}) => {
+  const { values, setFieldValue } = useFormikContext<any>();
+
+  useEffect(() => {
+    const newNameCode = slugify(values.name);
+
+    const parentCategory = categories.find(
+      (cat) => cat.name === values.cate_name
+    );
+    const parentUrl = parentCategory ? parentCategory.url : "";
+    const newUrl = `${parentUrl}/${newNameCode}`;
+
+    if (newNameCode !== values.name_code) {
+      setFieldValue("name_code", newNameCode);
+      setIsFormChanged(true);
+    }
+
+    if (newUrl !== values.url) {
+      setFieldValue("url", newUrl);
+      setIsFormChanged(true);
+    }
+  }, [values.name, values.cate_name]);
+
+  return null;
+};
 const VALIDATION_SCHEMA = yup.object().shape({
   cate_name: yup
     .string()
@@ -39,9 +72,15 @@ const VALIDATION_SCHEMA = yup.object().shape({
   status: yup.number().required("Trạng thái là bắt buộc"),
 });
 
+type CategoryOption = {
+  id: string;
+  name: string;
+  name_code: string;
+};
+
 type Props = {
   subcategory?: any;
-  categories?: any;
+  categories?: CategoryOption[];
 };
 
 export default function SubCategoryForm({ subcategory, categories }: Props) {
@@ -73,6 +112,8 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
             ? "Thay đổi thông tin danh mục con thành công!"
             : "Tạo danh mục con mới thành công!"
         );
+        router.push("/dashboard/admin/categories/sub-category");
+        router.refresh();
       } else {
         const errorMessage = res?.message || "Vui lòng thử lại.";
         notifyError(
@@ -105,7 +146,9 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
       handleChange(event);
     };
 
-  const categoryOptions = Array.isArray(categories) ? categories : [];
+  const categoryOptions: CategoryOption[] = Array.isArray(categories)
+    ? categories
+    : [];
 
   return (
     <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
@@ -125,6 +168,12 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
           setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
+            {/* Include the SubCategoryFormEffect component */}
+            <SubCategoryFormEffect
+              categories={categoryOptions}
+              setIsFormChanged={setIsFormChanged}
+            />
+
             <Divider sx={{ mb: 3 }} />
             <Grid container spacing={3}>
               <Grid item sm={6} xs={12}>
@@ -170,7 +219,10 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   size="medium"
                   value={values.name}
                   onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
+                  onChange={(e) => {
+                    handleChange(e);
+                    setIsFormChanged(true);
+                  }}
                   helperText={
                     touched.name && errors.name
                       ? typeof errors.name === "string"
@@ -191,8 +243,7 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   color="info"
                   size="medium"
                   value={values.name_code}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
+                  disabled
                   helperText={
                     touched.name_code && errors.name_code
                       ? typeof errors.name_code === "string"
@@ -213,8 +264,7 @@ export default function SubCategoryForm({ subcategory, categories }: Props) {
                   color="info"
                   size="medium"
                   value={values.url}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
+                  disabled
                   helperText={
                     touched.url && errors.url
                       ? typeof errors.url === "string"

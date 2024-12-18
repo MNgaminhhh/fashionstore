@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   keywords: ["e-commerce", "MTShop"],
 };
 
-interface ProductSearchProps {
+interface CategoriesSearchProps {
   searchParams: {
     [key: string]: string | string[] | undefined;
   };
 }
 
-const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
+const CategoriesSearch = async ({ searchParams }: CategoriesSearchProps) => {
   try {
     const params: { [key: string]: string | string[] } = {};
     Object.keys(searchParams).forEach((key) => {
@@ -27,7 +27,7 @@ const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
     });
     const productResponse = await Products.getAllProduct(100, 1, params);
     const initialProducts = get(productResponse, "data.data", []);
-    console.log(params);
+
     return (
       <ProductSearchPageView
         initialProducts={initialProducts}
@@ -40,4 +40,4 @@ const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
   }
 };
 
-export default ProductSearch;
+export default CategoriesSearch;

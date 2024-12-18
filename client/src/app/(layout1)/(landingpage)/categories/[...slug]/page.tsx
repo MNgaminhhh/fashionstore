@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import { get } from "lodash";
-import Products from "../../../../services/Products";
-import ProductSearchPageView from "../../../../sections/product-detail/view/ProductSearchPageView";
 import { notFound } from "next/navigation";
+import Products from "../../../../../services/Products";
+import ProductSearchPageView from "../../../../../sections/product-detail/view/ProductSearchPageView";
 
 export const metadata: Metadata = {
   title: "Tất Cả Sản Phẩm | MTShop",
@@ -11,23 +11,39 @@ export const metadata: Metadata = {
 };
 
 interface ProductSearchProps {
+  params: {
+    slug: string[];
+  };
   searchParams: {
     [key: string]: string | string[] | undefined;
   };
 }
 
-const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
+export default async function ProductSearch({
+  params,
+  searchParams,
+}: ProductSearchProps) {
   try {
-    const params: { [key: string]: string | string[] } = {};
+    const { slug } = params;
+    const requestParams: { [key: string]: string | string[] } = {};
+
     Object.keys(searchParams).forEach((key) => {
       const value = searchParams[key];
       if (typeof value === "string" || Array.isArray(value)) {
-        params[key] = value;
+        requestParams[key] = value;
       }
     });
-    const productResponse = await Products.getAllProduct(100, 1, params);
+    if (slug.length > 0) {
+      requestParams.slug_cate = slug[0];
+    }
+    if (slug.length > 1) {
+      requestParams.slug_sub_cate = slug[1];
+    }
+    if (slug.length > 2) {
+      requestParams.slug_child_cate = slug[2];
+    }
+    const productResponse = await Products.getAllProduct(100, 1, requestParams);
     const initialProducts = get(productResponse, "data.data", []);
-    console.log(params);
     return (
       <ProductSearchPageView
         initialProducts={initialProducts}
@@ -38,6 +54,4 @@ const ProductSearch = async ({ searchParams }: ProductSearchProps) => {
   } catch (error) {
     notFound();
   }
-};
-
-export default ProductSearch;
+}

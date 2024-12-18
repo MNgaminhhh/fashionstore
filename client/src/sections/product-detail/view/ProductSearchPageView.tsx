@@ -80,7 +80,9 @@ export default function ProductSearchPageView({
             {!loading && !error && (
               <Grid container spacing={3}>
                 {(initialProducts?.products ?? []).length === 0 ? (
-                  <Span color="grey.600">Không tìm thấy sản phẩm</Span>
+                  <Grid item lg={3} sm={6} xs={12}>
+                    <Span color="grey.600">Không tìm thấy sản phẩm</Span>
+                  </Grid>
                 ) : (
                   initialProducts.products.map((item: ProductModel) => (
                     <Grid item lg={3} sm={6} xs={12} key={item.id}>

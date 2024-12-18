@@ -88,15 +88,12 @@ const CartProvider = ({ children }: PropsWithChildren) => {
   const { sessionToken, setCart } = useAppContext();
   const router = useRouter();
 
-  // Check for existing cart data in localStorage/sessionStorage
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
-      // If cart data exists in localStorage, load it directly
       dispatch({ type: "SET_CART", payload: JSON.parse(storedCart) });
-      setLoading(false); // No need to show loading if data is already available
+      setLoading(false);
     } else {
-      // Otherwise, fetch the cart from API
       fetchCart();
     }
   }, []);
@@ -110,7 +107,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           selected: false,
         }));
         dispatch({ type: "SET_CART", payload: cartWithSelection });
-        localStorage.setItem("cart", JSON.stringify(cartWithSelection)); // Store cart in localStorage
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
       }
     } catch (error) {
       notifyError("Không thể tải giỏ hàng.");
@@ -136,7 +133,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           selected: false,
         }));
         dispatch({ type: "SET_CART", payload: cartWithSelection });
-        localStorage.setItem("cart", JSON.stringify(cartWithSelection)); // Update localStorage
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
         setCart(cartWithSelection.length);
       }
       notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
@@ -161,7 +158,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           selected: false,
         }));
         dispatch({ type: "SET_CART", payload: cartWithSelection });
-        localStorage.setItem("cart", JSON.stringify(cartWithSelection)); // Update localStorage
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
         setCart(cartWithSelection?.length || 0);
       }
     }

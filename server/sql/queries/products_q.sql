@@ -92,7 +92,10 @@ WHERE
     (c.name ILIKE '%' || COALESCE($6, '') || '%' OR $6 IS NULL ) AND
     (p.is_approved = COALESCE($7, p.is_approved) OR $7 IS NULL) AND
     (sc.name ILIKE '%' || COALESCE($8, '') || '%' OR $8 IS NULL) AND
-    (cc.name ILIKE '%' || COALESCE($9, '') || '%' OR $9 IS NULL)
+    (cc.name ILIKE '%' || COALESCE($9, '') || '%' OR $9 IS NULL) AND
+    (c.name_code ILIKE '%' || COALESCE($10, '') || '%' OR $10 IS NULL) AND
+    (sc.name_code ILIKE '%' || COALESCE($11, '') || '%' OR $11 IS NULL) AND
+    (cc.name_code ILIKE '%' || COALESCE($12, '') || '%' OR $12 IS NULL)
 ORDER BY p.updated_at DESC;
 
 -- name: ViewFullDetailOfProduct :one

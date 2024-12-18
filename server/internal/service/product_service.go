@@ -10,11 +10,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"github.com/lib/pq"
 	"log"
 	"slices"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type ProductResponse struct {
@@ -272,6 +273,9 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 		IsApproved: sql.NullBool{},
 		Column8:    sql.NullString{},
 		Column9:    sql.NullString{},
+		Column10: sql.NullString{},
+		Column11: sql.NullString{},
+		Column12: sql.NullString{},
 	}
 	if filter.VendorId != nil {
 		params.Column5 = *filter.VendorId
@@ -294,6 +298,33 @@ func (ps *ProductService) ListProducts(filter *validator.FilterProductRequest) (
 	if filter.ChildCateName != nil && len(*filter.ChildCateName) > 0 {
 		params.Column9 = sql.NullString{
 			String: *filter.ChildCateName,
+			Valid:  true,
+		}
+	}
+	if filter.ChildCateName != nil && len(*filter.ChildCateName) > 0 {
+		params.Column9 = sql.NullString{
+			String: *filter.ChildCateName,
+			Valid:  true,
+		}
+	}
+
+	if filter.CategorySlug != nil && len(*filter.CategorySlug) > 0 {
+		params.Column10 = sql.NullString{
+			String: *filter.CategorySlug,
+			Valid:  true,
+		}
+	}
+
+	if filter.SubCategorySlug != nil && len(*filter.SubCategorySlug) > 0 {
+		params.Column11 = sql.NullString{
+			String: *filter.SubCategorySlug,
+			Valid:  true,
+		}
+	}
+
+	if filter.ChildCategorySlug != nil && len(*filter.ChildCategorySlug) > 0 {
+		params.Column12 = sql.NullString{
+			String: *filter.ChildCategorySlug,
 			Valid:  true,
 		}
 	}

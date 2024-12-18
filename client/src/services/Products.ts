@@ -18,6 +18,9 @@ interface Filterss {
   is_approved?: string;
   child_cate_name?: string;
   sub_cate_name?: string;
+  slug_sub_cate?: string;
+  slug_cate?: string;
+  slug_child_cate?: string;
 }
 interface cuProductModel {
   name: string;
@@ -107,6 +110,19 @@ class ProductsServer extends Base {
     const queryParams: string[] = [];
     if (filters.store_name) {
       queryParams.push(`store_name=${encodeURIComponent(filters.store_name)}`);
+    }
+    if (filters.slug_child_cate) {
+      queryParams.push(
+        `slug_child_cate=${encodeURIComponent(filters.slug_child_cate)}`
+      );
+    }
+    if (filters.slug_cate) {
+      queryParams.push(`slug_cate=${encodeURIComponent(filters.slug_cate)}`);
+    }
+    if (filters.slug_sub_cate) {
+      queryParams.push(
+        `slug_sub_cate=${encodeURIComponent(filters.slug_sub_cate)}`
+      );
     }
     if (filters.low_price) {
       queryParams.push(`low_price=${encodeURIComponent(filters.low_price)}`);

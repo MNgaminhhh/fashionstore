@@ -18,7 +18,6 @@ import {
 import BannerModel from "../../../../models/Banner.model";
 import { useAppContext } from "../../../../context/AppContext";
 
-// Tạo interface mới với thuộc tính `preview`
 interface FileWithPreview extends File {
   preview?: string;
 }

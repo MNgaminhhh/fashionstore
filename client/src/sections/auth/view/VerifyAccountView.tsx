@@ -27,9 +27,9 @@ export const VerifyAccountView = () => {
       console.log("Email from token:", emailFromToken);
 
       if (!valid) {
-        setEmail(emailFromToken); // Set email even if token is invalid
+        setEmail(emailFromToken);
         setMessage("URL đã hết hạn hoặc không hợp lệ!");
-        setResend(true); // Allow resend if invalid
+        setResend(true);
         setLoading(false);
         return;
       }
@@ -38,7 +38,7 @@ export const VerifyAccountView = () => {
       verifyAccount(emailFromToken);
     } else {
       setMessage("Không tìm thấy đường dẫn phù hợp...");
-      setResend(true); // Allow resend if no token
+      setResend(true);
       setLoading(false);
     }
   }, [searchParams]);

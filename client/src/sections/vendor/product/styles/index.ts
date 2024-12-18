@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Menu, MenuItem } from "@mui/material";
-import { Theme } from "@mui/material/styles"; // Import the Theme type
+import { Theme } from "@mui/material/styles";
 
 export const StyledMenu = styled(Menu)<{ theme?: Theme }>(({ theme }) => ({
   "& .MuiPaper-root": {

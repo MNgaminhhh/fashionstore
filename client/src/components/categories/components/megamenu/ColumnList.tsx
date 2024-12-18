@@ -24,8 +24,9 @@ export default function ColumnList({
           <Grid container spacing={4}>
             {list.map((item, ind) => (
               <Grid item md={3} key={ind}>
-                <div className="title-link">{item.title}</div>
-
+                <NavLink className="title-link" href={item.href} key={ind}>
+                  {item.title}
+                </NavLink>
                 {item.children?.map((sub, ind) => (
                   <NavLink className="child-link" href={sub.href} key={ind}>
                     {sub.title}
