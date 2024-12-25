@@ -22,6 +22,6 @@ RUN npm install --only=production
 
 ENV NODE_ENV=production
 
-EXPOSE 3000
+EXPOSE 3008
 
 CMD ["npm", "start"]
