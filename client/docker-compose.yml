@@ -25,7 +25,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
     depends_on:
-      - nextjs
+      - nextjsfashion
     networks:
       - app-network
     restart: unless-stopped
