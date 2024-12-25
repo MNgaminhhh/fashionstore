@@ -2,13 +2,14 @@ package main
 
 import (
 	"backend/internal/initialize"
-	"github.com/joho/godotenv"
 	"log"
 	"path/filepath"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	fileEnv := filepath.Join("./", "config.env")
+	fileEnv := filepath.Join("./", ".env")
 	err := godotenv.Load(fileEnv)
 	if err != nil {
 		log.Fatal("Error loading .env file")

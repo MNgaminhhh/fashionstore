@@ -1,12 +1,16 @@
-GOOSE_DBSTRING = postgres://postgres:123456@localhost:5432/mtshop?sslmode=disable
-GOOSE_MIGRATION_DIR ?= sql/schema
+ifeq ($(wildcard .env),.env)
+	include .env
+	export $(shell for /F "tokens=1 delims==" %%i in (.env) do echo %%i)
+endif
 
-APP_NAME := server
 
+APP_NAME := $(APP_NAME)
 dev:
 	go run ./cmd/$(APP_NAME)
 
 upse:
+	@echo GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR)
+	@echo GOOSE_DBSTRING=$(GOOSE_DBSTRING)
 	@set GOOSE_DRIVER=postgres&& set GOOSE_DBSTRING=$(GOOSE_DBSTRING)&& goose -dir=$(GOOSE_MIGRATION_DIR) up
 
 downse:

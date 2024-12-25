@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: go_app:latest
+    container_name: go_app
+    ports:
+      - "8080:8080"
+    environment:
+      APP_NAME: ${APP_NAME}
+    volumes:
+      - ./config:/app/config
+      - ./migrations:/migrations
+      - ./storages/logs:/app/storages/logs
+    networks:
+      - app-network
+    env_file:
+      - ./.env
+networks:
+  app-network:
+    driver: bridge
