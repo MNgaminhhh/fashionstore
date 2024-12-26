@@ -1,5 +1,5 @@
 services:
-  nextjsfashion:
+  nextjs2:
     build:
       context: .
       dockerfile: Dockerfile
@@ -27,7 +27,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
     depends_on:
-      - nextjsfashion
+      - nextjs2
     networks:
       - network2
     restart: unless-stopped
