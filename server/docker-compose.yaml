@@ -14,9 +14,10 @@ services:
       - ./migrations:/migrations
       - ./storages/logs:/app/storages/logs
     networks:
-      - app-network
+      - network2
     env_file:
       - ./.env
+
 networks:
-  app-network:
-    driver: bridge
+  network2:
+    external: true
