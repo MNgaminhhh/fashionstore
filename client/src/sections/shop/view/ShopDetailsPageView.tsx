@@ -9,8 +9,7 @@ import VendorModel from "../../../models/Vendor.model";
 type Props = { shop: any; vendor: VendorModel; name: string };
 
 export default function ShopDetailsPageView({ shop, vendor, name }: Props) {
-  const vendorInfo = vendor ? vendor : null;
-
+  const vendorInfo = vendor ? vendor[0] : null;
   return (
     <Container className="mt-2 mb-3">
       {vendorInfo ? (

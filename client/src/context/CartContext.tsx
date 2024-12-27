@@ -91,11 +91,21 @@ const CartProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
-      dispatch({ type: "SET_CART", payload: JSON.parse(storedCart) });
-      setLoading(false);
+      try {
+        const parsedCart = JSON.parse(storedCart);
+        if (Array.isArray(parsedCart)) {
+          dispatch({ type: "SET_CART", payload: parsedCart });
+        } else {
+          localStorage.removeItem("cart");
+        }
+      } catch (error) {
+        localStorage.removeItem("cart");
+      }
     } else {
       fetchCart();
     }
+
+    setLoading(false);
   }, []);
 
   const fetchCart = async () => {
@@ -110,7 +120,6 @@ const CartProvider = ({ children }: PropsWithChildren) => {
         localStorage.setItem("cart", JSON.stringify(cartWithSelection));
       }
     } catch (error) {
-      notifyError("Không thể tải giỏ hàng.");
     } finally {
       setLoading(false);
     }

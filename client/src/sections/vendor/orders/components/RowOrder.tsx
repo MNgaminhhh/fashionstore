@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
@@ -16,7 +14,7 @@ type Props = {
 
 export default function RowOrder({ order }: Props) {
   const router = useRouter();
-
+  console.log(order);
   const handleView = (orderId: string) => {
     router.push(`/dashboard/vendor/orders/${orderId}`);
   };
@@ -31,22 +29,17 @@ export default function RowOrder({ order }: Props) {
           underline="hover"
           sx={{ cursor: "pointer" }}
         >
-          #{formatOrderId(order.order_id)}
+          #{order.order_id}
         </MuiLink>
       </StyledTableCell>
-      <StyledTableCell align="center" sx={{ minWidth: 150 }}>
+
+      <StyledTableCell align="center">
         <Tooltip title="Xem chi tiết" arrow>
           <StyledIconButton onClick={() => handleView(order.order_id)}>
-            <VisibilityIcon sx={{ color: "#1976d2" }} />
+            <VisibilityIcon />
           </StyledIconButton>
         </Tooltip>
       </StyledTableCell>
     </StyledTableRow>
   );
-}
-
-function formatOrderId(orderId: string): string {
-  return orderId.length > 15
-    ? `${orderId.slice(0, 15).toUpperCase()}`
-    : orderId.toUpperCase();
 }

@@ -58,6 +58,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   skus,
   orderIdForReview,
 }) => {
+  console.log(skus);
   const { sessionToken } = useAppContext();
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -179,7 +180,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
         <form onSubmit={formik.handleSubmit}>
           <Box display="flex" flexDirection="column" gap={2}>
-            {/* Chọn SKU */}
             <FormControl
               fullWidth
               variant="outlined"
@@ -198,7 +198,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 label="Chọn SKU"
               >
                 {skus.map((sku) => (
-                  <MenuItem key={sku.id} value={sku.id}>
+                  <MenuItem key={sku.sku_id} value={sku.sku_id}>
                     {sku.product_name}
                   </MenuItem>
                 ))}

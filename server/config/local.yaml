@@ -3,10 +3,10 @@ server:
   mode: "dev"
 
 postgres:
-  host: 116.118.50.253
-  port: 5433
-  username: admin
-  password: admin
+  host: localhost
+  port: 5432
+  username: postgres
+  password: 123456
   dbname: mtshop
   sslmode: disable
   maxIdleConns: 10

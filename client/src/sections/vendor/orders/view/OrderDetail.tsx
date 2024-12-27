@@ -27,7 +27,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { useRouter } from "next/navigation";
 import { H2 } from "../../../../components/Typography";
 import {
@@ -85,6 +85,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const OrderDetail: React.FC<Props> = ({ orderDetail }) => {
+  console.log(orderDetail);
   const router = useRouter();
   const { orderBill, skus } = orderDetail;
   const { sessionToken } = useAppContext();
@@ -342,10 +343,12 @@ function capitalizeFirstLetter(string: string): string {
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return format(date, "dd-MM-yyyy HH:mm");
-}
+  const parsedDate = parse(dateString, "dd-MM-yyyy HH:mm", new Date());
 
+  if (isNaN(parsedDate.getTime())) {
+  }
+  return format(parsedDate, "dd-MM-yyyy HH:mm");
+}
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
