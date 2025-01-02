@@ -14,7 +14,7 @@ export const VerifyAccountView = () => {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [resend, setResend] = useState(false);
   const router = useRouter();
 
@@ -23,6 +23,8 @@ export const VerifyAccountView = () => {
 
     if (tokenFromUrl) {
       const { valid, email: emailFromToken } = decodeToken(tokenFromUrl);
+      console.log("Token valid:", valid);
+      console.log("Email from token:", emailFromToken);
 
       if (!valid) {
         setEmail(emailFromToken);
@@ -31,6 +33,7 @@ export const VerifyAccountView = () => {
         setLoading(false);
         return;
       }
+
       setEmail(emailFromToken);
       verifyAccount(emailFromToken);
     } else {

@@ -28,7 +28,7 @@ import {
 } from "../../../../utils/ToastNotification";
 import DialogBox from "../../../../components/dialog/DialogBox";
 
-type Props = { brands: any[]; token: string };
+type Props = { brands: any; token: string };
 
 export default function BrandsView({ brands: initialBrands, token }: Props) {
   const [brands, setBrands] = useState(initialBrands.brands || []);
@@ -160,7 +160,14 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                           sx={{ backgroundColor: "grey.200" }}
                         >
@@ -172,7 +179,14 @@ export default function BrandsView({ brands: initialBrands, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                           sx={{ backgroundColor: "grey.100" }}
                         >

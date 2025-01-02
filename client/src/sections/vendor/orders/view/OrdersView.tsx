@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -65,6 +65,7 @@ export default function OrdersView({ ordersData, token }: Props) {
         flattened.push({
           ...sku,
           order_id: order.order_id,
+          order_date: order.order_date, // thêm thông tin ngày đặt hàng
         });
       });
     });
@@ -112,6 +113,7 @@ export default function OrdersView({ ordersData, token }: Props) {
     setCurrentPage(value);
     applyFilters(value, currentLimit);
   };
+
   const handlePageSizeChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
@@ -148,7 +150,14 @@ export default function OrdersView({ ordersData, token }: Props) {
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -159,7 +168,7 @@ export default function OrdersView({ ordersData, token }: Props) {
                   <TableBody>
                     {orders.length > 0 ? (
                       orders.map((order) => (
-                        <RowOrder key={order.sku_id} order={order} />
+                        <RowOrder key={order.order_id} order={order} />
                       ))
                     ) : (
                       <TableRow>

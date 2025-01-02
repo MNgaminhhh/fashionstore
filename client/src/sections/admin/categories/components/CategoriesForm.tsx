@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import { Formik } from "formik";
+import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import Divider from "@mui/material/Divider";
 import * as Icons from "react-icons/fa";
@@ -15,8 +16,49 @@ import {
   notifySuccess,
 } from "../../../../utils/ToastNotification";
 import Categories from "../../../../services/Categories";
-import { get } from "../../../../hooks/useLocalStorage";
 import { useAppContext } from "../../../../context/AppContext";
+import { slugify } from "../../../../utils/slugify";
+interface FormValues {
+  name: string;
+  name_code: string;
+  url: string;
+  icon: string;
+  status: string | boolean;
+  component: string;
+}
+
+type CategoriesFormEffectProps = {
+  setIsFormChanged: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const CategoriesFormEffect: React.FC<CategoriesFormEffectProps> = ({
+  setIsFormChanged,
+}) => {
+  const { values, setFieldValue } = useFormikContext<FormValues>();
+
+  useEffect(() => {
+    const newNameCode = slugify(values.name);
+    const newUrl = `/categories/${newNameCode}`;
+
+    let changed = false;
+
+    if (newNameCode !== values.name_code) {
+      setFieldValue("name_code", newNameCode);
+      changed = true;
+    }
+
+    if (newUrl !== values.url) {
+      setFieldValue("url", newUrl);
+      changed = true;
+    }
+
+    if (changed) {
+      setIsFormChanged(true);
+    }
+  }, [values.name, values.name_code, values.url]);
+
+  return null;
+};
 
 const VALIDATION_SCHEMA = yup.object().shape({
   name: yup
@@ -46,9 +88,9 @@ export default function CategoriesForm({ category }: Props) {
   const INITIAL_VALUES = {
     name: category?.name || "",
     name_code: category?.nameCode || "",
-    url: category?.url || "",
+    url: category ? category.url : "",
     icon: category?.icon || availableIcons[0],
-    status: category?.status === 1 ? 1 : 0,
+    status: category?.status === "1" ? "1" : "0",
     component: category?.component || "MegaMenu1.name",
   };
 
@@ -72,25 +114,12 @@ export default function CategoriesForm({ category }: Props) {
         }
       }
       setIsFormChanged(false);
+      router.push("/dashboard/admin/categories");
+      router.refresh();
     } catch (error) {
       notifyError("Có lỗi xảy ra. Vui lòng thử lại sau!");
     }
   };
-
-  const handleFieldChange =
-    (handleChange: any, setFieldValue: any) =>
-    (
-      event: React.ChangeEvent<
-        HTMLInputElement | { name?: string; value: unknown }
-      >
-    ) => {
-      const { name, value } = event.target;
-      if (name) {
-        setFieldValue(name, value);
-        setIsFormChanged(true);
-      }
-      handleChange(event);
-    };
 
   return (
     <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
@@ -110,6 +139,9 @@ export default function CategoriesForm({ category }: Props) {
           setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
+            {/* Include the CategoriesFormEffect component */}
+            <CategoriesFormEffect setIsFormChanged={setIsFormChanged} />
+
             <Divider sx={{ mb: 3 }} />
             <Grid container spacing={3}>
               <Grid item sm={6} xs={12}>
@@ -121,8 +153,13 @@ export default function CategoriesForm({ category }: Props) {
                   size="medium"
                   value={values.name}
                   onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name && errors.name}
+                  onChange={(e) => {
+                    handleChange(e);
+                    setIsFormChanged(true);
+                  }}
+                  helperText={
+                    touched.name && errors.name ? (errors.name as string) : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -134,9 +171,12 @@ export default function CategoriesForm({ category }: Props) {
                   color="info"
                   size="medium"
                   value={values.name_code}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name_code && errors.name_code}
+                  disabled
+                  helperText={
+                    touched.name_code && errors.name_code
+                      ? (errors.name_code as string)
+                      : ""
+                  }
                   error={Boolean(touched.name_code && errors.name_code)}
                 />
               </Grid>
@@ -148,9 +188,8 @@ export default function CategoriesForm({ category }: Props) {
                   color="info"
                   size="medium"
                   value={values.url}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.url && errors.url}
+                  disabled
+                  helperText={touched.url ? (errors.url as string) : ""}
                   error={Boolean(touched.url && errors.url)}
                 />
               </Grid>
@@ -167,7 +206,7 @@ export default function CategoriesForm({ category }: Props) {
                     setFieldValue("icon", e.target.value);
                     setIsFormChanged(true);
                   }}
-                  helperText={touched.icon && errors.icon}
+                  helperText={touched.icon ? (errors.icon as string) : ""}
                   error={Boolean(touched.icon && errors.icon)}
                 >
                   {availableIcons.map((iconKey) => {

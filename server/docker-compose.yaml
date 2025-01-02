@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: go_app:latest
+    container_name: go_app
+    ports:
+      - "8088:8088"
+    environment:
+      APP_NAME: ${APP_NAME}
+    volumes:
+      - ./config:/app/config
+      - ./migrations:/migrations
+      - ./storages/logs:/app/storages/logs
+    networks:
+      - network2
+    env_file:
+      - ./.env
+
+networks:
+  network2:
+    external: true

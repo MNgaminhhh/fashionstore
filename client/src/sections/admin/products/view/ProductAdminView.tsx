@@ -79,7 +79,7 @@ export default function ProductAdminView({
     }
   };
 
-  const handleToggleApproval = async (id: string, currentApproval: number) => {
+  const handleToggleApproval = async (id: string, currentApproval: any) => {
     try {
       const newStatus = !!currentApproval;
       const response = await Products.updateApproval(
@@ -126,7 +126,14 @@ export default function ProductAdminView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.label}
@@ -137,7 +144,14 @@ export default function ProductAdminView({
                       {tableHeading.map((headCell) => (
                         <StyledTableCell
                           key={headCell.id}
-                          align={headCell.align}
+                          align={
+                            headCell.align as
+                              | "left"
+                              | "center"
+                              | "right"
+                              | "justify"
+                              | "inherit"
+                          }
                           width={headCell.width}
                         >
                           {headCell.id !== "action" &&

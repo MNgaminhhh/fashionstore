@@ -8,9 +8,9 @@ import { Typography } from "@mui/material";
 
 interface Props {
   vendorid: string;
-  reviews: ReviewModel[];
+  reviews: any;
   onDeleteReview: (deletedReviewId: string) => void;
-  onUpdateReview: (updatedReview: ReviewModel) => void;
+  onUpdateReview: (updatedReview: any) => void;
 }
 
 export default function ProductReview({
@@ -19,7 +19,6 @@ export default function ProductReview({
   onDeleteReview,
   onUpdateReview,
 }: Props) {
-  console.log(reviews);
   return (
     <>
       <Box>

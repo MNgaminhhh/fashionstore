@@ -11,14 +11,10 @@ import {
   FormControlLabel,
   Switch,
   Typography,
-  Slider,
   Divider,
-  Box,
-  IconButton,
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
 import Products from "../../../../services/Products";
@@ -32,9 +28,9 @@ import {
   notifySuccess,
 } from "../../../../utils/ToastNotification";
 import { slugify } from "../../../../utils/slugify";
-import CloseIcon from "@mui/icons-material/Close";
 import File from "../../../../services/File";
 import ChildCategory from "../../../../services/ChildCategory";
+import { UploadBeforeReturn } from "suneditor-react/dist/types/upload";
 
 const VALIDATION_SCHEMA = yup.object().shape({
   name: yup
@@ -65,18 +61,19 @@ type ImageType = {
 };
 
 export default function ProductForm({ product, token, cat }: Props) {
-  const router = useRouter();
-  const [isFormChanged, setIsFormChanged] = useState(false);
-  const [categories, setCategories] = useState(cat || []);
-  const [subCategories, setSubCategories] = useState([]);
-  const [childCategories, setChildCategories] = useState([]);
-  const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState<ImageType[]>(
     product?.images.map((url, index) => ({
       id: `existing-${index}`,
       src: url,
     })) || []
   );
+  const router = useRouter();
+  const [isFormChanged, setIsFormChanged] = useState(false);
+  const [categories, setCategories] = useState(cat || []);
+  const [subCategories, setSubCategories] = useState([]);
+  const [childCategories, setChildCategories] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     if (product?.category_id) {
       fetchSubCategories(product.category_id);
@@ -123,13 +120,22 @@ export default function ProductForm({ product, token, cat }: Props) {
     [token]
   );
 
-  const INITIAL_VALUES: ProductModel = {
+  const INITIAL_VALUES: any = {
     name: product?.name || "",
     slug: product ? product.slug : "",
     images: [],
-    category_id: product?.category_id || "",
-    sub_category_id: product?.sub_category_id || "",
-    child_category_id: product?.child_category_id || "",
+    category_id:
+      product?.category_id === "00000000-0000-0000-0000-000000000000"
+        ? null
+        : product?.category_id || "",
+    sub_category_id:
+      product?.sub_category_id === "00000000-0000-0000-0000-000000000000"
+        ? null
+        : product?.sub_category_id || "",
+    child_category_id:
+      product?.child_category_id === "00000000-0000-0000-0000-000000000000"
+        ? null
+        : product?.child_category_id || "",
     short_description: product?.short_description || "",
     long_description: product?.long_description || "",
     product_type: product?.product_type || "none",
@@ -189,7 +195,7 @@ export default function ProductForm({ product, token, cat }: Props) {
           product ? "Cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!"
         );
         router.push("/dashboard/vendor/product");
-        router.refresh;
+        router.refresh();
       } else {
         notifyError(
           `${
@@ -246,7 +252,80 @@ export default function ProductForm({ product, token, cat }: Props) {
       ["preview", "print"],
       ["removeFormat"],
     ],
-    height: 500,
+    height: "800px",
+    imageUpload: true,
+  };
+  const handleImageUploadBefore = (
+    files: File[],
+    info: object,
+    uploadHandler: (data: { result: any }) => void
+  ): any => {
+    (async () => {
+      try {
+        const uploadedImages: { url: string; name: string; size: number }[] =
+          [];
+
+        for (const file of files) {
+          if (!file.type.startsWith("image/")) {
+            notifyError("Chỉ hỗ trợ tải lên các tệp hình ảnh.");
+            continue;
+          }
+
+          if (file.size > 10 * 1024 * 1024) {
+            notifyError("Kích thước hình ảnh không được vượt quá 10MB.");
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          try {
+            const response = await File.upload(formData, token);
+            if (
+              response?.data?.success &&
+              response?.data?.data?.files &&
+              response.data.data.files.length > 0
+            ) {
+              const url = response.data.data.files[0];
+
+              const randomName = `image_${Math.random()
+                .toString(36)
+                .substring(2, 15)}.png`;
+              const randomSize = Math.floor(Math.random() * 1000) + 100;
+
+              uploadedImages.push({
+                url: url,
+                name: randomName,
+                size: randomSize,
+              });
+            } else {
+              throw new Error(
+                response.data?.message || "Tải lên hình ảnh thất bại."
+              );
+            }
+          } catch (error: any) {
+            notifyError(
+              error.message ||
+                "Đã xảy ra lỗi khi tải lên hình ảnh. Vui lòng thử lại."
+            );
+          }
+        }
+
+        if (uploadedImages.length > 0) {
+          uploadHandler({
+            result: uploadedImages,
+          });
+        } else {
+          uploadHandler({ result: [] });
+        }
+      } catch (error: any) {
+        notifyError(
+          error.message ||
+            "Đã xảy ra lỗi khi tải lên hình ảnh. Vui lòng thử lại."
+        );
+        uploadHandler({ result: [] });
+      }
+    })();
   };
 
   return (
@@ -288,7 +367,13 @@ export default function ProductForm({ product, token, cat }: Props) {
                           handleChange,
                           setFieldValue
                         )}
-                        helperText={touched.name && errors.name}
+                        helperText={
+                          touched.name && errors.name
+                            ? typeof errors.name === "string"
+                              ? errors.name
+                              : ""
+                            : ""
+                        }
                         error={Boolean(touched.name && errors.name)}
                       />
                     </Grid>
@@ -342,16 +427,26 @@ export default function ProductForm({ product, token, cat }: Props) {
                           handleChange,
                           setFieldValue
                         )}
-                        helperText={touched.category_id && errors.category_id}
+                        helperText={
+                          touched.category_id && errors.category_id
+                            ? String(errors.category_id)
+                            : ""
+                        }
                         error={Boolean(
                           touched.category_id && errors.category_id
                         )}
                       >
-                        {categories.map((category) => (
-                          <MenuItem key={category.id} value={category.id}>
-                            {category.name}
+                        {Array.isArray(categories) ? (
+                          categories.map((category) => (
+                            <MenuItem key={category.id} value={category.id}>
+                              {category.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem value="">
+                            <em>Không có danh mục</em>
                           </MenuItem>
-                        ))}
+                        )}
                       </TextField>
                     </Grid>
 
@@ -370,6 +465,10 @@ export default function ProductForm({ product, token, cat }: Props) {
                         )}
                         helperText={
                           touched.sub_category_id && errors.sub_category_id
+                            ? Array.isArray(errors.sub_category_id)
+                              ? errors.sub_category_id.join(", ")
+                              : String(errors.sub_category_id)
+                            : ""
                         }
                         error={Boolean(
                           touched.sub_category_id && errors.sub_category_id
@@ -402,6 +501,10 @@ export default function ProductForm({ product, token, cat }: Props) {
                         )}
                         helperText={
                           touched.child_category_id && errors.child_category_id
+                            ? Array.isArray(errors.child_category_id)
+                              ? errors.child_category_id.join(", ")
+                              : String(errors.child_category_id)
+                            : ""
                         }
                         error={Boolean(
                           touched.child_category_id && errors.child_category_id
@@ -448,6 +551,10 @@ export default function ProductForm({ product, token, cat }: Props) {
                         )}
                         helperText={
                           touched.short_description && errors.short_description
+                            ? Array.isArray(errors.short_description)
+                              ? errors.short_description.join(", ")
+                              : String(errors.short_description)
+                            : ""
                         }
                         error={Boolean(
                           touched.short_description && errors.short_description
@@ -464,13 +571,14 @@ export default function ProductForm({ product, token, cat }: Props) {
                         setContents={values.long_description}
                         onChange={(content) => {
                           setFieldValue("long_description", content);
-                          setIsFormChanged(true);
                         }}
-                        onBlur={() => {}}
+                        onImageUploadBefore={handleImageUploadBefore}
                       />
                       {touched.long_description && errors.long_description && (
                         <Typography color="error" variant="body2">
-                          {errors.long_description}
+                          {Array.isArray(errors.long_description)
+                            ? errors.long_description.join(", ")
+                            : String(errors.long_description)}
                         </Typography>
                       )}
                     </Grid>

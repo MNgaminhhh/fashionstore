@@ -6,13 +6,13 @@ import IconButton from "@mui/material/IconButton";
 import { alpha, styled } from "@mui/material/styles";
 
 interface StyledTableCellProps {
-  align: any;
   width?: string | number;
+  align?: "left" | "center" | "right" | "inherit" | "justify";
 }
 
 const StyledTableCell = styled(TableCell, {
-  shouldForwardProp: (prop) => prop !== "width",
-})<StyledTableCellProps>(({ theme, width }) => ({
+  shouldForwardProp: (prop) => prop !== "width" && prop !== "align",
+})<StyledTableCellProps>(({ theme, width, align = "left" }) => ({
   fontSize: 13.5,
   paddingTop: 10,
   fontWeight: 600,
@@ -20,6 +20,7 @@ const StyledTableCell = styled(TableCell, {
   color: theme.palette.grey[900],
   borderBottom: `1px solid ${theme.palette.grey[300]}`,
   width: width || "auto",
+  textAlign: align,
 }));
 
 const CategoryWrapper = styled(Box)(({ theme }) => ({

@@ -58,7 +58,7 @@ interface Review {
   id: string;
   number_of_replies: number;
   rating: number;
-  replies: ReplyItem[];
+  replies: any;
   sku_id: string;
   updated_at: string;
   user_id: string;
@@ -84,7 +84,7 @@ interface ProductCommentProps {
   idV: string;
   review: Review;
   onDelete?: (deletedReviewId: string) => void;
-  onUpdate?: (updatedReview: Review) => void;
+  onUpdate?: (updatedReview: any) => void;
 }
 
 interface DecodedToken {
@@ -183,7 +183,7 @@ export default function ProductComment({
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        let updatedComments: CommentItem[] = [
+        let updatedComments: any = [
           {
             id: comment.find((c) => c.content_type === "text")?.id || "",
             content: values.comment,
@@ -287,7 +287,7 @@ export default function ProductComment({
     validationSchema: replyValidationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        let replyComments: CommentItem[] = [
+        let replyComments: any = [
           {
             id: `reply-${Date.now()}`,
             content: values.replyComment,
@@ -639,24 +639,19 @@ export default function ProductComment({
                   src={reply.avt}
                   sx={{ width: 40, height: 40 }}
                 />
-
-                <div>
-                  <Box
-                    display="flex"
-                    gap={0.75}
-                    direction="row"
-                    alignItems="center"
-                  >
-                    <H5 paddingBottom={0.5}>
-                      {reply ? reply.user_name : "Người dùng"}
-                    </H5>
-                    <H6
-                      sx={{ color: "rgba(44, 44, 44, 0.6)", fontSize: "11px" }}
-                    >
-                      {reply.created_at}
-                    </H6>
-                  </Box>
-                </div>
+                <Box
+                  display="flex"
+                  gap={0.75}
+                  flexDirection="row"
+                  alignItems="center"
+                >
+                  <H5 paddingBottom={0.5}>
+                    {reply ? reply.user_name : "Người dùng"}
+                  </H5>
+                  <H6 sx={{ color: "rgba(44, 44, 44, 0.6)", fontSize: "11px" }}>
+                    {reply.created_at}
+                  </H6>
+                </Box>
 
                 {isOwner && (
                   <>

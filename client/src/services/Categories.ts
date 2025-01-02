@@ -91,7 +91,7 @@ class CategoriesServer extends Base {
 
   async update(
     id: string,
-    data: CategoryUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {
@@ -109,7 +109,7 @@ class CategoriesServer extends Base {
   }
 
   async create(
-    data: CategoryUpdateData,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {

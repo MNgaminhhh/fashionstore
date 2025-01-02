@@ -16,7 +16,7 @@ export default function AddressListItem({ addressData, handleDelete }: Props) {
   const router = useRouter();
   const { address, email, phone_number, receiver_name, id } = addressData || {};
   const handleEdit = (id: string) => {
-    router.push(`/dashboard/admin/coupons/${id}`);
+    router.push(`/my-address/${id}`);
   };
   return (
     <TableRow>

@@ -437,15 +437,13 @@ SELECT
     cc.name AS child_category_name,
     cc.url AS child_category_url
 FROM
-    categories c
+    categories c 
         LEFT JOIN
-    sub_categories sc ON c.id = sc.category_id
+    sub_categories sc ON c.id = sc.category_id AND sc."status" = 1
         LEFT JOIN
-    child_categories cc ON sc.id = cc.sub_category_id
-ORDER BY
-    c.created_at ASC,
-    sc.created_at ASC,
-    cc.created_at ASC
+    child_categories cc ON sc.id = cc.sub_category_id AND cc."status" = 1
+WHERE
+    c."status" = 1
 `
 
 type GetFullCategoriesRow struct {

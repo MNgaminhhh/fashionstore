@@ -1,6 +1,6 @@
 import MenuItem from "@mui/material/MenuItem";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-import navigation from "./data"; // Đảm bảo đường dẫn đúng
+import navigation from "./data";
 import {
   StyledNavLink,
   NAV_LINK_STYLES,
@@ -18,10 +18,8 @@ import { useAppContext } from "../../../../context/AppContext";
 export default function NavigationList() {
   const { role } = useAppContext();
 
-  const renderNestedNav = (list: NavList[] = [], isRoot = false) => {
-    // Lọc các mục dựa trên role
+  const renderNestedNav = (list: any = [], isRoot = false) => {
     const filteredList = list.filter((nav) => {
-      // Nếu mục không có allowedRoles, mặc định là không được phép
       if (!nav.allowedRoles) return false;
       return nav.allowedRoles.includes(role);
     });
@@ -30,11 +28,7 @@ export default function NavigationList() {
       if (isRoot) {
         if (nav.megaMenu) {
           return (
-            <MegaMenu
-              key={nav.title}
-              title={nav.title}
-              menuList={nav.child as NavList[]}
-            />
+            <MegaMenu key={nav.title} title={nav.title} menuList={nav.child} />
           );
         }
         if (nav.megaMenuWithSub) {
@@ -42,7 +36,7 @@ export default function NavigationList() {
             <CategoryMenu
               key={nav.title}
               title={nav.title}
-              menuList={nav.child as NavList[]}
+              menuList={nav.child}
             />
           );
         }

@@ -23,7 +23,7 @@ import CouponModel from "../../../../models/Coupon.model";
 type DetailDialogProps = {
   open: boolean;
   onClose: () => void;
-  coupon: CouponModel | null;
+  coupon: any;
 };
 
 const Label = styled(Typography)(({ theme }) => ({

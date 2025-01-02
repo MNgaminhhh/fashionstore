@@ -24,7 +24,7 @@ interface Props {
   isApprov: boolean;
   handleCloseDialog: () => void;
   token?: string;
-  onProductTypeChange?: (newType: string) => void;
+  onProductTypeChange: (id: string, newType: string) => void;
 }
 
 const mappingTypeProduct: { [key: string]: string } = {

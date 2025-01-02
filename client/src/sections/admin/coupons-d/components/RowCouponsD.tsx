@@ -16,7 +16,6 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 type Props = {
   coupon: CouponModel;
-  onDelete: (id: string) => void;
   onToggleStatus: (id: string, status: boolean) => void;
   onViewDetail: (coupon: CouponModel) => void;
 };
@@ -71,7 +70,7 @@ export default function RowCouponsD({
       <StyledTableCell sx={{ fontWeight: "400" }}>
         <MTSwitch
           color="info"
-          checked={coupon.status}
+          checked={Boolean(coupon.status)}
           onChange={handleToggleStatus}
         />
       </StyledTableCell>

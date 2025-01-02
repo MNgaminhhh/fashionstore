@@ -132,6 +132,9 @@ export default function CheckoutForm({ status = false }: Props) {
         const checkoutUrl = res?.data?.data?.checkoutUrl;
         if (checkoutUrl) {
           router.push(checkoutUrl);
+        } else {
+          router.push("/orders");
+          router.refresh();
         }
       } else {
         const errorMessage =

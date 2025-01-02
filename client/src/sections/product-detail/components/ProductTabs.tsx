@@ -1,5 +1,3 @@
-// components/ProductTabs.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,17 +39,14 @@ export default function ProductTabs({ product, vendor, reviews }: Props) {
 
   const handleOptionClick = (_, value: number) => setSelectedOption(value);
 
-  // Hàm xử lý xóa đánh giá
   const handleDeleteReview = (deletedReviewId: string) => {
     setCurrentReviews((prevReviews) =>
       prevReviews.filter((review) => review.id !== deletedReviewId)
     );
   };
 
-  // Hàm xử lý cập nhật đánh giá
   const handleUpdateReview = (updatedReview: ReviewModel) => {
     if (!updatedReview || !updatedReview.id) {
-      console.error("Updated review is undefined or missing 'id'");
       return;
     }
     setCurrentReviews((prevReviews) =>

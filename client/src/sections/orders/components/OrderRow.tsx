@@ -1,5 +1,3 @@
-// components/OrderRow.tsx
-
 "use client";
 
 import Link from "next/link";
@@ -7,7 +5,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import East from "@mui/icons-material/East";
-import Star from "@mui/icons-material/Star"; // Thêm biểu tượng sao
+import Star from "@mui/icons-material/Star";
 import { parse, format } from "date-fns";
 import { TableRow } from "../../customer/styles";
 import { Paragraph, H5 } from "../../../components/Typography";

@@ -3,7 +3,7 @@ server:
   mode: "dev"
 
 postgres:
-  host: 127.0.0.1
+  host: localhost
   port: 5432
   username: postgres
   password: 123456
@@ -15,7 +15,7 @@ postgres:
 
 logger:
   log_level: debug
-  file_log_name: "./storages/logs/dev.001.log"
+  file_log_name: ""
   max_backups: 30
   max_age: 7
   max_size: 1024

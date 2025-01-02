@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Formik } from "formik";
+import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import {
   Box,
@@ -13,7 +13,6 @@ import {
   MenuItem,
   Divider,
   Autocomplete,
-  Typography,
 } from "@mui/material";
 import {
   notifyError,
@@ -23,9 +22,46 @@ import ChildCategoryModel from "../../../../../../models/ChildCategory.model";
 import ChildCategory from "../../../../../../services/ChildCategory";
 import CategoriesModel from "../../../../../../models/Categories.model";
 import { useAppContext } from "../../../../../../context/AppContext";
+import { slugify } from "../../../../../../utils/slugify";
+type FormEffectProps = {
+  categories: CategoriesModel[];
+  setIsFormChanged: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
+const FormEffect: React.FC<FormEffectProps> = ({
+  categories,
+  setIsFormChanged,
+}) => {
+  const { values, setFieldValue } = useFormikContext<any>();
+
+  useEffect(() => {
+    const updateSlugAndUrl = () => {
+      const newNameCode = slugify(values.name);
+      const parentCategory = categories.find(
+        (cat) => cat.id === values.sub_cate_id
+      );
+      const parentUrl = parentCategory ? parentCategory.url : "";
+      const newUrl =
+        parentUrl && newNameCode ? `${parentUrl}/${newNameCode}` : "";
+
+      if (newNameCode !== values.name_code) {
+        setFieldValue("name_code", newNameCode);
+        setIsFormChanged(true);
+      }
+
+      if (newUrl !== values.url) {
+        setFieldValue("url", newUrl);
+        setIsFormChanged(true);
+      }
+    };
+
+    updateSlugAndUrl();
+  }, [values.name, values.sub_cate_id]);
+
+  return null;
+};
 const VALIDATION_SCHEMA = yup.object().shape({
-  parent: yup.string().required("Tên danh mục cha là bắt buộc"),
+  sub_cate_id: yup.string().required("Tên danh mục cha là bắt buộc"),
   name: yup
     .string()
     .required("Tên danh mục con là bắt buộc")
@@ -42,7 +78,7 @@ const VALIDATION_SCHEMA = yup.object().shape({
 });
 
 type Props = {
-  childCategory?: ChildCategoryModel;
+  childCategory?: any;
   categories: CategoriesModel[];
 };
 
@@ -55,11 +91,11 @@ export default function ChildCategoryForm({
   const { sessionToken } = useAppContext();
 
   const INITIAL_VALUES = {
-    parent: childCategory?.parentid || "",
+    sub_cate_id: childCategory?.parentid || "",
     name: childCategory?.name || "",
     name_code: childCategory?.nameCode || "",
     url: childCategory?.url || "",
-    status: childCategory?.status === 1 ? 0 : 1,
+    status: childCategory?.status === 1 ? 1 : 0,
   };
 
   const handleFormSubmit = async (values: typeof INITIAL_VALUES) => {
@@ -81,6 +117,8 @@ export default function ChildCategoryForm({
             ? "Thay đổi thông tin danh mục con thành công!"
             : "Tạo danh mục con mới thành công!"
         );
+        router.push("/dashboard/admin/categories/sub-category/child");
+        router.refresh();
       } else {
         const errorMessage = res?.message || "Vui lòng thử lại.";
         notifyError(errorMessage);
@@ -123,6 +161,11 @@ export default function ChildCategoryForm({
           setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
+            <FormEffect
+              categories={categories}
+              setIsFormChanged={setIsFormChanged}
+            />
+
             <Divider sx={{ mb: 3 }} />
             <Grid container spacing={3}>
               <Grid item sm={6} xs={12}>
@@ -131,10 +174,11 @@ export default function ChildCategoryForm({
                   options={categories}
                   getOptionLabel={(option) => option.name || ""}
                   value={
-                    categories.find((cat) => cat.id === values.parent) || null
+                    categories.find((cat) => cat.id === values.sub_cate_id) ||
+                    null
                   }
                   onChange={(event, newValue) => {
-                    setFieldValue("parent", newValue ? newValue.id : "");
+                    setFieldValue("sub_cate_id", newValue ? newValue.id : "");
                     setIsFormChanged(true);
                   }}
                   renderInput={(params) => (
@@ -143,8 +187,12 @@ export default function ChildCategoryForm({
                       label="Tên danh mục cha"
                       color="info"
                       size="medium"
-                      error={Boolean(touched.parent && errors.parent)}
-                      helperText={touched.parent && errors.parent}
+                      error={Boolean(touched.sub_cate_id && errors.sub_cate_id)}
+                      helperText={
+                        touched.sub_cate_id && errors.sub_cate_id
+                          ? String(errors.sub_cate_id)
+                          : ""
+                      }
                     />
                   )}
                 />
@@ -159,8 +207,13 @@ export default function ChildCategoryForm({
                   size="medium"
                   value={values.name}
                   onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name && errors.name}
+                  onChange={(e) => {
+                    handleChange(e);
+                    setIsFormChanged(true);
+                  }}
+                  helperText={
+                    touched.name && errors.name ? String(errors.name) : ""
+                  }
                   error={Boolean(touched.name && errors.name)}
                 />
               </Grid>
@@ -173,9 +226,12 @@ export default function ChildCategoryForm({
                   color="info"
                   size="medium"
                   value={values.name_code}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.name_code && errors.name_code}
+                  disabled
+                  helperText={
+                    touched.name_code && errors.name_code
+                      ? String(errors.name_code)
+                      : ""
+                  }
                   error={Boolean(touched.name_code && errors.name_code)}
                 />
               </Grid>
@@ -188,9 +244,10 @@ export default function ChildCategoryForm({
                   color="info"
                   size="medium"
                   value={values.url}
-                  onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.url && errors.url}
+                  disabled
+                  helperText={
+                    touched.url && errors.url ? String(errors.url) : ""
+                  }
                   error={Boolean(touched.url && errors.url)}
                 />
               </Grid>
@@ -216,7 +273,6 @@ export default function ChildCategoryForm({
                 </TextField>
               </Grid>
             </Grid>
-
             <Box mt={4} textAlign="center">
               <Button
                 variant="outlined"

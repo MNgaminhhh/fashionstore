@@ -28,14 +28,19 @@ export default function RowOrdersAdmin({ order, onDelete }: Props) {
   };
 
   const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return "Ngày không hợp lệ";
+    }
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
     };
-    return new Date(dateString).toLocaleDateString("vi-VN", options);
+    return date.toLocaleDateString("vi-VN", options);
   };
 
   const formatCurrency = (amount: number): string => {
@@ -57,12 +62,12 @@ export default function RowOrdersAdmin({ order, onDelete }: Props) {
         color = "warning";
         label = "Đang Chuẩn Bị Hàng";
         break;
-      case "pending":
-        pending = "paying";
+      case "paying":
+        color = "warning";
         label = "Chờ Thanh Toán";
         break;
       case "shipping":
-        color = "info";
+        color = "default";
         label = "Đang vận chuyển";
         break;
       case "delivered":

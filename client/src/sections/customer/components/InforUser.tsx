@@ -3,9 +3,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { FlexBox } from "../../../components/flexbox";
 import { Small, Span } from "../../../components/Typography";
 import UserModel from "../../../models/User.model";
-import * as moment from "moment";
 type Props = { user: UserModel };
-
+import dayjs from "dayjs";
 export default function UserInfo({ user }: Props) {
   const downMd = useMediaQuery("(max-width: 600px)");
 
@@ -29,7 +28,7 @@ export default function UserInfo({ user }: Props) {
       <TableRowItem title="Email" value={user.email} />
       <TableRowItem
         title="Ngày Tháng Năm Sinh"
-        value={user.dob ? moment(user.dob).format("DD/MM/YYYY") : ""}
+        value={user.dob ? dayjs(user.dob).format("DD/MM/YYYY") : ""}
       />
     </Card>
   );

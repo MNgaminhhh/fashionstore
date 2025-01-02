@@ -29,7 +29,7 @@ export default function RowBrands({
 }: Props) {
   const router = useRouter();
 
-  const [isVisible, setIsVisible] = useState(brand.visible);
+  const [isVisible, setIsVisible] = useState<any>(brand.visible);
 
   const handleEdit = (id: string) => {
     router.push(`/dashboard/admin/brands/${id}`);

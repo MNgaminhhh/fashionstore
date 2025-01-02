@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import { usePathname } from "next/navigation";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import createTheme from "@mui/material/styles/createTheme";

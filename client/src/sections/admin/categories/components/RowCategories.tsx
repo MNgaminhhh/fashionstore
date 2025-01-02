@@ -30,7 +30,9 @@ export default function RowCategories({
 }: Props) {
   const router = useRouter();
 
-  const [isVisible, setIsVisible] = useState(category.status === 1);
+  const [isVisible, setIsVisible] = useState<any>(
+    Number(category.status) === 1
+  );
 
   const handleEdit = (id: string) => {
     router.push(`/dashboard/admin/categories/${id}`);

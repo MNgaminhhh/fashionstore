@@ -62,8 +62,7 @@ export default function VendorForm({ vendor }: Props) {
         router.refresh();
       } else {
         notifyError(
-          "Cập nhật thất bại:",
-          response?.message || "Vui lòng thử lại sau!"
+          "Cập nhật thất bại:" + response?.message || "Vui lòng thử lại sau!"
         );
       }
     } catch (error: any) {

@@ -10,13 +10,16 @@ interface Filters {
   productId?: string;
 }
 interface cuSkuModel {
+  sku: string;
+  variant_options: any;
+  status: any;
   in_stock: string;
   price: string;
   images: string[];
   product_id: string;
   offer?: number;
-  offer_start_date?: Date;
-  offer_end_date?: Date;
+  offer_start_date?: string;
+  offer_end_date?: string;
 }
 
 class SkusServer extends Base {
@@ -88,7 +91,7 @@ class SkusServer extends Base {
   }
 
   async create(
-    data: cuSkuModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {
@@ -107,7 +110,7 @@ class SkusServer extends Base {
 
   async update(
     id: string,
-    data: cuSkuModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ): Promise<any> {

@@ -1,5 +1,3 @@
-// components/card/productcard1/ProductCard2.tsx
-
 "use client";
 
 import Link from "next/link";
@@ -15,8 +13,8 @@ interface Props {
   off?: number;
   slug: string;
   title: string;
-  price: number;
-  discountPrice: number;
+  price: any;
+  discountPrice: any;
   imgUrl: string;
   rating: number;
   hideReview?: boolean;

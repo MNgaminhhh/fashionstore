@@ -1,5 +1,3 @@
-// components/OrdersPageView.tsx
-
 "use client";
 
 import { Fragment } from "react";

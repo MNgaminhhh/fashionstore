@@ -19,7 +19,7 @@ class ReviewServer extends Base {
   }
 
   async create(
-    data: cuReviewModel,
+    data: any,
     token: string | undefined = undefined,
     withCredentials: boolean = true
   ) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -13,8 +13,10 @@ import {
   MenuItem,
   FormHelperText,
   CircularProgress,
+  Typography,
+  SelectChangeEvent,
 } from "@mui/material";
-import { Formik } from "formik";
+import { Formik, FormikErrors, FormikTouched } from "formik";
 import * as yup from "yup";
 import {
   notifyError,
@@ -36,23 +38,52 @@ const VALIDATION_SCHEMA = yup.object().shape({
   description: yup.string().required("Mô tả là bắt buộc"),
 });
 
+interface FormValues {
+  field: string;
+  operator: string;
+  value: string;
+  description: string;
+}
+
 type Props = {
   coupon?: CouponModel;
   token: string;
+};
+
+const getHelperText = (
+  touched: FormikTouched<FormValues>,
+  errors: FormikErrors<FormValues>,
+  field: keyof FormValues
+): string => {
+  if (touched[field] && typeof errors[field] === "string") {
+    return errors[field];
+  }
+  return "";
 };
 
 export default function CouponsForm({ coupon, token }: Props) {
   const router = useRouter();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const INITIAL_VALUES = {
-    field: coupon ? coupon.Field : "",
-    operator: coupon ? coupon.Operator : "",
-    value: coupon ? coupon.Value?.value : "",
-    description: coupon ? coupon.Description : "",
-  };
+  const [initialValues, setInitialValues] = useState<FormValues>({
+    field: "",
+    operator: "",
+    value: "",
+    description: "",
+  });
 
-  const handleFormSubmit = async (values: typeof INITIAL_VALUES) => {
+  useEffect(() => {
+    if (coupon) {
+      setInitialValues({
+        field: coupon.Field || "",
+        operator: coupon.Operator || "",
+        value: coupon.Value?.value || "",
+        description: coupon.Description || "",
+      });
+    }
+  }, [coupon]);
+
+  const handleFormSubmit = async (values: FormValues) => {
     try {
       setUploading(true);
 
@@ -92,28 +123,14 @@ export default function CouponsForm({ coupon, token }: Props) {
     }
   };
 
-  const handleFieldChange =
-    (handleChange: any, setFieldValue: any) =>
-    (
-      event: React.ChangeEvent<
-        | HTMLInputElement
-        | HTMLTextAreaElement
-        | { name?: string; value: unknown }
-      >
-    ) => {
-      const { name, value } = event.target;
-      if (name) {
-        setFieldValue(name, value);
-        setIsFormChanged(true);
-      }
-      handleChange(event);
-    };
-
   return (
     <Card sx={{ p: 4, mx: "auto", boxShadow: 3 }}>
-      <Formik
+      <Typography variant="h5" gutterBottom>
+        {coupon ? "Sửa Coupon" : "Tạo Coupon Mới"}
+      </Typography>
+      <Formik<FormValues>
         onSubmit={handleFormSubmit}
-        initialValues={INITIAL_VALUES}
+        initialValues={initialValues}
         validationSchema={VALIDATION_SCHEMA}
         enableReinitialize
       >
@@ -142,11 +159,17 @@ export default function CouponsForm({ coupon, token }: Props) {
                     name="field"
                     value={values.field}
                     label="Kiểu"
-                    onChange={handleFieldChange(handleChange, setFieldValue)}
+                    onChange={(event: SelectChangeEvent<string>) => {
+                      setFieldValue("field", event.target.value);
+                      setIsFormChanged(true);
+                    }}
                   >
                     <MenuItem value="price">Giá trị đơn hàng</MenuItem>
+                    <MenuItem value="shipping_cost">Phí Vận Chuyển</MenuItem>
+                    <MenuItem value="product_type">Loại Sản Phẩm</MenuItem>
+                    {/* Add more MenuItems as needed */}
                   </Select>
-                  {touched.field && errors.field && (
+                  {touched.field && typeof errors.field === "string" && (
                     <FormHelperText>{errors.field}</FormHelperText>
                   )}
                 </FormControl>
@@ -166,13 +189,16 @@ export default function CouponsForm({ coupon, token }: Props) {
                     name="operator"
                     value={values.operator}
                     label="Toán Tử"
-                    onChange={handleFieldChange(handleChange, setFieldValue)}
+                    onChange={(event: SelectChangeEvent<string>) => {
+                      setFieldValue("operator", event.target.value);
+                      setIsFormChanged(true);
+                    }}
                   >
                     <MenuItem value=">=">&gt;=</MenuItem>
                     <MenuItem value=">">&gt;</MenuItem>
                     <MenuItem value="=">=</MenuItem>
                   </Select>
-                  {touched.operator && errors.operator && (
+                  {touched.operator && typeof errors.operator === "string" && (
                     <FormHelperText>{errors.operator}</FormHelperText>
                   )}
                 </FormControl>
@@ -188,8 +214,15 @@ export default function CouponsForm({ coupon, token }: Props) {
                   type="number"
                   value={values.value}
                   onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.value && errors.value}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFieldValue("value", event.target.value);
+                    setIsFormChanged(true);
+                  }}
+                  helperText={
+                    touched.value && typeof errors.value === "string"
+                      ? errors.value
+                      : ""
+                  }
                   error={Boolean(touched.value && errors.value)}
                   InputProps={{
                     inputProps: { min: 0 },
@@ -197,6 +230,7 @@ export default function CouponsForm({ coupon, token }: Props) {
                 />
               </Grid>
 
+              {/* Mô Tả */}
               <Grid item sm={6} xs={12}>
                 <TextField
                   fullWidth
@@ -206,11 +240,20 @@ export default function CouponsForm({ coupon, token }: Props) {
                   size="medium"
                   value={values.description}
                   onBlur={handleBlur}
-                  onChange={handleFieldChange(handleChange, setFieldValue)}
-                  helperText={touched.description && errors.description}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFieldValue("description", event.target.value);
+                    setIsFormChanged(true);
+                  }}
+                  helperText={
+                    touched.description &&
+                    typeof errors.description === "string"
+                      ? errors.description
+                      : ""
+                  }
                   error={Boolean(touched.description && errors.description)}
                 />
               </Grid>
+
               <Grid item xs={12} mt={3} textAlign="center">
                 <Button
                   variant="outlined"

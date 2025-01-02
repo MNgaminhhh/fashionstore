@@ -26,9 +26,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-5px)",
     boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
   },
-  [theme.breakpoints.down("sm")]: {
-    flexDirection: "column",
-  },
 }));
 
 const ImageBox = styled(Box)(({ theme }) => ({
@@ -38,10 +35,6 @@ const ImageBox = styled(Box)(({ theme }) => ({
   borderRadius: "12px",
   overflow: "hidden",
   flexShrink: 0,
-  [theme.breakpoints.down("sm")]: {
-    width: "100%",
-    height: "200px",
-  },
   "&:hover img": {
     transform: "scale(1.1)",
   },

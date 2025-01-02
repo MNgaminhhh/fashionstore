@@ -14,8 +14,8 @@ import { Typography } from "@mui/material";
 type Props = {
   id: string;
   storeName: string;
-  fullName: string;
-  phoneNumber: string;
+  fullName?: string;
+  phoneNumber?: string;
   address: string;
   banner: string;
   description: string;

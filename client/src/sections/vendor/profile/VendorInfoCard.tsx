@@ -22,13 +22,15 @@ import * as Yup from "yup";
 import { notifyError, notifySuccess } from "../../../utils/ToastNotification";
 import MTDropZone from "../../../components/MTDropZone";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
 import Vendor from "../../../services/Vendor";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(4),
 }));
-
+interface CustomJwtPayload extends JwtPayload {
+  vendorId: string;
+}
 const VendorInfoCard: React.FC = () => {
   const { sessionToken } = useAppContext();
   const [vendor, setVendor] = useState(null);
@@ -40,7 +42,7 @@ const VendorInfoCard: React.FC = () => {
   useEffect(() => {
     const fetchVendor = async () => {
       try {
-        const decoded = jwtDecode(sessionToken);
+        const decoded = jwtDecode<CustomJwtPayload>(sessionToken);
         const vendorId = decoded.vendorId;
 
         if (!vendorId) {
@@ -98,7 +100,7 @@ const VendorInfoCard: React.FC = () => {
       banner: Yup.mixed().nullable(),
     }),
     onSubmit: async (values) => {
-      const decode = jwtDecode(sessionToken);
+      const decode = jwtDecode<CustomJwtPayload>(sessionToken);
       const vendorId = decode.vendorId;
 
       if (!vendorId) {
@@ -197,7 +199,10 @@ const VendorInfoCard: React.FC = () => {
                   formik.touched.store_name && Boolean(formik.errors.store_name)
                 }
                 helperText={
-                  formik.touched.store_name && formik.errors.store_name
+                  formik.touched.store_name &&
+                  (typeof formik.errors.store_name === "string"
+                    ? formik.errors.store_name
+                    : "")
                 }
               />
             </Grid>
@@ -214,7 +219,10 @@ const VendorInfoCard: React.FC = () => {
                   Boolean(formik.errors.phone_number)
                 }
                 helperText={
-                  formik.touched.phone_number && formik.errors.phone_number
+                  formik.touched.phone_number &&
+                  (typeof formik.errors.phone_number === "string"
+                    ? formik.errors.phone_number
+                    : "")
                 }
               />
             </Grid>
@@ -229,7 +237,14 @@ const VendorInfoCard: React.FC = () => {
                 value={formik.values.email}
                 onChange={formik.handleChange}
                 error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
+                helperText={
+                  formik.touched.email &&
+                  (typeof formik.errors.email === "string"
+                    ? formik.errors.email
+                    : Array.isArray(formik.errors.email)
+                    ? formik.errors.email.join(", ")
+                    : "")
+                }
               />
             </Grid>
 
@@ -242,7 +257,14 @@ const VendorInfoCard: React.FC = () => {
                 value={formik.values.address}
                 onChange={formik.handleChange}
                 error={formik.touched.address && Boolean(formik.errors.address)}
-                helperText={formik.touched.address && formik.errors.address}
+                helperText={
+                  formik.touched.address &&
+                  (typeof formik.errors.address === "string"
+                    ? formik.errors.address
+                    : Array.isArray(formik.errors.address)
+                    ? formik.errors.address.join(", ")
+                    : "")
+                }
               />
             </Grid>
 

@@ -59,15 +59,9 @@ const ProductFilterCard: React.FC<Props> = ({ filters, changeFilters }) => {
   const router = useRouter();
 
   const handleChangePrice = (values: number[]) => {
+    const updatedFilters = { ...filters, price: values };
     changeFilters && changeFilters("price", values);
-    updateURL({ ...filters, price: values, productType: filters?.productType });
-  };
-
-  const handleCategoryToggle = (categoryPath: string) => {
-    setCollapsed((prevState) => ({
-      ...prevState,
-      [categoryPath]: !prevState[categoryPath],
-    }));
+    updateURL(updatedFilters);
   };
 
   const handleProductTypeChange = (typeKey: string, checked: boolean) => {
@@ -81,8 +75,9 @@ const ProductFilterCard: React.FC<Props> = ({ filters, changeFilters }) => {
       updatedTypes = updatedTypes.filter((t) => t !== typeKey);
     }
 
+    const updatedFilters = { ...filters, productType: updatedTypes };
     changeFilters && changeFilters("productType", updatedTypes);
-    updateURL({ ...filters, productType: updatedTypes });
+    updateURL(updatedFilters);
   };
 
   const handleCategorySelect = (categoryPath: string, level: number) => {
@@ -134,8 +129,9 @@ const ProductFilterCard: React.FC<Props> = ({ filters, changeFilters }) => {
   };
 
   const handleNameChange = (name: string) => {
+    const updatedFilters = { ...filters, name };
     changeFilters && changeFilters("name", name);
-    updateURL({ ...filters, name });
+    updateURL(updatedFilters);
   };
 
   const updateURL = (updatedFilters: ProductFilters) => {
@@ -180,8 +176,12 @@ const ProductFilterCard: React.FC<Props> = ({ filters, changeFilters }) => {
 
     const handleToggle = (e: React.MouseEvent) => {
       e.stopPropagation();
-      handleCategoryToggle(categoryPath);
+      setCollapsed((prevState) => ({
+        ...prevState,
+        [categoryPath]: !prevState[categoryPath],
+      }));
     };
+
     const handleClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       handleCategorySelect(categoryPath, level);

@@ -87,24 +87,43 @@ const CartProvider = ({ children }: PropsWithChildren) => {
   const [loading, setLoading] = useState(true);
   const { sessionToken, setCart } = useAppContext();
   const router = useRouter();
+
   useEffect(() => {
-    const fetchCart = async () => {
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
       try {
-        const response = await Cart.getAllCart(sessionToken);
-        if (response?.success || response?.data?.success) {
-          const cartWithSelection = response.data.map((item: CartItem) => ({
-            ...item,
-            selected: false,
-          }));
-          dispatch({ type: "SET_CART", payload: cartWithSelection });
+        const parsedCart = JSON.parse(storedCart);
+        if (Array.isArray(parsedCart)) {
+          dispatch({ type: "SET_CART", payload: parsedCart });
+        } else {
+          localStorage.removeItem("cart");
         }
       } catch (error) {
-      } finally {
-        setLoading(false);
+        localStorage.removeItem("cart");
       }
-    };
-    fetchCart();
+    } else {
+      fetchCart();
+    }
+
+    setLoading(false);
   }, []);
+
+  const fetchCart = async () => {
+    try {
+      const response = await Cart.getAllCart(sessionToken);
+      if (response?.success || response?.data?.success) {
+        const cartWithSelection = response.data.map((item: CartItem) => ({
+          ...item,
+          selected: false,
+        }));
+        dispatch({ type: "SET_CART", payload: cartWithSelection });
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
+      }
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addItemToCart = async (sku_id: string, quantity: number) => {
     if (!sessionToken) {
@@ -123,6 +142,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           selected: false,
         }));
         dispatch({ type: "SET_CART", payload: cartWithSelection });
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
         setCart(cartWithSelection.length);
       }
       notifySuccess(`Thêm sản phẩm vào giỏ hàng thành công`);
@@ -147,10 +167,12 @@ const CartProvider = ({ children }: PropsWithChildren) => {
           selected: false,
         }));
         dispatch({ type: "SET_CART", payload: cartWithSelection });
+        localStorage.setItem("cart", JSON.stringify(cartWithSelection));
         setCart(cartWithSelection?.length || 0);
       }
     }
   };
+
   const toggleSelectItem = (itemId: string) => {
     dispatch({ type: "TOGGLE_SELECT_ITEM", payload: itemId });
   };
@@ -171,23 +193,21 @@ const CartProvider = ({ children }: PropsWithChildren) => {
     [state]
   );
 
-  if (loading)
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <CircularProgress size={50} color="primary" />
-        <Typography variant="h6" ml={2}>
-          Đang tải...
-        </Typography>
-      </Box>
-    );
-
   return (
-    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
+    <CartContext.Provider value={contextValue}>
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        children
+      )}
+    </CartContext.Provider>
   );
 };
 
