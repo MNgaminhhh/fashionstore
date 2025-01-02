@@ -1,8 +1,8 @@
-# E-Commerce Management System
+# E-Commerce Management System for Fashion
 
 ## Overview
 
-## The **E-Commerce Management System** is a comprehensive platform designed to deliver a seamless shopping experience for users while equipping sellers with robust management tools. By leveraging advanced technologies and prioritizing a user-centered design, the system ensures optimal performance, enhanced security, and scalability.
+## The **E-Commerce Management System for Fashion** is a comprehensive platform designed to deliver a seamless shopping experience for users while equipping sellers with robust management tools. By leveraging advanced technologies and prioritizing a user-centered design, the system ensures optimal performance, enhanced security, and scalability.
 
 ## Technologies Used
 
